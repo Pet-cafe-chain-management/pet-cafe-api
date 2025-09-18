@@ -13,6 +13,7 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 var app = builder.Build();
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 app.UseCors();
 

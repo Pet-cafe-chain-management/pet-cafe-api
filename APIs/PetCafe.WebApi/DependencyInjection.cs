@@ -28,7 +28,7 @@ public static class DependencyInjection
         services.AddScoped<IClaimsService, ClaimService>();
 
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(
-                    appSettings.ConnectionStrings.PostgreConnection ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.")));
+                    appSettings.ConnectionStrings.PostgreConnection ?? throw new InvalidOperationException("Connection string 'PostgreConnection' not found.")));
         services.AddAutoMapper(typeof(MapperConfigurationsProfile));
 
         services.AddEndpointsApiExplorer();
