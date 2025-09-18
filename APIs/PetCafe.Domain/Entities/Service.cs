@@ -1,0 +1,46 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace PetCafe.Domain.Entities;
+
+[Table("services")]
+public class Service : BaseEntity
+{
+    [Column("name")]
+    [Required]
+    [MaxLength(100)]
+    public string Name { get; set; } = default!;
+
+    [Column("description")]
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
+    [Column("duration_minutes")]
+    public int DurationMinutes { get; set; }
+
+    [Column("base_price")]
+    public double BasePrice { get; set; } // Giá cơ bản, có thể điều chỉnh theo area
+
+    [Column("max_participants")]
+    public int MaxParticipants { get; set; } = 1;
+
+    [Column("service_type")]
+    [Required]
+    [MaxLength(30)]
+    public string ServiceType { get; set; } = default!; // Training, Bathing, Care, Experience
+
+    [Column("requires_area")]
+    public bool RequiresArea { get; set; } = true; // Service có cần chọn khu vực không
+
+    [Column("image_url")]
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
+
+    [Column("is_active")]
+    public bool IsActive { get; set; } = true;
+
+    // Navigation properties
+    public virtual ICollection<ServiceBooking> ServiceBookings { get; set; } = new List<ServiceBooking>();
+    public virtual ICollection<AreaService> AreaServices { get; set; } = new List<AreaService>();
+}
+

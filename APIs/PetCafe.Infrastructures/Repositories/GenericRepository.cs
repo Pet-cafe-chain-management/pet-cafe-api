@@ -5,6 +5,7 @@ using PetCafe.Application.Repositories;
 using PetCafe.Application.Services.Commons;
 using PetCafe.Domain.Entities;
 using PetCafe.Domain.Models;
+using Task = System.Threading.Tasks.Task;
 
 namespace PetCafe.Infrastructures.Repositories;
 

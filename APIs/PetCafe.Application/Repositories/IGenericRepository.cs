@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using PetCafe.Domain.Entities;
 using PetCafe.Domain.Models;
+using Task = System.Threading.Tasks.Task;
 
 namespace PetCafe.Application.Repositories;
 
