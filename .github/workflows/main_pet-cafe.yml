@@ -28,29 +28,17 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
 
-      # 3️⃣ Restore dependencies
-      - name: Restore dependencies
-        run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
-
-      # 4️⃣ Build
-      - name: Build
-        run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
-
-      # 5️⃣ Test
-      - name: Test
-        run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
-
-      # 6️⃣ Publish
+      # 3️⃣ Publish trực tiếp (bao gồm build + restore)
       - name: Publish
-        run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.PUBLISH_DIR }}"
+        run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --output "${{ env.PUBLISH_DIR }}"
 
-      # 7️⃣ Login to Azure
+      # 4️⃣ Login Azure bằng Service Principal
       - name: Login to Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # 8️⃣ Deploy to Azure Web App
+      # 5️⃣ Deploy lên Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
