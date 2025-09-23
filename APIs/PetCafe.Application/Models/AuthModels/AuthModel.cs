@@ -17,7 +17,6 @@ public class AuthRequestModel
     [Required(ErrorMessage = "Mật khẩu không hợp lệ")]
     public string Password { get; set; } = default!;
 
-    public string asnbnn { get; set; } = default!;
 }
 
 public class AuthResponseModel
