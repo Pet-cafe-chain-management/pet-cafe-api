@@ -1,4 +1,4 @@
-name: Build and Deploy ASP.NET Core App to Azure Web App - Pet Cafe
+name: Build and Deploy PetCafe Web API to Azure
 
 on:
   push:
@@ -7,49 +7,52 @@ on:
       - TestCiCD
   workflow_dispatch:
 
+env:
+  AZURE_WEBAPP_NAME: Petcafe
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 8.0.x
+  WORKING_DIRECTORY: APIs/PetCafe.WebApi
+  PUBLISH_DIR: '${{ github.workspace }}/publish'
+
 jobs:
-  build:
+  build-and-deploy:
     runs-on: windows-latest
     steps:
-      - name: Checkout code
+      # 1️⃣ Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up .NET SDK
+      # 2️⃣ Setup .NET SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
 
+      # 3️⃣ Restore dependencies
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
 
-      - name: Build the application
-        run: dotnet build --configuration Release
+      # 4️⃣ Build
+      - name: Build
+        run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
 
-      - name: Publish the application
-        run: dotnet publish -c Release -o "${{ github.workspace }}/publish"
+      # 5️⃣ Test
+      - name: Test
+        run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: petcafe-webapi
-          path: ${{ github.workspace }}/publish
+      # 6️⃣ Publish
+      - name: Publish
+        run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.PUBLISH_DIR }}"
 
-  deploy:
-    runs-on: windows-latest
-    needs: build
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: petcafe-webapi
-
+      # 7️⃣ Login to Azure
       - name: Login to Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      # 8️⃣ Deploy to Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "petcafe"
-          package: ${{ github.workspace }}/petcafe-webapi
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: ${{ env.PUBLISH_DIR }}
