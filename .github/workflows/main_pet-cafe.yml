@@ -1,55 +1,46 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - Pet Cafe
+name: Build and Deploy PetCafe Web API to Azure
 
 on:
   push:
     branches:
       - master
+
   workflow_dispatch:
 
+env:
+  AZURE_WEBAPP_NAME: Petcafe
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 8.0.x
+  WORKING_DIRECTORY: APIs/PetCafe.WebApi
+  PUBLISH_DIR: '${{ github.workspace }}/publish'
+
 jobs:
-  build:
+  build-and-deploy:
     runs-on: windows-latest
-    permissions:
-      contents: read #This is required for actions/checkout
-
     steps:
-      - uses: actions/checkout@v4
+      # 1️⃣ Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up .NET Core
+      # 2️⃣ Setup .NET SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "v9.0"
+          dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      # 3️⃣ Publish trực tiếp (bao gồm build + restore)
+      - name: Publish
+        run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --output "${{ env.PUBLISH_DIR }}"
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
-
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
+      # 4️⃣ Login Azure bằng Service Principal
+      - name: Login to Azure
+        uses: azure/login@v1
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-  deploy:
-    runs-on: windows-latest
-    needs: build
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: .net-app
-
+      # 5️⃣ Deploy lên Azure Web App
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "petcafe"
-          slot-name: "Production"
-          package: .
-          publish-profile: ${{ secrets.AZURE_CREDENTIALS }}
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: ${{ env.PUBLISH_DIR }}
