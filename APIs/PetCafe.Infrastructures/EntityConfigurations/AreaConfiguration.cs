@@ -8,7 +8,6 @@ public class AreaConfiguration : IEntityTypeConfiguration<Area>
 {
     public void Configure(EntityTypeBuilder<Area> builder)
     {
-        builder.HasIndex(x => x.AreaCode).IsUnique();
         builder.HasIndex(x => x.Name);
 
         builder.Property(x => x.IsActive)

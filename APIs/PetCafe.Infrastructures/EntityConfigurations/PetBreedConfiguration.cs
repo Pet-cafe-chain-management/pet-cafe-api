@@ -8,6 +8,11 @@ public class PetBreedConfiguration : IEntityTypeConfiguration<PetBreed>
 {
     public void Configure(EntityTypeBuilder<PetBreed> builder)
     {
-        builder.HasIndex(x => new { x.Name, x.Species }).IsUnique();
+        builder.HasIndex(x => new { x.Name, x.SpeciesId }).IsUnique();
+
+        builder.HasOne(x => x.Species)
+            .WithMany(x => x.PetBreeds)
+            .HasForeignKey(x => x.SpeciesId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

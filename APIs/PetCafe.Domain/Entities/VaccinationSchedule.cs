@@ -25,9 +25,6 @@ public class VaccinationSchedule : BaseEntity
     [Column("completed_date")]
     public DateTime? CompletedDate { get; set; }
 
-    [Column("reminder_sent")]
-    public bool ReminderSent { get; set; } = false;
-
     [Column("notes")]
     [MaxLength(500)]
     public string? Notes { get; set; }

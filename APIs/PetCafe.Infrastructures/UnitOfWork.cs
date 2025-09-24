@@ -10,13 +10,12 @@ public class UnitOfWork(
     ICustomerRepository customerRepository,
     IEmployeeRepository employeeRepository,
     IPetBreedRepository petBreedRepository,
-    IPetStatusRepository petStatusRepository,
     IPetRepository petRepository,
     IHealthRecordRepository healthRecordRepository,
     IVaccineTypeRepository vaccineTypeRepository,
     IVaccinationRecordRepository vaccinationRecordRepository,
     IVaccinationScheduleRepository vaccinationScheduleRepository,
-    IPetSpecificRepository petSpecificRepository,
+    IPetSpeciesRepository petSpecificRepository,
     ITeamRepository teamRepository,
     ITeamMemberRepository teamMemberRepository,
     ITaskRepository taskRepository,
@@ -27,13 +26,14 @@ public class UnitOfWork(
     IProductRepository productRepository,
     IOrderRepository orderRepository,
     IOrderDetailRepository orderDetailRepository,
-    IStaffAssignmentRepository staffAssignmentRepository,
+    ICustomerBookingRepository customerBookingRepository,
     IAreaRepository areaRepository,
     IServiceRepository serviceRepository,
     IAreaServiceRepository areaServiceRepository,
-    IServiceBookingRepository serviceBookingRepository,
-    IBookingPetRepository bookingPetRepository,
-    INotificationRepository notificationRepository
+    IPetGroupRepository petGroupRepository,
+    INotificationRepository notificationRepository,
+    ITransactionRepository transactionRepository,
+    ISlotRepository slotRepository
 ) : IUnitOfWork
 {
     private IDbContextTransaction? _transaction;
@@ -45,13 +45,13 @@ public class UnitOfWork(
 
     // Pet Management
     public IPetBreedRepository PetBreedRepository => petBreedRepository;
-    public IPetStatusRepository PetStatusRepository => petStatusRepository;
+    public ICustomerBookingRepository BookingRepository => customerBookingRepository;
     public IPetRepository PetRepository => petRepository;
     public IHealthRecordRepository HealthRecordRepository => healthRecordRepository;
     public IVaccineTypeRepository VaccineTypeRepository => vaccineTypeRepository;
     public IVaccinationRecordRepository VaccinationRecordRepository => vaccinationRecordRepository;
     public IVaccinationScheduleRepository VaccinationScheduleRepository => vaccinationScheduleRepository;
-    public IPetSpecificRepository PetSpecificRepository => petSpecificRepository;
+    public IPetSpeciesRepository PetSpecificRepository => petSpecificRepository;
 
     // Team & Task Management
     public ITeamRepository TeamRepository => teamRepository;
@@ -66,17 +66,19 @@ public class UnitOfWork(
     public IProductRepository ProductRepository => productRepository;
     public IOrderRepository OrderRepository => orderRepository;
     public IOrderDetailRepository OrderDetailRepository => orderDetailRepository;
-    public IStaffAssignmentRepository StaffAssignmentRepository => staffAssignmentRepository;
+    public ITransactionRepository TransactionRepository => transactionRepository;
 
     // Area & Service Management
     public IAreaRepository AreaRepository => areaRepository;
     public IServiceRepository ServiceRepository => serviceRepository;
     public IAreaServiceRepository AreaServiceRepository => areaServiceRepository;
-    public IServiceBookingRepository ServiceBookingRepository => serviceBookingRepository;
-    public IBookingPetRepository BookingPetRepository => bookingPetRepository;
+    public IPetGroupRepository PetGroupRepository => petGroupRepository;
 
     // Notification System
     public INotificationRepository NotificationRepository => notificationRepository;
+
+
+    public ISlotRepository SlotRepository => slotRepository;
 
     // Transaction methods
     public async Task<bool> SaveChangesAsync()

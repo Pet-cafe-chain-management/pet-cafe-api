@@ -11,13 +11,13 @@ public interface IUnitOfWork
 
     // Pet Management
     IPetBreedRepository PetBreedRepository { get; }
-    IPetStatusRepository PetStatusRepository { get; }
     IPetRepository PetRepository { get; }
+    IPetGroupRepository PetGroupRepository { get; }
     IHealthRecordRepository HealthRecordRepository { get; }
     IVaccineTypeRepository VaccineTypeRepository { get; }
     IVaccinationRecordRepository VaccinationRecordRepository { get; }
     IVaccinationScheduleRepository VaccinationScheduleRepository { get; }
-    IPetSpecificRepository PetSpecificRepository { get; }
+    IPetSpeciesRepository PetSpecificRepository { get; }
 
     // Team & Task Management
     ITeamRepository TeamRepository { get; }
@@ -32,14 +32,14 @@ public interface IUnitOfWork
     IProductRepository ProductRepository { get; }
     IOrderRepository OrderRepository { get; }
     IOrderDetailRepository OrderDetailRepository { get; }
-    IStaffAssignmentRepository StaffAssignmentRepository { get; }
+    ITransactionRepository TransactionRepository { get; }
+    ISlotRepository SlotRepository { get; }
 
     // Area & Service Management
     IAreaRepository AreaRepository { get; }
     IServiceRepository ServiceRepository { get; }
     IAreaServiceRepository AreaServiceRepository { get; }
-    IServiceBookingRepository ServiceBookingRepository { get; }
-    IBookingPetRepository BookingPetRepository { get; }
+    ICustomerBookingRepository BookingRepository { get; }
 
     // Notification System
     INotificationRepository NotificationRepository { get; }

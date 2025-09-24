@@ -17,13 +17,10 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasForeignKey(x => x.CustomerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(x => x.PaymentStatus)
-            .HasDefaultValue("Pending");
+        builder.HasOne(x => x.Employee)
+            .WithMany(x => x.Orders)
+            .HasForeignKey(x => x.EmployeeId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(x => x.Status)
-            .HasDefaultValue("Processing");
-
-        builder.Property(x => x.OrderDate)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
     }
 }

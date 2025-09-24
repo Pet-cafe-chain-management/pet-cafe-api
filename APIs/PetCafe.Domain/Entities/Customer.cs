@@ -32,5 +32,5 @@ public class Customer : BaseEntity
     // Navigation properties
     public virtual Account Account { get; set; } = default!;
     public virtual ICollection<Order> Orders { get; set; } = [];
-    public virtual ICollection<ServiceBooking> ServiceBookings { get; set; } = [];
+    public virtual ICollection<CustomerBooking> Bookings { get; set; } = [];
 }

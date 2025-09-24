@@ -10,11 +10,6 @@ public class Employee : BaseEntity
     [ForeignKey("Account")]
     public Guid AccountId { get; set; }
 
-    [Column("employee_code")]
-    [Required]
-    [MaxLength(20)]
-    public string EmployeeCode { get; set; } = default!;
-
     [Column("full_name")]
     [Required]
     [MaxLength(100)]
@@ -38,10 +33,22 @@ public class Employee : BaseEntity
     [MaxLength(50)]
     public string? Position { get; set; }
 
+    [Column("area_id")]
+    public Guid? AreaId { get; set; }
+
+    [Column("LeaderId")]
+    public Guid? LeaderId { get; set; }
+
     // Navigation properties
+
+    [ForeignKey("LeaderId")]
+    public virtual Employee? Leader { get; set; } = default!;
+
+    [ForeignKey("AreaId")]
+    public virtual Area? Area { get; set; } = default!;
     public virtual Account Account { get; set; } = default!;
     public virtual ICollection<TeamMember> TeamMembers { get; set; } = [];
     public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = [];
-    public virtual ICollection<EmployeeSchedule> EmployeeSchedules { get; set; } = [];
-    public virtual ICollection<StaffAssignment> StaffAssignments { get; set; } = [];
+    public virtual ICollection<Order> Orders { get; set; } = [];
+    public virtual ICollection<EmployeeSchedule> Schedules { get; set; } = [];
 }

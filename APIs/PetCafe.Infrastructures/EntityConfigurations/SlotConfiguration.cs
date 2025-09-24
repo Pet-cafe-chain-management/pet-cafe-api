@@ -4,10 +4,11 @@ using PetCafe.Domain.Entities;
 
 namespace PetCafe.Infrastructures.EntityConfigurations;
 
-public class PetStatusConfiguration : IEntityTypeConfiguration<PetStatus>
+public class SlotConfiguration : IEntityTypeConfiguration<Slot>
 {
-    public void Configure(EntityTypeBuilder<PetStatus> builder)
+    public void Configure(EntityTypeBuilder<Slot> builder)
     {
-        builder.HasIndex(x => x.Name).IsUnique();
+
     }
 }
+

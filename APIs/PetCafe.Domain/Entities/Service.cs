@@ -40,7 +40,10 @@ public class Service : BaseEntity
     public bool IsActive { get; set; } = true;
 
     // Navigation properties
-    public virtual ICollection<ServiceBooking> ServiceBookings { get; set; } = new List<ServiceBooking>();
-    public virtual ICollection<AreaService> AreaServices { get; set; } = new List<AreaService>();
+    public virtual ICollection<Slot> Slots { get; set; } = [];
+    public virtual ICollection<Task> Tasks { get; set; } = [];
+    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = [];
+    public virtual ICollection<CustomerBooking> Bookings { get; set; } = [];
+    public virtual ICollection<AreaService> AreaServices { get; set; } = [];
 }
 

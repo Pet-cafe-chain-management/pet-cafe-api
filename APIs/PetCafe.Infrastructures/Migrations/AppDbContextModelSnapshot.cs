@@ -22,6 +22,24 @@ namespace PetCafe.Infrastructures.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("CustomerBookingSlot", b =>
+                {
+                    b.Property<Guid>("CustomerBookingsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_bookings_id");
+
+                    b.Property<Guid>("SlotsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("slots_id");
+
+                    b.HasKey("CustomerBookingsId", "SlotsId");
+
+                    b.HasIndex("SlotsId")
+                        .HasDatabaseName("i_x_customer_booking_slot_slots_id");
+
+                    b.ToTable("customer_booking_slot");
+                });
+
             modelBuilder.Entity("PetCafe.Domain.Entities.Account", b =>
                 {
                     b.Property<Guid>("Id")
@@ -101,12 +119,6 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("AreaCode")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
-                        .HasColumnName("area_code");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -150,14 +162,6 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
-                    b.Property<TimeSpan?>("OperatingHoursEnd")
-                        .HasColumnType("interval")
-                        .HasColumnName("operating_hours_end");
-
-                    b.Property<TimeSpan?>("OperatingHoursStart")
-                        .HasColumnType("interval")
-                        .HasColumnName("operating_hours_start");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -167,10 +171,6 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnName("updated_by");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AreaCode")
-                        .IsUnique()
-                        .HasDatabaseName("i_x_areas_area_code");
 
                     b.HasIndex("Name")
                         .HasDatabaseName("i_x_areas_name");
@@ -248,58 +248,6 @@ namespace PetCafe.Infrastructures.Migrations
                     b.ToTable("area_services");
                 });
 
-            modelBuilder.Entity("PetCafe.Domain.Entities.BookingPet", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("notes");
-
-                    b.Property<Guid>("PetId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("pet_id");
-
-                    b.Property<Guid>("ServiceBookingId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("service_booking_id");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PetId")
-                        .HasDatabaseName("i_x_booking_pets_pet_id");
-
-                    b.HasIndex("ServiceBookingId", "PetId")
-                        .IsUnique()
-                        .HasDatabaseName("i_x_booking_pets_service_booking_id_pet_id");
-
-                    b.ToTable("booking_pets");
-                });
-
             modelBuilder.Entity("PetCafe.Domain.Entities.Customer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -368,6 +316,133 @@ namespace PetCafe.Infrastructures.Migrations
                     b.ToTable("customers");
                 });
 
+            modelBuilder.Entity("PetCafe.Domain.Entities.CustomerBooking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<double>("AreaAdjustment")
+                        .HasColumnType("double precision")
+                        .HasColumnName("area_adjustment");
+
+                    b.Property<double>("BaseAmount")
+                        .HasColumnType("double precision")
+                        .HasColumnName("base_amount");
+
+                    b.Property<DateTime>("BookingDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("booking_date");
+
+                    b.Property<string>("BookingNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("booking_number");
+
+                    b.Property<string>("BookingStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("booking_status");
+
+                    b.Property<DateTime?>("CompletionDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completion_date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("FeedbackComment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("feedback_comment");
+
+                    b.Property<DateTime?>("FeedbackDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("feedback_date");
+
+                    b.Property<int?>("FeedbackRating")
+                        .HasColumnType("integer")
+                        .HasColumnName("feedback_rating");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<Guid>("OrderDetailId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_detail_id");
+
+                    b.Property<int>("Participants")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("participants");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("payment_status");
+
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("scheduled_date");
+
+                    b.Property<TimeSpan>("ScheduledTime")
+                        .HasColumnType("interval")
+                        .HasColumnName("scheduled_time");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.Property<string>("SpecialRequests")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("special_requests");
+
+                    b.Property<double>("TotalAmount")
+                        .HasColumnType("double precision")
+                        .HasColumnName("total_amount");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderDetailId")
+                        .IsUnique()
+                        .HasDatabaseName("i_x_customer_bookings_order_detail_id");
+
+                    b.HasIndex("ScheduledDate")
+                        .HasDatabaseName("i_x_customer_bookings_scheduled_date");
+
+                    b.HasIndex("CustomerId", "BookingDate")
+                        .HasDatabaseName("i_x_customer_bookings_customer_id_booking_date");
+
+                    b.HasIndex("ServiceId", "ScheduledDate")
+                        .HasDatabaseName("i_x_customer_bookings_service_id_scheduled_date");
+
+                    b.ToTable("customer_bookings");
+                });
+
             modelBuilder.Entity("PetCafe.Domain.Entities.Employee", b =>
                 {
                     b.Property<Guid>("Id")
@@ -384,6 +459,10 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("address");
 
+                    b.Property<Guid?>("AreaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("area_id");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -391,12 +470,6 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
-
-                    b.Property<string>("EmployeeCode")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("employee_code");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -411,6 +484,10 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
+
+                    b.Property<Guid?>("LeaderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("leader_id");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(15)
@@ -440,9 +517,11 @@ namespace PetCafe.Infrastructures.Migrations
                         .IsUnique()
                         .HasDatabaseName("i_x_employees_account_id");
 
-                    b.HasIndex("EmployeeCode")
-                        .IsUnique()
-                        .HasDatabaseName("i_x_employees_employee_code");
+                    b.HasIndex("AreaId")
+                        .HasDatabaseName("i_x_employees_area_id");
+
+                    b.HasIndex("LeaderId")
+                        .HasDatabaseName("i_x_employees_leader_id");
 
                     b.HasIndex("Phone")
                         .IsUnique()
@@ -728,6 +807,10 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("discount_amount");
 
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
                     b.Property<double>("FinalAmount")
                         .HasColumnType("double precision")
                         .HasColumnName("final_amount");
@@ -742,10 +825,8 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnName("notes");
 
                     b.Property<DateTime>("OrderDate")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("order_date")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnName("order_date");
 
                     b.Property<string>("OrderNumber")
                         .IsRequired()
@@ -760,18 +841,14 @@ namespace PetCafe.Infrastructures.Migrations
 
                     b.Property<string>("PaymentStatus")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
-                        .HasDefaultValue("Pending")
                         .HasColumnName("payment_status");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
-                        .HasDefaultValue("Processing")
                         .HasColumnName("status");
 
                     b.Property<double>("TotalAmount")
@@ -787,6 +864,9 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnName("updated_by");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("i_x_orders_employee_id");
 
                     b.HasIndex("OrderDate")
                         .HasDatabaseName("i_x_orders_order_date");
@@ -807,6 +887,10 @@ namespace PetCafe.Infrastructures.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<Guid?>("BookingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("booking_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -835,13 +919,21 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("order_id");
 
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid?>("ProductId")
                         .HasColumnType("uuid")
                         .HasColumnName("product_id");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
+
+                    b.Property<Guid?>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.Property<Guid?>("SlotId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("slot_id");
 
                     b.Property<double>("TotalPrice")
                         .HasColumnType("double precision")
@@ -864,6 +956,12 @@ namespace PetCafe.Infrastructures.Migrations
                     b.HasIndex("ProductId")
                         .HasDatabaseName("i_x_order_details_product_id");
 
+                    b.HasIndex("ServiceId")
+                        .HasDatabaseName("i_x_order_details_service_id");
+
+                    b.HasIndex("SlotId")
+                        .HasDatabaseName("i_x_order_details_slot_id");
+
                     b.HasIndex("OrderId", "ProductId")
                         .HasDatabaseName("i_x_order_details_order_id_product_id");
 
@@ -882,10 +980,12 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnName("age");
 
                     b.Property<DateTime>("ArrivalDate")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("arrival_date")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnName("arrival_date");
+
+                    b.Property<Guid>("BreedId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("breed_id");
 
                     b.Property<string>("Color")
                         .HasMaxLength(30)
@@ -901,13 +1001,18 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnName("created_by");
 
                     b.Property<string>("Gender")
+                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)")
                         .HasColumnName("gender");
 
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
                     b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("image_url");
 
                     b.Property<bool>("IsDeleted")
@@ -920,23 +1025,19 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("name");
 
-                    b.Property<string>("Personality")
+                    b.Property<string>("Preferences")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
-                        .HasColumnName("personality");
-
-                    b.Property<Guid>("PetBreedId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("pet_breed_id");
-
-                    b.Property<Guid>("PetStatusId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("pet_status_id");
+                        .HasColumnName("preferences");
 
                     b.Property<string>("SpecialNotes")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("special_notes");
+
+                    b.Property<Guid>("SpeciesId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("species_id");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -952,14 +1053,17 @@ namespace PetCafe.Infrastructures.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BreedId")
+                        .HasDatabaseName("i_x_pets_breed_id");
+
+                    b.HasIndex("GroupId")
+                        .HasDatabaseName("i_x_pets_group_id");
+
                     b.HasIndex("Name")
                         .HasDatabaseName("i_x_pets_name");
 
-                    b.HasIndex("PetBreedId")
-                        .HasDatabaseName("i_x_pets_pet_breed_id");
-
-                    b.HasIndex("PetStatusId")
-                        .HasDatabaseName("i_x_pets_pet_status_id");
+                    b.HasIndex("SpeciesId")
+                        .HasDatabaseName("i_x_pets_species_id");
 
                     b.ToTable("pets");
                 });
@@ -971,6 +1075,14 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<int?>("AverageLifespan")
+                        .HasColumnType("integer")
+                        .HasColumnName("average_lifespan");
+
+                    b.Property<double>("AverageWeight")
+                        .HasColumnType("double precision")
+                        .HasColumnName("average_weight");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -994,11 +1106,9 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("name");
 
-                    b.Property<string>("Species")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("species");
+                    b.Property<Guid>("SpeciesId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("species_id");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1010,31 +1120,26 @@ namespace PetCafe.Infrastructures.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name", "Species")
+                    b.HasIndex("SpeciesId")
+                        .HasDatabaseName("i_x_pet_breeds_species_id");
+
+                    b.HasIndex("Name", "SpeciesId")
                         .IsUnique()
-                        .HasDatabaseName("i_x_pet_breeds_name_species");
+                        .HasDatabaseName("i_x_pet_breeds_name_species_id");
 
                     b.ToTable("pet_breeds");
                 });
 
-            modelBuilder.Entity("PetCafe.Domain.Entities.PetSpecific", b =>
+            modelBuilder.Entity("PetCafe.Domain.Entities.PetGroup", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("AttributeName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("attribute_name");
-
-                    b.Property<string>("AttributeValue")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("attribute_value");
+                    b.Property<Guid?>("AreaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("area_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1044,18 +1149,32 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("description");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("notes");
+                    b.Property<int>("MaxCapacity")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_capacity");
 
-                    b.Property<Guid>("PetId")
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid?>("PetBreedId")
                         .HasColumnType("uuid")
-                        .HasColumnName("pet_id");
+                        .HasColumnName("pet_breed_id");
+
+                    b.Property<Guid?>("PetSpeciesId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("pet_species_id");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1067,23 +1186,24 @@ namespace PetCafe.Infrastructures.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PetId", "AttributeName")
-                        .HasDatabaseName("i_x_pet_specifics_pet_id_attribute_name");
+                    b.HasIndex("AreaId")
+                        .HasDatabaseName("i_x_pet_groups_area_id");
 
-                    b.ToTable("pet_specifics");
+                    b.HasIndex("PetBreedId")
+                        .HasDatabaseName("i_x_pet_groups_pet_breed_id");
+
+                    b.HasIndex("PetSpeciesId")
+                        .HasDatabaseName("i_x_pet_groups_pet_species_id");
+
+                    b.ToTable("pet_groups");
                 });
 
-            modelBuilder.Entity("PetCafe.Domain.Entities.PetStatus", b =>
+            modelBuilder.Entity("PetCafe.Domain.Entities.PetSpecies", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<string>("ColorCode")
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)")
-                        .HasColumnName("color_code");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1094,9 +1214,13 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnName("created_by");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("description");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
@@ -1104,8 +1228,8 @@ namespace PetCafe.Infrastructures.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("name");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -1118,11 +1242,7 @@ namespace PetCafe.Infrastructures.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasDatabaseName("i_x_pet_status_name");
-
-                    b.ToTable("pet_status");
+                    b.ToTable("pet_species");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Product", b =>
@@ -1355,48 +1475,20 @@ namespace PetCafe.Infrastructures.Migrations
                     b.ToTable("services");
                 });
 
-            modelBuilder.Entity("PetCafe.Domain.Entities.ServiceBooking", b =>
+            modelBuilder.Entity("PetCafe.Domain.Entities.Slot", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<double>("AreaAdjustment")
-                        .HasColumnType("double precision")
-                        .HasColumnName("area_adjustment");
-
-                    b.Property<Guid?>("AreaId")
+                    b.Property<Guid>("AreaId")
                         .HasColumnType("uuid")
                         .HasColumnName("area_id");
 
-                    b.Property<double>("BaseAmount")
-                        .HasColumnType("double precision")
-                        .HasColumnName("base_amount");
-
-                    b.Property<DateTime>("BookingDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("booking_date")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("BookingNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("booking_number");
-
-                    b.Property<string>("BookingStatus")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("Pending")
-                        .HasColumnName("booking_status");
-
-                    b.Property<DateTime?>("CompletionDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("completion_date");
+                    b.Property<int>("AvailableCapacity")
+                        .HasColumnType("integer")
+                        .HasColumnName("available_capacity");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1406,61 +1498,64 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("customer_id");
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
 
-                    b.Property<string>("FeedbackComment")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("feedback_comment");
-
-                    b.Property<DateTime?>("FeedbackDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("feedback_date");
-
-                    b.Property<int?>("FeedbackRating")
+                    b.Property<int>("DurationMinutes")
                         .HasColumnType("integer")
-                        .HasColumnName("feedback_rating");
+                        .HasColumnName("duration_minutes");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("interval")
+                        .HasColumnName("end_time");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
-                    b.Property<int>("Participants")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("MaxCapacity")
                         .HasColumnType("integer")
-                        .HasDefaultValue(1)
-                        .HasColumnName("participants");
+                        .HasColumnName("max_capacity");
 
-                    b.Property<string>("PaymentStatus")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("Pending")
-                        .HasColumnName("payment_status");
+                    b.Property<Guid>("PetGroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("pet_gourp_id");
 
-                    b.Property<DateTime>("ScheduledDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("scheduled_date");
-
-                    b.Property<TimeSpan>("ScheduledTime")
-                        .HasColumnType("interval")
-                        .HasColumnName("scheduled_time");
+                    b.Property<double>("Price")
+                        .HasColumnType("double precision")
+                        .HasColumnName("price");
 
                     b.Property<Guid>("ServiceId")
                         .HasColumnType("uuid")
                         .HasColumnName("service_id");
 
-                    b.Property<string>("SpecialRequests")
+                    b.Property<DateTime>("SlotDateTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("slot_datetime");
+
+                    b.Property<string>("SpecialNotes")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
-                        .HasColumnName("special_requests");
+                        .HasColumnName("special_notes");
 
-                    b.Property<double>("TotalAmount")
-                        .HasColumnType("double precision")
-                        .HasColumnName("total_amount");
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("interval")
+                        .HasColumnName("start_time");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("team_id");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1473,97 +1568,18 @@ namespace PetCafe.Infrastructures.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AreaId")
-                        .HasDatabaseName("i_x_service_bookings_area_id");
+                        .HasDatabaseName("i_x_slots_area_id");
 
-                    b.HasIndex("BookingNumber")
-                        .IsUnique()
-                        .HasDatabaseName("i_x_service_bookings_booking_number");
+                    b.HasIndex("PetGroupId")
+                        .HasDatabaseName("i_x_slots_pet_gourp_id");
 
-                    b.HasIndex("CustomerId", "BookingDate")
-                        .HasDatabaseName("i_x_service_bookings_customer_id_booking_date");
+                    b.HasIndex("ServiceId")
+                        .HasDatabaseName("i_x_slots_service_id");
 
-                    b.HasIndex("ScheduledDate", "AreaId")
-                        .HasDatabaseName("i_x_service_bookings_scheduled_date_area_id");
+                    b.HasIndex("TeamId")
+                        .HasDatabaseName("i_x_slots_team_id");
 
-                    b.HasIndex("ServiceId", "ScheduledDate")
-                        .HasDatabaseName("i_x_service_bookings_service_id_scheduled_date");
-
-                    b.ToTable("service_bookings");
-                });
-
-            modelBuilder.Entity("PetCafe.Domain.Entities.StaffAssignment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("AssignedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("assigned_date")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("AssignmentType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("assignment_type");
-
-                    b.Property<DateTime?>("CompletionDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("completion_date");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("employee_id");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("notes");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("order_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("Assigned")
-                        .HasColumnName("status");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId", "AssignedDate")
-                        .HasDatabaseName("i_x_staff_assignments_employee_id_assigned_date");
-
-                    b.HasIndex("OrderId", "EmployeeId", "AssignmentType")
-                        .HasDatabaseName("i_x_staff_assignments_order_id_employee_id_assignment_type");
-
-                    b.ToTable("staff_assignments");
+                    b.ToTable("slots");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Task", b =>
@@ -1576,6 +1592,10 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Property<int?>("ActualHours")
                         .HasColumnType("integer")
                         .HasColumnName("actual_hours");
+
+                    b.Property<Guid?>("AreaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("area_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1602,6 +1622,14 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
+                    b.Property<Guid?>("PetGroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("pet_group_id");
+
+                    b.Property<Guid?>("PetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("pet_id");
+
                     b.Property<string>("Priority")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -1609,6 +1637,10 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("character varying(10)")
                         .HasDefaultValue("Medium")
                         .HasColumnName("priority");
+
+                    b.Property<Guid?>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1636,10 +1668,29 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
 
+                    b.Property<Guid?>("WorkShiftId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_shift_id");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AreaId")
+                        .HasDatabaseName("i_x_tasks_area_id");
 
                     b.HasIndex("DueDate")
                         .HasDatabaseName("i_x_tasks_due_date");
+
+                    b.HasIndex("PetGroupId")
+                        .HasDatabaseName("i_x_tasks_pet_group_id");
+
+                    b.HasIndex("PetId")
+                        .HasDatabaseName("i_x_tasks_pet_id");
+
+                    b.HasIndex("ServiceId")
+                        .HasDatabaseName("i_x_tasks_service_id");
+
+                    b.HasIndex("WorkShiftId")
+                        .HasDatabaseName("i_x_tasks_work_shift_id");
 
                     b.HasIndex("TeamId", "Status")
                         .HasDatabaseName("i_x_tasks_team_id_status");
@@ -1655,10 +1706,8 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnName("id");
 
                     b.Property<DateTime>("AssignedDate")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("assigned_date")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnName("assigned_date");
 
                     b.Property<DateTime?>("CompletionDate")
                         .HasColumnType("timestamp with time zone")
@@ -1691,10 +1740,8 @@ namespace PetCafe.Infrastructures.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
-                        .HasDefaultValue("Assigned")
                         .HasColumnName("status");
 
                     b.Property<Guid>("TaskId")
@@ -1816,12 +1863,6 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
-                    b.Property<DateTime>("JoinDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("join_date")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
                     b.Property<Guid>("TeamId")
                         .HasColumnType("uuid")
                         .HasColumnName("team_id");
@@ -1844,6 +1885,85 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasDatabaseName("i_x_team_members_team_id_employee_id");
 
                     b.ToTable("team_members");
+                });
+
+            modelBuilder.Entity("PetCafe.Domain.Entities.Transaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AccountNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("account_number");
+
+                    b.Property<double>("Amount")
+                        .HasColumnType("double precision")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("text")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("Desc")
+                        .HasColumnType("text")
+                        .HasColumnName("desc");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<double>("OrderCode")
+                        .HasColumnType("double precision")
+                        .HasColumnName("order_code");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("PaymentLinkId")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_link_id");
+
+                    b.Property<string>("Reference")
+                        .HasColumnType("text")
+                        .HasColumnName("reference");
+
+                    b.Property<string>("TransactionDateTime")
+                        .HasColumnType("text")
+                        .HasColumnName("transaction_date_time");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("i_x_transactions_order_id");
+
+                    b.ToTable("transactions");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.VaccinationRecord", b =>
@@ -1958,12 +2078,6 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("pet_id");
 
-                    b.Property<bool>("ReminderSent")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("reminder_sent");
-
                     b.Property<DateTime>("ScheduledDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("scheduled_date");
@@ -2014,19 +2128,19 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("description");
 
-                    b.Property<int>("DurationMonths")
+                    b.Property<int>("IntervalMonths")
                         .HasColumnType("integer")
-                        .HasColumnName("duration_months");
+                        .HasColumnName("interval_months");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
-                    b.Property<bool>("IsMandatory")
+                    b.Property<bool>("IsRequired")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
-                        .HasColumnName("is_mandatory");
+                        .HasColumnName("is_required");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -2034,11 +2148,9 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
-                    b.Property<string>("Species")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("species");
+                    b.Property<Guid?>("SpeciesId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("species_id");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -2050,9 +2162,12 @@ namespace PetCafe.Infrastructures.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name", "Species")
+                    b.HasIndex("Name")
                         .IsUnique()
-                        .HasDatabaseName("i_x_vaccine_types_name_species");
+                        .HasDatabaseName("i_x_vaccine_types_name");
+
+                    b.HasIndex("SpeciesId")
+                        .HasDatabaseName("i_x_vaccine_types_species_id");
 
                     b.ToTable("vaccine_types");
                 });
@@ -2118,6 +2233,23 @@ namespace PetCafe.Infrastructures.Migrations
                     b.ToTable("work_shifts");
                 });
 
+            modelBuilder.Entity("CustomerBookingSlot", b =>
+                {
+                    b.HasOne("PetCafe.Domain.Entities.CustomerBooking", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerBookingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_customer_booking_slot_customer_bookings_customer_bookings_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.Slot", null)
+                        .WithMany()
+                        .HasForeignKey("SlotsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_customer_booking_slot_slots_slots_id");
+                });
+
             modelBuilder.Entity("PetCafe.Domain.Entities.AreaService", b =>
                 {
                     b.HasOne("PetCafe.Domain.Entities.Area", "Area")
@@ -2139,27 +2271,6 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Navigation("Service");
                 });
 
-            modelBuilder.Entity("PetCafe.Domain.Entities.BookingPet", b =>
-                {
-                    b.HasOne("PetCafe.Domain.Entities.Pet", "Pet")
-                        .WithMany("BookingPets")
-                        .HasForeignKey("PetId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("f_k_booking_pets_pets_pet_id");
-
-                    b.HasOne("PetCafe.Domain.Entities.ServiceBooking", "ServiceBooking")
-                        .WithMany("BookingPets")
-                        .HasForeignKey("ServiceBookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("f_k_booking_pets_service_bookings_service_booking_id");
-
-                    b.Navigation("Pet");
-
-                    b.Navigation("ServiceBooking");
-                });
-
             modelBuilder.Entity("PetCafe.Domain.Entities.Customer", b =>
                 {
                     b.HasOne("PetCafe.Domain.Entities.Account", "Account")
@@ -2172,6 +2283,36 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Navigation("Account");
                 });
 
+            modelBuilder.Entity("PetCafe.Domain.Entities.CustomerBooking", b =>
+                {
+                    b.HasOne("PetCafe.Domain.Entities.Customer", "Customer")
+                        .WithMany("Bookings")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_customer_bookings_customers_customer_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.OrderDetail", "OrderDetail")
+                        .WithOne("Booking")
+                        .HasForeignKey("PetCafe.Domain.Entities.CustomerBooking", "OrderDetailId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_customer_bookings_order_details_order_detail_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.Service", "Service")
+                        .WithMany("Bookings")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_customer_bookings_services_service_id");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("OrderDetail");
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("PetCafe.Domain.Entities.Employee", b =>
                 {
                     b.HasOne("PetCafe.Domain.Entities.Account", "Account")
@@ -2181,20 +2322,34 @@ namespace PetCafe.Infrastructures.Migrations
                         .IsRequired()
                         .HasConstraintName("f_k_employees_accounts_account_id");
 
+                    b.HasOne("PetCafe.Domain.Entities.Area", "Area")
+                        .WithMany("Employees")
+                        .HasForeignKey("AreaId")
+                        .HasConstraintName("f_k_employees_areas_area_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.Employee", "Leader")
+                        .WithMany()
+                        .HasForeignKey("LeaderId")
+                        .HasConstraintName("f_k_employees_employees_leader_id");
+
                     b.Navigation("Account");
+
+                    b.Navigation("Area");
+
+                    b.Navigation("Leader");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.EmployeeSchedule", b =>
                 {
                     b.HasOne("PetCafe.Domain.Entities.Employee", "Employee")
-                        .WithMany("EmployeeSchedules")
+                        .WithMany("Schedules")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("f_k_employee_schedules_employees_employee_id");
 
                     b.HasOne("PetCafe.Domain.Entities.WorkShift", "WorkShift")
-                        .WithMany("EmployeeSchedules")
+                        .WithMany("Schedules")
                         .HasForeignKey("WorkShiftId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
@@ -2238,7 +2393,16 @@ namespace PetCafe.Infrastructures.Migrations
                         .IsRequired()
                         .HasConstraintName("f_k_orders_customers_customer_id");
 
+                    b.HasOne("PetCafe.Domain.Entities.Employee", "Employee")
+                        .WithMany("Orders")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("f_k_orders_employees_employee_id");
+
                     b.Navigation("Customer");
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.OrderDetail", b =>
@@ -2253,46 +2417,91 @@ namespace PetCafe.Infrastructures.Migrations
                     b.HasOne("PetCafe.Domain.Entities.Product", "Product")
                         .WithMany("OrderDetails")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
+                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("f_k_order_details_products_product_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.Service", "Service")
+                        .WithMany("OrderDetails")
+                        .HasForeignKey("ServiceId")
+                        .HasConstraintName("f_k_order_details_services_service_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.Slot", "Slot")
+                        .WithMany("OrderDetails")
+                        .HasForeignKey("SlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("f_k_order_details_slots_slot_id");
 
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+
+                    b.Navigation("Service");
+
+                    b.Navigation("Slot");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Pet", b =>
                 {
-                    b.HasOne("PetCafe.Domain.Entities.PetBreed", "PetBreed")
+                    b.HasOne("PetCafe.Domain.Entities.PetBreed", "Breed")
                         .WithMany("Pets")
-                        .HasForeignKey("PetBreedId")
+                        .HasForeignKey("BreedId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("f_k_pets_pet_breeds_pet_breed_id");
+                        .HasConstraintName("f_k_pets_pet_breeds_breed_id");
 
-                    b.HasOne("PetCafe.Domain.Entities.PetStatus", "PetStatus")
+                    b.HasOne("PetCafe.Domain.Entities.PetGroup", "Group")
                         .WithMany("Pets")
-                        .HasForeignKey("PetStatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("GroupId")
+                        .HasConstraintName("f_k_pets_pet_groups_group_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.PetSpecies", "Species")
+                        .WithMany("Pets")
+                        .HasForeignKey("SpeciesId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("f_k_pets_pet_status_pet_status_id");
+                        .HasConstraintName("f_k_pets_pet_species_species_id");
+
+                    b.Navigation("Breed");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Species");
+                });
+
+            modelBuilder.Entity("PetCafe.Domain.Entities.PetBreed", b =>
+                {
+                    b.HasOne("PetCafe.Domain.Entities.PetSpecies", "Species")
+                        .WithMany("PetBreeds")
+                        .HasForeignKey("SpeciesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_pet_breeds_pet_species_species_id");
+
+                    b.Navigation("Species");
+                });
+
+            modelBuilder.Entity("PetCafe.Domain.Entities.PetGroup", b =>
+                {
+                    b.HasOne("PetCafe.Domain.Entities.Area", null)
+                        .WithMany("PetGroups")
+                        .HasForeignKey("AreaId")
+                        .HasConstraintName("f_k_pet_groups_areas_area_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.PetBreed", "PetBreed")
+                        .WithMany()
+                        .HasForeignKey("PetBreedId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("f_k_pet_groups_pet_breeds_pet_breed_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.PetSpecies", "PetSpecies")
+                        .WithMany()
+                        .HasForeignKey("PetSpeciesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("f_k_pet_groups_pet_species_pet_species_id");
 
                     b.Navigation("PetBreed");
 
-                    b.Navigation("PetStatus");
-                });
-
-            modelBuilder.Entity("PetCafe.Domain.Entities.PetSpecific", b =>
-                {
-                    b.HasOne("PetCafe.Domain.Entities.Pet", "Pet")
-                        .WithMany("PetSpecifics")
-                        .HasForeignKey("PetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("f_k_pet_specifics_pets_pet_id");
-
-                    b.Navigation("Pet");
+                    b.Navigation("PetSpecies");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Product", b =>
@@ -2307,58 +2516,70 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Navigation("ProductCategory");
                 });
 
-            modelBuilder.Entity("PetCafe.Domain.Entities.ServiceBooking", b =>
+            modelBuilder.Entity("PetCafe.Domain.Entities.Slot", b =>
                 {
                     b.HasOne("PetCafe.Domain.Entities.Area", "Area")
-                        .WithMany("ServiceBookings")
+                        .WithMany("Slots")
                         .HasForeignKey("AreaId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("f_k_service_bookings_areas_area_id");
-
-                    b.HasOne("PetCafe.Domain.Entities.Customer", "Customer")
-                        .WithMany("ServiceBookings")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("f_k_service_bookings_customers_customer_id");
+                        .HasConstraintName("f_k_slots_areas_area_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.PetGroup", "PetGroup")
+                        .WithMany("Slots")
+                        .HasForeignKey("PetGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_slots_pet_groups_pet_gourp_id");
 
                     b.HasOne("PetCafe.Domain.Entities.Service", "Service")
-                        .WithMany("ServiceBookings")
+                        .WithMany("Slots")
                         .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("f_k_service_bookings_services_service_id");
+                        .HasConstraintName("f_k_slots_services_service_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.Team", "Team")
+                        .WithMany("Slots")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_slots_teams_team_id");
 
                     b.Navigation("Area");
 
-                    b.Navigation("Customer");
+                    b.Navigation("PetGroup");
 
                     b.Navigation("Service");
-                });
 
-            modelBuilder.Entity("PetCafe.Domain.Entities.StaffAssignment", b =>
-                {
-                    b.HasOne("PetCafe.Domain.Entities.Employee", "Employee")
-                        .WithMany("StaffAssignments")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("f_k_staff_assignments_employees_employee_id");
-
-                    b.HasOne("PetCafe.Domain.Entities.Order", "Order")
-                        .WithMany("StaffAssignments")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("f_k_staff_assignments_orders_order_id");
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Order");
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Task", b =>
                 {
+                    b.HasOne("PetCafe.Domain.Entities.Area", "Area")
+                        .WithMany("Tasks")
+                        .HasForeignKey("AreaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("f_k_tasks_areas_area_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.PetGroup", "PetGroup")
+                        .WithMany("Tasks")
+                        .HasForeignKey("PetGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("f_k_tasks_pet_groups_pet_group_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.Pet", "Pet")
+                        .WithMany()
+                        .HasForeignKey("PetId")
+                        .HasConstraintName("f_k_tasks_pets_pet_id");
+
+                    b.HasOne("PetCafe.Domain.Entities.Service", "Service")
+                        .WithMany("Tasks")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("f_k_tasks_services_service_id");
+
                     b.HasOne("PetCafe.Domain.Entities.Team", "Team")
                         .WithMany("Tasks")
                         .HasForeignKey("TeamId")
@@ -2366,7 +2587,23 @@ namespace PetCafe.Infrastructures.Migrations
                         .IsRequired()
                         .HasConstraintName("f_k_tasks_teams_team_id");
 
+                    b.HasOne("PetCafe.Domain.Entities.WorkShift", "WorkShift")
+                        .WithMany("Tasks")
+                        .HasForeignKey("WorkShiftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("f_k_tasks_work_shifts_work_shift_id");
+
+                    b.Navigation("Area");
+
+                    b.Navigation("Pet");
+
+                    b.Navigation("PetGroup");
+
+                    b.Navigation("Service");
+
                     b.Navigation("Team");
+
+                    b.Navigation("WorkShift");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.TaskAssignment", b =>
@@ -2422,6 +2659,18 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("PetCafe.Domain.Entities.Transaction", b =>
+                {
+                    b.HasOne("PetCafe.Domain.Entities.Order", "Order")
+                        .WithMany("Transactions")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired()
+                        .HasConstraintName("f_k_transactions_orders_order_id");
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("PetCafe.Domain.Entities.VaccinationRecord", b =>
                 {
                     b.HasOne("PetCafe.Domain.Entities.Pet", "Pet")
@@ -2464,6 +2713,17 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Navigation("VaccineType");
                 });
 
+            modelBuilder.Entity("PetCafe.Domain.Entities.VaccineType", b =>
+                {
+                    b.HasOne("PetCafe.Domain.Entities.PetSpecies", "Species")
+                        .WithMany("VaccineTypes")
+                        .HasForeignKey("SpeciesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("f_k_vaccine_types_pet_species_species_id");
+
+                    b.Navigation("Species");
+                });
+
             modelBuilder.Entity("PetCafe.Domain.Entities.Account", b =>
                 {
                     b.Navigation("Customer");
@@ -2477,21 +2737,27 @@ namespace PetCafe.Infrastructures.Migrations
                 {
                     b.Navigation("AreaServices");
 
-                    b.Navigation("ServiceBookings");
+                    b.Navigation("Employees");
+
+                    b.Navigation("PetGroups");
+
+                    b.Navigation("Slots");
+
+                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Customer", b =>
                 {
-                    b.Navigation("Orders");
+                    b.Navigation("Bookings");
 
-                    b.Navigation("ServiceBookings");
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Employee", b =>
                 {
-                    b.Navigation("EmployeeSchedules");
+                    b.Navigation("Orders");
 
-                    b.Navigation("StaffAssignments");
+                    b.Navigation("Schedules");
 
                     b.Navigation("TaskAssignments");
 
@@ -2502,16 +2768,17 @@ namespace PetCafe.Infrastructures.Migrations
                 {
                     b.Navigation("OrderDetails");
 
-                    b.Navigation("StaffAssignments");
+                    b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("PetCafe.Domain.Entities.OrderDetail", b =>
+                {
+                    b.Navigation("Booking");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Pet", b =>
                 {
-                    b.Navigation("BookingPets");
-
                     b.Navigation("HealthRecords");
-
-                    b.Navigation("PetSpecifics");
 
                     b.Navigation("VaccinationRecords");
 
@@ -2523,9 +2790,22 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Navigation("Pets");
                 });
 
-            modelBuilder.Entity("PetCafe.Domain.Entities.PetStatus", b =>
+            modelBuilder.Entity("PetCafe.Domain.Entities.PetGroup", b =>
                 {
                     b.Navigation("Pets");
+
+                    b.Navigation("Slots");
+
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("PetCafe.Domain.Entities.PetSpecies", b =>
+                {
+                    b.Navigation("PetBreeds");
+
+                    b.Navigation("Pets");
+
+                    b.Navigation("VaccineTypes");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Product", b =>
@@ -2542,12 +2822,18 @@ namespace PetCafe.Infrastructures.Migrations
                 {
                     b.Navigation("AreaServices");
 
-                    b.Navigation("ServiceBookings");
+                    b.Navigation("Bookings");
+
+                    b.Navigation("OrderDetails");
+
+                    b.Navigation("Slots");
+
+                    b.Navigation("Tasks");
                 });
 
-            modelBuilder.Entity("PetCafe.Domain.Entities.ServiceBooking", b =>
+            modelBuilder.Entity("PetCafe.Domain.Entities.Slot", b =>
                 {
-                    b.Navigation("BookingPets");
+                    b.Navigation("OrderDetails");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Task", b =>
@@ -2557,6 +2843,8 @@ namespace PetCafe.Infrastructures.Migrations
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Team", b =>
                 {
+                    b.Navigation("Slots");
+
                     b.Navigation("Tasks");
 
                     b.Navigation("TeamMembers");
@@ -2571,7 +2859,9 @@ namespace PetCafe.Infrastructures.Migrations
 
             modelBuilder.Entity("PetCafe.Domain.Entities.WorkShift", b =>
                 {
-                    b.Navigation("EmployeeSchedules");
+                    b.Navigation("Schedules");
+
+                    b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618
         }

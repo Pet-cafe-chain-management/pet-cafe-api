@@ -24,7 +24,5 @@ public class VaccinationScheduleConfiguration : IEntityTypeConfiguration<Vaccina
         builder.Property(x => x.IsCompleted)
             .HasDefaultValue(false);
 
-        builder.Property(x => x.ReminderSent)
-            .HasDefaultValue(false);
     }
 }

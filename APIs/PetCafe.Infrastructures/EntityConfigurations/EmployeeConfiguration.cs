@@ -8,7 +8,6 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
 {
     public void Configure(EntityTypeBuilder<Employee> builder)
     {
-        builder.HasIndex(x => x.EmployeeCode).IsUnique();
         builder.HasIndex(x => x.Phone).IsUnique();
 
         builder.HasOne(x => x.Account)

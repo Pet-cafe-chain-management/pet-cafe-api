@@ -7,19 +7,24 @@ namespace PetCafe.Domain.Entities;
 public class PetBreed : BaseEntity
 {
     [Column("name")]
-    [Required]
     [MaxLength(50)]
-    public string Name { get; set; } = default!;
+    public string Name { get; set; } = null!;
+
+    [Column("species_id")]
+    [ForeignKey("Species")]
+    public Guid SpeciesId { get; set; }
 
     [Column("description")]
     [MaxLength(500)]
     public string? Description { get; set; }
 
-    [Column("species")]
-    [Required]
-    [MaxLength(30)]
-    public string Species { get; set; } = default!; // Cat, Dog, Rabbit, etc.
+    [Column("average_weight")]
+    public double AverageWeight { get; set; }
+
+    [Column("average_lifespan")]
+    public int? AverageLifespan { get; set; }
 
     // Navigation properties
-    public virtual ICollection<Pet> Pets { get; set; } = new List<Pet>();
+    public virtual PetSpecies Species { get; set; } = null!;
+    public virtual ICollection<Pet> Pets { get; set; } = [];
 }

@@ -12,12 +12,12 @@ public class EmployeeScheduleConfiguration : IEntityTypeConfiguration<EmployeeSc
         builder.HasIndex(x => x.WorkDate);
 
         builder.HasOne(x => x.Employee)
-            .WithMany(x => x.EmployeeSchedules)
+            .WithMany(x => x.Schedules)
             .HasForeignKey(x => x.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.WorkShift)
-            .WithMany(x => x.EmployeeSchedules)
+            .WithMany(x => x.Schedules)
             .HasForeignKey(x => x.WorkShiftId)
             .OnDelete(DeleteBehavior.Restrict);
 

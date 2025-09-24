@@ -10,6 +10,10 @@ public class Order : BaseEntity
     [ForeignKey("Customer")]
     public Guid CustomerId { get; set; }
 
+    [Column("employee_id")]
+    [ForeignKey("Employee")]
+    public Guid EmployeeId { get; set; }
+
     [Column("order_number")]
     [Required]
     [MaxLength(20)]
@@ -45,6 +49,7 @@ public class Order : BaseEntity
 
     // Navigation properties
     public virtual Customer Customer { get; set; } = default!;
+    public virtual Employee Employee { get; set; } = default!;
+    public virtual ICollection<Transaction> Transactions { get; set; } = [];
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = [];
-    public virtual ICollection<StaffAssignment> StaffAssignments { get; set; } = [];
 }

@@ -15,10 +15,6 @@ public class Task : BaseEntity
     [MaxLength(500)]
     public string? Description { get; set; }
 
-    [Column("team_id")]
-    [ForeignKey("Team")]
-    public Guid TeamId { get; set; }
-
     [Column("priority")]
     [MaxLength(10)]
     public string Priority { get; set; } = "Medium"; // Low, Medium, High, Urgent
@@ -36,7 +32,36 @@ public class Task : BaseEntity
     [Column("actual_hours")]
     public int? ActualHours { get; set; }
 
+    [Column("team_id")]
+    [ForeignKey("Team")]
+    public Guid TeamId { get; set; }
+
+    [Column("area_id")]
+    [ForeignKey("Area")]
+    public Guid? AreaId { get; set; }
+
+    [Column("pet_group_id")]
+    [ForeignKey("PetGroup")]
+    public Guid? PetGroupId { get; set; }
+
+    [Column("service_id")]
+    [ForeignKey("Service")]
+    public Guid? ServiceId { get; set; }
+
+    [Column("pet_id")]
+    [ForeignKey("Pet")]
+    public Guid? PetId { get; set; }
+
+    [Column("work_shift_id")]
+    [ForeignKey("WorkShift")]
+    public Guid? WorkShiftId { get; set; }
+
     // Navigation properties
     public virtual Team Team { get; set; } = default!;
+    public virtual Area? Area { get; set; } = default!;
+    public virtual PetGroup? PetGroup { get; set; } = default!;
+    public virtual Service? Service { get; set; } = default!;
+    public virtual Pet? Pet { get; set; } = default!;
+    public virtual WorkShift WorkShift { get; set; } = default!;
     public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = [];
 }

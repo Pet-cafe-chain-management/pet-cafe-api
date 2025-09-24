@@ -17,30 +17,22 @@ public class Area : BaseEntity
 
     [Column("location")]
     [MaxLength(200)]
-    public string? Location { get; set; } // Vị trí trong cửa hàng
-
-    [Column("area_code")]
-    [Required]
-    [MaxLength(10)]
-    public string AreaCode { get; set; } = default!; // Mã khu vực: A, B, C, etc.
+    public string? Location { get; set; }
 
     [Column("max_capacity")]
-    public int MaxCapacity { get; set; } = 0; // Sức chứa tối đa của khu vực
+    public int MaxCapacity { get; set; } = 0;
 
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
-
-    [Column("operating_hours_start")]
-    public TimeSpan? OperatingHoursStart { get; set; }
-
-    [Column("operating_hours_end")]
-    public TimeSpan? OperatingHoursEnd { get; set; }
 
     [Column("image_url")]
     [MaxLength(500)]
     public string? ImageUrl { get; set; }
 
     // Navigation properties
-    public virtual ICollection<AreaService> AreaServices { get; set; } = new List<AreaService>();
-    public virtual ICollection<ServiceBooking> ServiceBookings { get; set; } = new List<ServiceBooking>();
+    public virtual ICollection<AreaService> AreaServices { get; set; } = [];
+    public virtual ICollection<Slot> Slots { get; set; } = [];
+    public virtual ICollection<Task> Tasks { get; set; } = [];
+    public virtual ICollection<PetGroup> PetGroups { get; set; } = [];
+    public virtual ICollection<Employee> Employees { get; set; } = [];
 }

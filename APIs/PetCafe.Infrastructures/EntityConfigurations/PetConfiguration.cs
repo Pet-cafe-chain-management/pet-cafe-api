@@ -10,19 +10,11 @@ public class PetConfiguration : IEntityTypeConfiguration<Pet>
     {
         builder.HasIndex(x => x.Name);
 
-        builder.HasOne(x => x.PetBreed)
+        builder.HasOne(x => x.Breed)
             .WithMany(x => x.Pets)
-            .HasForeignKey(x => x.PetBreedId)
+            .HasForeignKey(x => x.BreedId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.PetStatus)
-            .WithMany(x => x.Pets)
-            .HasForeignKey(x => x.PetStatusId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-
-        builder.Property(x => x.ArrivalDate)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
     }
 }
 

@@ -14,8 +14,6 @@ public class TeamMember : BaseEntity
     [ForeignKey("Employee")]
     public Guid EmployeeId { get; set; }
 
-    [Column("join_date")]
-    public DateTime JoinDate { get; set; }
 
     [Column("is_active")]
     public bool IsActive { get; set; } = true;

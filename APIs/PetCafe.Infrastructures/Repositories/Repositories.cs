@@ -24,7 +24,10 @@ public class PetBreedRepository(AppDbContext context, ICurrentTime currentTime, 
 {
 }
 
-public class PetStatusRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<PetStatus>(context, currentTime, claimsService), IPetStatusRepository
+public class PetGroupRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<PetGroup>(context, currentTime, claimsService), IPetGroupRepository
+{
+}
+public class TransactionRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<Transaction>(context, currentTime, claimsService), ITransactionRepository
 {
 }
 
@@ -48,7 +51,7 @@ public class VaccinationScheduleRepository(AppDbContext context, ICurrentTime cu
 {
 }
 
-public class PetSpecificRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<PetSpecific>(context, currentTime, claimsService), IPetSpecificRepository
+public class PetSpeciesRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<PetSpecies>(context, currentTime, claimsService), IPetSpeciesRepository
 {
 }
 
@@ -94,7 +97,10 @@ public class OrderDetailRepository(AppDbContext context, ICurrentTime currentTim
 {
 }
 
-public class StaffAssignmentRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<StaffAssignment>(context, currentTime, claimsService), IStaffAssignmentRepository
+public class CustomerBookingRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<CustomerBooking>(context, currentTime, claimsService), ICustomerBookingRepository
+{
+}
+public class SlotRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<Slot>(context, currentTime, claimsService), ISlotRepository
 {
 }
 
@@ -111,13 +117,6 @@ public class AreaServiceRepository(AppDbContext context, ICurrentTime currentTim
 {
 }
 
-public class ServiceBookingRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<ServiceBooking>(context, currentTime, claimsService), IServiceBookingRepository
-{
-}
-
-public class BookingPetRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<BookingPet>(context, currentTime, claimsService), IBookingPetRepository
-{
-}
 
 // Notification System
 public class NotificationRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<Notification>(context, currentTime, claimsService), INotificationRepository

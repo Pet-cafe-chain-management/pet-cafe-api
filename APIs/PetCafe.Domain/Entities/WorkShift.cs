@@ -24,6 +24,6 @@ public class WorkShift : BaseEntity
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
 
-    // Navigation properties
-    public virtual ICollection<EmployeeSchedule> EmployeeSchedules { get; set; } = [];
+    public virtual ICollection<EmployeeSchedule> Schedules { get; set; } = [];
+    public virtual ICollection<Task> Tasks { get; set; } = [];
 }

@@ -20,11 +20,5 @@ public class TaskAssignmentConfiguration : IEntityTypeConfiguration<TaskAssignme
             .WithMany(x => x.TaskAssignments)
             .HasForeignKey(x => x.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Property(x => x.Status)
-            .HasDefaultValue("Assigned");
-
-        builder.Property(x => x.AssignedDate)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
     }
 }

@@ -23,7 +23,5 @@ public class TeamMemberConfiguration : IEntityTypeConfiguration<TeamMember>
         builder.Property(x => x.IsActive)
             .HasDefaultValue(true);
 
-        builder.Property(x => x.JoinDate)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
     }
 }

@@ -16,6 +16,27 @@ public class TaskConfiguration : IEntityTypeConfiguration<Task>
             .HasForeignKey(x => x.TeamId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne(x => x.Area)
+            .WithMany(x => x.Tasks)
+            .HasForeignKey(x => x.AreaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.PetGroup)
+            .WithMany(x => x.Tasks)
+            .HasForeignKey(x => x.PetGroupId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.Service)
+            .WithMany(x => x.Tasks)
+            .HasForeignKey(x => x.ServiceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
+        builder.HasOne(x => x.WorkShift)
+            .WithMany(x => x.Tasks)
+            .HasForeignKey(x => x.WorkShiftId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.Property(x => x.Priority)
             .HasDefaultValue("Medium");
 

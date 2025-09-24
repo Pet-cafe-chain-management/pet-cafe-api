@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PetCafe.Domain.Entities;
 
-[Table("service_bookings")]
-public class ServiceBooking : BaseEntity
+[Table("customer_bookings")]
+public class CustomerBooking : BaseEntity
 {
     [Column("customer_id")]
     [ForeignKey("Customer")]
@@ -14,9 +14,8 @@ public class ServiceBooking : BaseEntity
     [ForeignKey("Service")]
     public Guid ServiceId { get; set; }
 
-    [Column("area_id")]
-    [ForeignKey("Area")]
-    public Guid? AreaId { get; set; } // Khu vực được chọn cho service
+    [Column("order_detail_id")]
+    public Guid OrderDetailId { get; set; }
 
     [Column("booking_number")]
     [Required]
@@ -72,7 +71,7 @@ public class ServiceBooking : BaseEntity
     // Navigation properties
     public virtual Customer Customer { get; set; } = default!;
     public virtual Service Service { get; set; } = default!;
-    public virtual Area? Area { get; set; }
-    public virtual ICollection<BookingPet> BookingPets { get; set; } = [];
+    public virtual OrderDetail OrderDetail { get; set; } = default!;
+    public virtual ICollection<Slot> Slots { get; set; } = [];
 }
 

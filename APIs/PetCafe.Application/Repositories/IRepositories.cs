@@ -21,11 +21,12 @@ public interface IPetBreedRepository : IGenericRepository<PetBreed>
 {
 }
 
-public interface IPetStatusRepository : IGenericRepository<PetStatus>
+
+public interface IPetRepository : IGenericRepository<Pet>
 {
 }
 
-public interface IPetRepository : IGenericRepository<Pet>
+public interface IPetGroupRepository : IGenericRepository<PetGroup>
 {
 }
 
@@ -45,7 +46,7 @@ public interface IVaccinationScheduleRepository : IGenericRepository<Vaccination
 {
 }
 
-public interface IPetSpecificRepository : IGenericRepository<PetSpecific>
+public interface IPetSpeciesRepository : IGenericRepository<PetSpecies>
 {
 }
 
@@ -91,7 +92,11 @@ public interface IOrderDetailRepository : IGenericRepository<OrderDetail>
 {
 }
 
-public interface IStaffAssignmentRepository : IGenericRepository<StaffAssignment>
+public interface ITransactionRepository : IGenericRepository<Transaction>
+{
+}
+
+public interface ISlotRepository : IGenericRepository<Slot>
 {
 }
 
@@ -108,11 +113,7 @@ public interface IAreaServiceRepository : IGenericRepository<AreaService>
 {
 }
 
-public interface IServiceBookingRepository : IGenericRepository<ServiceBooking>
-{
-}
-
-public interface IBookingPetRepository : IGenericRepository<BookingPet>
+public interface ICustomerBookingRepository : IGenericRepository<CustomerBooking>
 {
 }
 
@@ -120,3 +121,4 @@ public interface IBookingPetRepository : IGenericRepository<BookingPet>
 public interface INotificationRepository : IGenericRepository<Notification>
 {
 }
+
