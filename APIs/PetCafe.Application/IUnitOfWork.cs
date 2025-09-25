@@ -19,7 +19,7 @@ public interface IUnitOfWork
     IVaccineTypeRepository VaccineTypeRepository { get; }
     IVaccinationRecordRepository VaccinationRecordRepository { get; }
     IVaccinationScheduleRepository VaccinationScheduleRepository { get; }
-    IPetSpeciesRepository PetSpecificRepository { get; }
+    IPetSpeciesRepository PetSpeciesRepository { get; }
 
     // Team & Task Management
     ITeamRepository TeamRepository { get; }

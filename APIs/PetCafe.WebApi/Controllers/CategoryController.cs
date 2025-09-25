@@ -15,7 +15,7 @@ public class CategoryController(
     public async Task<IActionResult> CreateAsync([FromBody] CategoryCreateModel model)
     {
         var category = await _categoryService.CreateAsync(model);
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = category.Id }, category);
+        return Ok(category);
     }
 
     [HttpPut("{id:guid}")]

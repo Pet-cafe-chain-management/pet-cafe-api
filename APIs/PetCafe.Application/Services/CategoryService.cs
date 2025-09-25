@@ -11,7 +11,7 @@ public interface ICategoryService
     Task<ProductCategory> CreateAsync(CategoryCreateModel model);
     Task<ProductCategory> UpdateAsync(Guid id, CategoryUpdateModel model);
     Task<bool> DeleteAsync(Guid id);
-    Task<ProductCategory?> GetByIdAsync(Guid id);
+    Task<ProductCategory> GetByIdAsync(Guid id);
     Task<BasePagingResponseModel<ProductCategory>> GetAllPagingAsync(FilterQuery query);
 }
 
@@ -43,9 +43,9 @@ public class CategoryService(
         return await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<ProductCategory?> GetByIdAsync(Guid id)
+    public async Task<ProductCategory> GetByIdAsync(Guid id)
     {
-        return await _unitOfWork.ProductCategoryRepository.GetByIdAsync(id);
+        return await _unitOfWork.ProductCategoryRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
     }
 
     public async Task<BasePagingResponseModel<ProductCategory>> GetAllPagingAsync(FilterQuery query)

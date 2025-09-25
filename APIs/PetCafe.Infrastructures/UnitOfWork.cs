@@ -53,7 +53,7 @@ public class UnitOfWork(
     public IVaccineTypeRepository VaccineTypeRepository => vaccineTypeRepository;
     public IVaccinationRecordRepository VaccinationRecordRepository => vaccinationRecordRepository;
     public IVaccinationScheduleRepository VaccinationScheduleRepository => vaccinationScheduleRepository;
-    public IPetSpeciesRepository PetSpecificRepository => petSpecificRepository;
+    public IPetSpeciesRepository PetSpeciesRepository => petSpecificRepository;
 
     // Team & Task Management
     public ITeamRepository TeamRepository => teamRepository;
