@@ -122,3 +122,7 @@ public interface INotificationRepository : IGenericRepository<Notification>
 {
 }
 
+public interface IStorageRepository : IGenericRepository<Storage>
+{
+}
+

@@ -48,6 +48,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     // Notification System
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<Storage> Storages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

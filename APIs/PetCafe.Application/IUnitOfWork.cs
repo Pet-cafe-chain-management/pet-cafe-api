@@ -45,6 +45,7 @@ public interface IUnitOfWork
 
     // Notification System
     INotificationRepository NotificationRepository { get; }
+    IStorageRepository StorageRepository { get; }
 
     // Transaction methods
     Task<bool> SaveChangesAsync();

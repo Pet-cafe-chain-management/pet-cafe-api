@@ -35,6 +35,7 @@ public class UnitOfWork(
     INotificationRepository notificationRepository,
     ITransactionRepository transactionRepository,
     ISlotRepository slotRepository,
+    IStorageRepository storageRepository,
     IMapper mapper
 ) : IUnitOfWork
 {
@@ -83,6 +84,8 @@ public class UnitOfWork(
     public ISlotRepository SlotRepository => slotRepository;
 
     public IMapper Mapper => mapper;
+
+    public IStorageRepository StorageRepository => storageRepository;
 
     // Transaction methods
     public async Task<bool> SaveChangesAsync()

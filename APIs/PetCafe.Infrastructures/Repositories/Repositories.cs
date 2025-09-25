@@ -122,3 +122,7 @@ public class AreaServiceRepository(AppDbContext context, ICurrentTime currentTim
 public class NotificationRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<Notification>(context, currentTime, claimsService), INotificationRepository
 {
 }
+
+public class StorageRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<Storage>(context, currentTime, claimsService), IStorageRepository
+{
+}
