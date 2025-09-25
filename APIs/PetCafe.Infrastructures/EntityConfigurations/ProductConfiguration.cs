@@ -10,11 +10,11 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
     public void Configure(EntityTypeBuilder<Product> builder)
     {
         builder.HasIndex(x => x.Name);
-        builder.HasIndex(x => new { x.ProductCategoryId, x.IsActive });
+        builder.HasIndex(x => new { x.CategoryId, x.IsActive });
 
-        builder.HasOne(x => x.ProductCategory)
+        builder.HasOne(x => x.Category)
             .WithMany(x => x.Products)
-            .HasForeignKey(x => x.ProductCategoryId)
+            .HasForeignKey(x => x.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
 

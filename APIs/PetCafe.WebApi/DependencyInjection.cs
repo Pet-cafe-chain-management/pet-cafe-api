@@ -14,6 +14,7 @@ using Microsoft.OpenApi.Models;
 using PetCafe.Application;
 using PetCafe.Application.GlobalExceptionHandling;
 using PetCafe.Application.Mappers;
+using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services.Commons;
 using PetCafe.Infrastructures;
 using PetCafe.WebApi.Middlewares;
@@ -35,11 +36,15 @@ public static class DependencyInjection
         services.AddSwaggerGen();
         services.AddRouting(options => options.LowercaseUrls = true);
         services.AddControllers();
-        services.AddControllers().AddJsonOptions(options =>
+        services.AddControllers(options =>
         {
-            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-            options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+            options.ModelBinderProviders.Insert(0, new OrderParamListBinderProvider());
+        }).AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+            options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.SnakeCaseLower;
         });
+
         services.AddHttpContextAccessor();
         services.AddHttpClient();
         services.AddCors(options =>

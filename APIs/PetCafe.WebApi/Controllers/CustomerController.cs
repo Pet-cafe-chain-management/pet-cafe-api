@@ -1,0 +1,30 @@
+using Microsoft.AspNetCore.Mvc;
+using PetCafe.Application.Models.CustomerModels;
+using PetCafe.Application.Models.ShareModels;
+using PetCafe.Application.Services;
+
+namespace PetCafe.WebApi.Controllers;
+
+public class CustomerController(ICustomerService _customerService) : BaseController
+{
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] CustomerUpdateModel model)
+    {
+        await _customerService.UpdateAsync(id, model);
+        return NoContent();
+    }
+
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    {
+        return Ok(await _customerService.GetByIdAsync(id));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllPaging([FromQuery] FilterQuery query)
+    {
+        return Ok(await _customerService.GetAllPagingAsync(query));
+    }
+}

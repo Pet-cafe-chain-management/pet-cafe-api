@@ -1,9 +1,11 @@
+using AutoMapper;
 using PetCafe.Application.Repositories;
 
 namespace PetCafe.Application;
 
 public interface IUnitOfWork
 {
+    IMapper Mapper { get; }
     // Account & User Management
     IAccountRepository AccountRepository { get; }
     ICustomerRepository CustomerRepository { get; }

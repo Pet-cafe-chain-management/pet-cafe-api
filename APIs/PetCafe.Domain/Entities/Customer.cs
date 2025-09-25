@@ -15,6 +15,15 @@ public class Customer : BaseEntity
     [MaxLength(100)]
     public string FullName { get; set; } = default!;
 
+    [Column("avatar_url")]
+    [Required]
+    public string AvatarUrl { get; set; } = default!;
+
+    [Column("email")]
+    [Required]
+    [MaxLength(100)]
+    public string Email { get; set; } = default!;
+
     [Column("phone")]
     [MaxLength(15)]
     public string? Phone { get; set; }

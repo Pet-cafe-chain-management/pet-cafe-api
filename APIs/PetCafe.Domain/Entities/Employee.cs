@@ -15,6 +15,15 @@ public class Employee : BaseEntity
     [MaxLength(100)]
     public string FullName { get; set; } = default!;
 
+    [Column("avatar_url")]
+    [Required]
+    public string AvatarUrl { get; set; } = default!;
+
+    [Column("email")]
+    [Required]
+    [MaxLength(100)]
+    public string Email { get; set; } = default!;
+
     [Column("phone")]
     [MaxLength(15)]
     public string? Phone { get; set; }
@@ -23,26 +32,16 @@ public class Employee : BaseEntity
     [MaxLength(200)]
     public string? Address { get; set; }
 
-    [Column("hire_date")]
-    public DateTime HireDate { get; set; }
+    [Column("skills")]
+    public List<string> Skills { get; set; } = [];
 
     [Column("salary")]
     public double? Salary { get; set; } = 0;
 
-    [Column("position")]
-    [MaxLength(50)]
-    public string? Position { get; set; }
-
     [Column("area_id")]
     public Guid? AreaId { get; set; }
 
-    [Column("LeaderId")]
-    public Guid? LeaderId { get; set; }
-
     // Navigation properties
-
-    [ForeignKey("LeaderId")]
-    public virtual Employee? Leader { get; set; } = default!;
 
     [ForeignKey("AreaId")]
     public virtual Area? Area { get; set; } = default!;

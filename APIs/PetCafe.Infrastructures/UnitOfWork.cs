@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore.Storage;
 using PetCafe.Application;
 using PetCafe.Application.Repositories;
@@ -33,7 +34,8 @@ public class UnitOfWork(
     IPetGroupRepository petGroupRepository,
     INotificationRepository notificationRepository,
     ITransactionRepository transactionRepository,
-    ISlotRepository slotRepository
+    ISlotRepository slotRepository,
+    IMapper mapper
 ) : IUnitOfWork
 {
     private IDbContextTransaction? _transaction;
@@ -79,6 +81,8 @@ public class UnitOfWork(
 
 
     public ISlotRepository SlotRepository => slotRepository;
+
+    public IMapper Mapper => mapper;
 
     // Transaction methods
     public async Task<bool> SaveChangesAsync()

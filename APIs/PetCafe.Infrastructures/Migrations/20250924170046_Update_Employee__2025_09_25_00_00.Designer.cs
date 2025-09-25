@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetCafe.Infrastructures;
@@ -11,9 +12,11 @@ using PetCafe.Infrastructures;
 namespace PetCafe.Infrastructures.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250924170046_Update_Employee__2025_09_25_00_00")]
+    partial class Update_Employee__2025_09_25_00_00
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -264,11 +267,6 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("address");
 
-                    b.Property<string>("AvatarUrl")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("avatar_url");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -280,12 +278,6 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_of_birth");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("email");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -474,11 +466,6 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("area_id");
 
-                    b.Property<string>("AvatarUrl")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("avatar_url");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -486,12 +473,6 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("email");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -1263,10 +1244,6 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("category_id");
-
                     b.Property<double?>("Cost")
                         .HasColumnType("double precision")
                         .HasColumnName("cost");
@@ -1319,6 +1296,10 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("price");
 
+                    b.Property<Guid>("ProductCategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_category_id");
+
                     b.Property<int>("StockQuantity")
                         .HasColumnType("integer")
                         .HasColumnName("stock_quantity");
@@ -1336,8 +1317,8 @@ namespace PetCafe.Infrastructures.Migrations
                     b.HasIndex("Name")
                         .HasDatabaseName("i_x_products_name");
 
-                    b.HasIndex("CategoryId", "IsActive")
-                        .HasDatabaseName("i_x_products_category_id_is_active");
+                    b.HasIndex("ProductCategoryId", "IsActive")
+                        .HasDatabaseName("i_x_products_product_category_id_is_active");
 
                     b.ToTable("products");
                 });
@@ -2510,14 +2491,14 @@ namespace PetCafe.Infrastructures.Migrations
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Product", b =>
                 {
-                    b.HasOne("PetCafe.Domain.Entities.ProductCategory", "Category")
+                    b.HasOne("PetCafe.Domain.Entities.ProductCategory", "ProductCategory")
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId")
+                        .HasForeignKey("ProductCategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("f_k_products_product_categories_category_id");
+                        .HasConstraintName("f_k_products_product_categories_product_category_id");
 
-                    b.Navigation("Category");
+                    b.Navigation("ProductCategory");
                 });
 
             modelBuilder.Entity("PetCafe.Domain.Entities.Slot", b =>

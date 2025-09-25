@@ -61,7 +61,9 @@ public class AuthService(
         account.Customer = await _unitOfWork.CustomerRepository.AddAsync(new Customer
         {
             AccountId = account.Id,
-            FullName = userGoogleProfile.DisplayName
+            FullName = userGoogleProfile.DisplayName,
+            Email = userGoogleProfile.Email,
+            AvatarUrl = userGoogleProfile.PhotoUrl ?? string.Empty
         });
 
         await _unitOfWork.SaveChangesAsync();

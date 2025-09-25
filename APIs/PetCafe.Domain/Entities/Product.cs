@@ -11,9 +11,9 @@ public class Product : BaseEntity
     [MaxLength(100)]
     public string Name { get; set; } = default!;
 
-    [Column("product_category_id")]
-    [ForeignKey("ProductCategory")]
-    public Guid ProductCategoryId { get; set; }
+    [Column("category_id")]
+    [ForeignKey("Category")]
+    public Guid CategoryId { get; set; }
 
     [Column("description")]
     [MaxLength(500)]
@@ -42,6 +42,6 @@ public class Product : BaseEntity
     public bool IsForPets { get; set; } = false;
 
     // Navigation properties
-    public virtual ProductCategory ProductCategory { get; set; } = default!;
+    public virtual ProductCategory Category { get; set; } = default!;
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = [];
 }
