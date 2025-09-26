@@ -1,11 +1,10 @@
-using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.PetSpeciesModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Domain.Entities;
 using Task = System.Threading.Tasks.Task;
 
-namespace PetCafe.Application.Services.Commons;
+namespace PetCafe.Application.Services;
 
 public interface IPetSpeciesService
 {

@@ -37,5 +37,29 @@ public class MapperConfigurationsProfile : Profile
         // Pet
         CreateMap<Models.PetModels.PetCreateModel, Domain.Entities.Pet>().ReverseMap();
         CreateMap<Models.PetModels.PetUpdateModel, Domain.Entities.Pet>().ReverseMap();
+
+        // Team
+        CreateMap<Models.TeamModels.TeamCreateModel, Domain.Entities.Team>().ReverseMap();
+        CreateMap<Models.TeamModels.TeamUpdateModel, Domain.Entities.Team>().ReverseMap();
+
+        // Team Member
+        CreateMap<Models.TeamModels.MemberCreateModel, Domain.Entities.TeamMember>().ReverseMap();
+        CreateMap<Models.TeamModels.MemberUpdateModel, Domain.Entities.TeamMember>().ReverseMap();
+
+        // Work Shift
+        CreateMap<Models.WorkShiftModels.WorkShiftCreateModel, Domain.Entities.WorkShift>().ReverseMap();
+        CreateMap<Models.WorkShiftModels.WorkShiftUpdateModel, Domain.Entities.WorkShift>().ReverseMap();
+
+        // VaccineType
+        CreateMap<Models.VaccineTypeModels.VaccineTypeCreateModel, Domain.Entities.VaccineType>().ReverseMap();
+        CreateMap<Models.VaccineTypeModels.VaccineTypeUpdateModel, Domain.Entities.VaccineType>().ReverseMap();
+
+        // PetGroup
+        CreateMap<Models.PetGroupModels.PetGroupCreateModel, Domain.Entities.PetGroup>().ReverseMap();
+        CreateMap<Models.PetGroupModels.PetGroupUpdateModel, Domain.Entities.PetGroup>().ReverseMap();
+
+        // HealthRecord
+        CreateMap<Models.HealthRecordModels.HealthRecordCreateModel, Domain.Entities.HealthRecord>().ReverseMap();
+        CreateMap<Models.HealthRecordModels.HealthRecordUpdateModel, Domain.Entities.HealthRecord>().ReverseMap();
     }
 }

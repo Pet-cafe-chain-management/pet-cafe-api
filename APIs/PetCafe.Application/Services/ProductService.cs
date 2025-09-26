@@ -63,6 +63,6 @@ public class ProductService(
                 ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
             includeFunc: x => x.Include(x => x.Category)
         );
-        return BasePagingResponseModel<Product>.CreateInstance(Entities, Pagination); ;
+        return BasePagingResponseModel<Product>.CreateInstance(Entities, Pagination);
     }
 }
