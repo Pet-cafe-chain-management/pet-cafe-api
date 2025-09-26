@@ -135,6 +135,3 @@ $RECYCLE.BIN/
 
 _NCrunch*
 /set-key.txt
-
-# Application settings with sensitive information
-appsettings.json
