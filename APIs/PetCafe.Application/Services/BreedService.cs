@@ -57,7 +57,7 @@ public class BreedService(
              pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
             searchTerm: query.Q,
-            searchFields: ["Name"],
+            searchFields: ["Name", "Description"],
             sortOrders: query.OrderBy?.ToDictionary(
                 k => k.OrderColumn ?? "CreatedAt",
                 v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)

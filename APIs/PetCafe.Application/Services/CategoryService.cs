@@ -12,7 +12,7 @@ public interface ICategoryService
     Task<ProductCategory> UpdateAsync(Guid id, CategoryUpdateModel model);
     Task<bool> DeleteAsync(Guid id);
     Task<ProductCategory> GetByIdAsync(Guid id);
-    Task<BasePagingResponseModel<ProductCategory>> GetAllPagingAsync(FilterQuery query);
+    Task<BasePagingResponseModel<ProductCategory>> GetAllPagingAsync(CategoryFilterQuery query);
 }
 
 public class CategoryService(
@@ -48,13 +48,14 @@ public class CategoryService(
         return await _unitOfWork.ProductCategoryRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
     }
 
-    public async Task<BasePagingResponseModel<ProductCategory>> GetAllPagingAsync(FilterQuery query)
+    public async Task<BasePagingResponseModel<ProductCategory>> GetAllPagingAsync(CategoryFilterQuery query)
     {
         var (Pagination, Entities) = await _unitOfWork.ProductCategoryRepository.ToPagination(
             pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
+            filter: x => x.IsActive == query.IsActive,
             searchTerm: query.Q,
-            searchFields: ["FullName", "Phone", "Address"],
+            searchFields: ["Name", "Description"],
             sortOrders: query.OrderBy?.ToDictionary(
                     k => k.OrderColumn ?? "CreatedAt",
                     v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)

@@ -15,7 +15,7 @@ public class ProductController(IProductService _productService) : BaseController
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllPaging([FromQuery] FilterQuery query)
+    public async Task<IActionResult> GetAllPaging([FromQuery] ProductFilterQuery query)
     {
         var products = await _productService.GetAllPagingAsync(query);
         return Ok(products);

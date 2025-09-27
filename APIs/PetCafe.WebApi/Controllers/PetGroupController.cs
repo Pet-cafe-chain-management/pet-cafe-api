@@ -5,7 +5,9 @@ using PetCafe.Application.Services;
 
 namespace PetCafe.WebApi.Controllers;
 
-public class PetGroupController(IPetGroupService _petGroupService) : BaseController
+[ApiController]
+[Route("api/pet-groups")]
+public class PetGroupController(IPetGroupService _petGroupService) : ControllerBase
 {
 
     [HttpGet("{id:guid}")]

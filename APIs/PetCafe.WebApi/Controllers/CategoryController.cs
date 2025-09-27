@@ -44,7 +44,7 @@ public class CategoryController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllPagingAsync([FromQuery] FilterQuery query)
+    public async Task<IActionResult> GetAllPagingAsync([FromQuery] CategoryFilterQuery query)
     {
         var categories = await _categoryService.GetAllPagingAsync(query);
         return Ok(categories);

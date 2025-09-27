@@ -22,6 +22,9 @@ public class VaccineType : BaseEntity
     [Column("interval_months")]
     public int IntervalMonths { get; set; }
 
+    [Column("required_doses")]
+    public int RequiredDoses { get; set; }
+
     [Column("is_required")]
     public bool IsRequired { get; set; } = true;
 

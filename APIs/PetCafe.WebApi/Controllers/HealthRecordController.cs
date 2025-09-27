@@ -5,7 +5,9 @@ using PetCafe.Application.Services;
 
 namespace PetCafe.WebApi.Controllers;
 
-public class HealthRecordController(IHealthRecordService _healthRecordService) : BaseController
+[ApiController]
+[Route("api/health-records")]
+public class HealthRecordController(IHealthRecordService _healthRecordService) : ControllerBase
 {
 
     [HttpGet("{id:guid}")]

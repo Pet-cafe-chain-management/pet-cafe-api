@@ -30,7 +30,7 @@ public class CustomerService(
              pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
             searchTerm: query.Q,
-            searchFields: ["FullName", "Phone", "Address"],
+            searchFields: ["FullName", "Phone", "Address", "Email"],
             sortOrders: query.OrderBy?.ToDictionary(
                     k => k.OrderColumn ?? "CreatedAt",
                     v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)

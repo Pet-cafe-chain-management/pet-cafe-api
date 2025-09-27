@@ -1,3 +1,5 @@
+using PetCafe.Application.Models.ShareModels;
+
 namespace PetCafe.Application.Models.CategoryModels;
 
 public class CategoryCreateModel
@@ -10,4 +12,10 @@ public class CategoryCreateModel
 public class CategoryUpdateModel : CategoryCreateModel
 {
     public bool IsActive { get; set; }
+}
+
+public class CategoryFilterQuery : FilterQuery
+{
+    public bool IsActive { get; set; } = true;
+
 }

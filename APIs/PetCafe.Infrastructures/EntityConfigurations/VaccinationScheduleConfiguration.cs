@@ -21,8 +21,10 @@ public class VaccinationScheduleConfiguration : IEntityTypeConfiguration<Vaccina
             .HasForeignKey(x => x.VaccineTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(x => x.IsCompleted)
-            .HasDefaultValue(false);
+        builder.HasOne(x => x.Record)
+            .WithOne(x => x.Schedule)
+            .HasForeignKey<VaccinationSchedule>(x => x.RecordId)
+            .OnDelete(DeleteBehavior.Cascade);
 
     }
 }

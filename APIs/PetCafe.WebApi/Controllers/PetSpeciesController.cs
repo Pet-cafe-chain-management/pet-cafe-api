@@ -5,7 +5,9 @@ using PetCafe.Application.Services;
 
 namespace PetCafe.WebApi.Controllers;
 
-public class PetSpeciesController(IPetSpeciesService _petSpeciesService) : BaseController
+[ApiController]
+[Route("api/pet-species")]
+public class PetSpeciesController(IPetSpeciesService _petSpeciesService) : ControllerBase
 {
 
     [HttpPost]

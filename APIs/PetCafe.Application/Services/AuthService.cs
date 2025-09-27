@@ -33,7 +33,7 @@ public class AuthService(
     {
         var account = await _unitOfWork.AccountRepository
             .FirstOrDefaultAsync(x =>
-                x.Email == model.Email, includeFunc: x => x.Include(x => x.Employee!).Include(x => x.Customer!)
+                x.Email == model.Email && x.IsActive, includeFunc: x => x.Include(x => x.Employee!).Include(x => x.Customer!)
             ) ?? throw new BadRequestException("Tài khoản không hợp lệ!");
 
         if (!_hashService.VerifyPassword(model.Password, account.PasswordHash)) throw new BadRequestException("Tài khoản không hợp lệ!");
@@ -77,7 +77,7 @@ public class AuthService(
             ?? throw new BadRequestException($"Tài khoản không tồn tại!");
 
         var account = await _unitOfWork.AccountRepository
-            .FirstOrDefaultAsync(x => x.Email == userGoogleProfile.Email) ?? await CreateAccountAsync(userGoogleProfile);
+            .FirstOrDefaultAsync(x => x.Email == userGoogleProfile.Email && x.IsActive) ?? await CreateAccountAsync(userGoogleProfile);
 
         return new AuthResponseModel
         {

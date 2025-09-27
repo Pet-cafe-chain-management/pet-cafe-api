@@ -5,7 +5,9 @@ using PetCafe.Application.Services;
 
 namespace PetCafe.WebApi.Controllers;
 
-public class WorkShiftController(IWorkShiftService _workShiftService) : BaseController
+[ApiController]
+[Route("api/work-shifts")]
+public class WorkShiftController(IWorkShiftService _workShiftService) : ControllerBase
 {
 
     [HttpGet("{id:guid}")]

@@ -5,7 +5,9 @@ using PetCafe.Application.Services;
 
 namespace PetCafe.WebApi.Controllers;
 
-public class VaccineTypeController(IVaccineTypeService _vaccineTypeService) : BaseController
+[ApiController]
+[Route("api/vaccine-types")]
+public class VaccineTypeController(IVaccineTypeService _vaccineTypeService) : ControllerBase
 {
 
     [HttpGet("{id:guid}")]

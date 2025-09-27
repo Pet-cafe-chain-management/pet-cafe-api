@@ -5,7 +5,10 @@ using PetCafe.Application.Services;
 
 namespace PetCafe.WebApi.Controllers;
 
-public class PetController(IPetService _petService, IHealthRecordService _healthRecordService) : BaseController
+public class PetController(
+    IPetService _petService,
+    IHealthRecordService _healthRecordService,
+    IVaccinationRecordService _vaccinationRecordService) : BaseController
 {
 
     [HttpPost]
@@ -47,6 +50,13 @@ public class PetController(IPetService _petService, IHealthRecordService _health
     public async Task<IActionResult> GetAllByPetId([FromRoute] Guid id, [FromQuery] FilterQuery query)
     {
         var records = await _healthRecordService.GetAllPagingAsync(id, query);
+        return Ok(records);
+    }
+
+    [HttpGet("{id:guid}/vaccination-records")]
+    public async Task<IActionResult> GetAllVaccinationRecordsByPetId([FromRoute] Guid id, [FromQuery] FilterQuery query)
+    {
+        var records = await _vaccinationRecordService.GetAllByPetIdAsync(id, query);
         return Ok(records);
     }
 

@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Domain.Entities;
-
-
 
 [Table("vaccination_schedules")]
 public class VaccinationSchedule : BaseEntity
@@ -19,8 +18,8 @@ public class VaccinationSchedule : BaseEntity
     [Column("scheduled_date")]
     public DateTime ScheduledDate { get; set; }
 
-    [Column("is_completed")]
-    public bool IsCompleted { get; set; } = false;
+    [Column("status")]
+    public string Status { get; set; } = VaccinationScheduleStatus.PENDING;
 
     [Column("completed_date")]
     public DateTime? CompletedDate { get; set; }
@@ -29,7 +28,10 @@ public class VaccinationSchedule : BaseEntity
     [MaxLength(500)]
     public string? Notes { get; set; }
 
+    [Column("record_id")]
+    public Guid? RecordId { get; set; }
     // Navigation properties
+    public virtual VaccinationRecord? Record { get; set; }
     public virtual Pet Pet { get; set; } = default!;
     public virtual VaccineType VaccineType { get; set; } = default!;
 }

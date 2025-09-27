@@ -1,3 +1,5 @@
+using PetCafe.Application.Models.ShareModels;
+
 namespace PetCafe.Application.Models.AreaModels;
 
 public class AreaCreateModel
@@ -12,4 +14,10 @@ public class AreaCreateModel
 public class AreaUpdateModel : AreaCreateModel
 {
     public bool IsActive { get; set; }
+}
+
+public class AreaFilterQuery : FilterQuery
+{
+    public bool IsActive { get; set; } = true;
+
 }

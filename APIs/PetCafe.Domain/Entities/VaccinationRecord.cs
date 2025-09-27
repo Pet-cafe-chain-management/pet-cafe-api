@@ -15,7 +15,7 @@ public class VaccinationRecord : BaseEntity
     public Guid VaccineTypeId { get; set; }
 
     [Column("vaccination_date")]
-    public DateTime VaccinationDate { get; set; }
+    public DateTime VaccinationDate { get; set; } = DateTime.UtcNow;
 
     [Column("next_due_date")]
     public DateTime? NextDueDate { get; set; }
@@ -36,7 +36,11 @@ public class VaccinationRecord : BaseEntity
     [MaxLength(500)]
     public string? Notes { get; set; }
 
+    [Column("schedule_id")]
+    public Guid ScheduleId { get; set; }
+
     // Navigation properties
+    public virtual VaccinationSchedule? Schedule { get; set; }
     public virtual Pet Pet { get; set; } = default!;
     public virtual VaccineType VaccineType { get; set; } = default!;
 }

@@ -9,7 +9,7 @@ namespace PetCafe.Application.Services;
 public interface IAreaService
 {
     Task<Area> GetByIdAsync(Guid id);
-    Task<BasePagingResponseModel<Area>> GetAllPagingAsync(FilterQuery query);
+    Task<BasePagingResponseModel<Area>> GetAllPagingAsync(AreaFilterQuery query);
     Task<Area> CreateAsync(AreaCreateModel model);
     Task<Area> UpdateAsync(Guid id, AreaUpdateModel model);
     Task<bool> DeleteAsync(Guid id);
@@ -48,14 +48,15 @@ public class AreaService(
         return await _unitOfWork.AreaRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
     }
 
-    public async Task<BasePagingResponseModel<Area>> GetAllPagingAsync(FilterQuery query)
+    public async Task<BasePagingResponseModel<Area>> GetAllPagingAsync(AreaFilterQuery query)
     {
 
         var (Pagination, Entities) = await _unitOfWork.AreaRepository.ToPagination(
              pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
+            filter: x => x.IsActive == query.IsActive,
             searchTerm: query.Q,
-            searchFields: ["FullName", "Phone", "Address"],
+            searchFields: ["Name", "Description", "Location"],
             sortOrders: query.OrderBy?.ToDictionary(
                     k => k.OrderColumn ?? "CreatedAt",
                     v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)

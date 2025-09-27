@@ -15,7 +15,7 @@ public class AreaController(IAreaService _areaService) : BaseController
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllPaging([FromQuery] FilterQuery query)
+    public async Task<IActionResult> GetAllPaging([FromQuery] AreaFilterQuery query)
     {
         var areas = await _areaService.GetAllPagingAsync(query);
         return Ok(areas);

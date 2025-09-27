@@ -61,5 +61,13 @@ public class MapperConfigurationsProfile : Profile
         // HealthRecord
         CreateMap<Models.HealthRecordModels.HealthRecordCreateModel, Domain.Entities.HealthRecord>().ReverseMap();
         CreateMap<Models.HealthRecordModels.HealthRecordUpdateModel, Domain.Entities.HealthRecord>().ReverseMap();
+
+        // VaccinationRecord
+        CreateMap<Models.VaccinationRecordModels.VaccinationRecordCreateModel, Domain.Entities.VaccinationRecord>().ReverseMap();
+        CreateMap<Models.VaccinationRecordModels.VaccinationRecordUpdateModel, Domain.Entities.VaccinationRecord>().ReverseMap();
+
+        // VaccinationSchedule
+        CreateMap<Models.VaccinationScheduleModels.VaccinationScheduleCreateModel, Domain.Entities.VaccinationSchedule>().ReverseMap();
+        CreateMap<Models.VaccinationScheduleModels.VaccinationScheduleUpdateModel, Domain.Entities.VaccinationSchedule>().ReverseMap();
     }
 }

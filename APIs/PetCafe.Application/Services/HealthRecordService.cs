@@ -56,7 +56,7 @@ public class HealthRecordService(
             pageSize: query.Limit ?? 10,
             filter: x => x.PetId == petId,
             searchTerm: query.Q,
-            searchFields: ["Name", "Description"],
+            searchFields: ["Notes", "Veterinarian", "Treatment", "Symptoms"],
             sortOrders: query.OrderBy?.ToDictionary(
                     k => k.OrderColumn ?? "CreatedAt",
                     v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
