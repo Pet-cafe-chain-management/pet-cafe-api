@@ -69,5 +69,11 @@ public class MapperConfigurationsProfile : Profile
         // VaccinationSchedule
         CreateMap<Models.VaccinationScheduleModels.VaccinationScheduleCreateModel, Domain.Entities.VaccinationSchedule>().ReverseMap();
         CreateMap<Models.VaccinationScheduleModels.VaccinationScheduleUpdateModel, Domain.Entities.VaccinationSchedule>().ReverseMap();
+
+        // Service
+
+        CreateMap<Models.ServiceModels.ServiceCreateModel, Domain.Entities.Service>().ReverseMap();
+        CreateMap<Models.ServiceModels.ServiceUpdateModel, Domain.Entities.Service>().ReverseMap();
+
     }
 }

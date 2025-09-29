@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Domain.Entities;
 
@@ -19,8 +20,8 @@ public class Slot : BaseEntity
     [Column("pet_gourp_id")]
     public Guid PetGroupId { get; set; }
 
-    [Column("date")]
-    public DateOnly Date { get; set; }
+    [Column("applicable_days")]
+    public List<string> ApplicableDays { get; set; } = DayConstant.ALLDAYS;
 
     [Column("start_time")]
     public TimeSpan StartTime { get; set; }
@@ -47,12 +48,6 @@ public class Slot : BaseEntity
     [Column("special_notes")]
     [MaxLength(500)]
     public string? SpecialNotes { get; set; }
-
-    [Column("slot_datetime")]
-    public DateTime SlotDateTime { get; set; }
-
-    [Column("duration_minutes")]
-    public int DurationMinutes { get; set; }
 
     [ForeignKey("PetGroupId")]
     public virtual PetGroup PetGroup { get; set; } = null!;

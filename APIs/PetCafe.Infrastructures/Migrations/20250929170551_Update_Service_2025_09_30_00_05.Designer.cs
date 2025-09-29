@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetCafe.Infrastructures;
@@ -11,9 +12,11 @@ using PetCafe.Infrastructures;
 namespace PetCafe.Infrastructures.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250929170551_Update_Service_2025_09_30_00_05")]
+    partial class Update_Service_2025_09_30_00_05
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1502,11 +1505,6 @@ namespace PetCafe.Infrastructures.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ApplicableDays")
-                        .IsRequired()
-                        .HasColumnType("json")
-                        .HasColumnName("applicable_days");
-
                     b.Property<Guid>("AreaId")
                         .HasColumnType("uuid")
                         .HasColumnName("area_id");
@@ -1522,6 +1520,14 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("duration_minutes");
 
                     b.Property<TimeSpan>("EndTime")
                         .HasColumnType("interval")
@@ -1550,6 +1556,10 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Property<Guid>("ServiceId")
                         .HasColumnType("uuid")
                         .HasColumnName("service_id");
+
+                    b.Property<DateTime>("SlotDateTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("slot_datetime");
 
                     b.Property<string>("SpecialNotes")
                         .HasMaxLength(500)

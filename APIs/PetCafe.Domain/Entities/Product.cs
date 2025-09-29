@@ -35,6 +35,9 @@ public class Product : BaseEntity
     [MaxLength(500)]
     public string? ImageUrl { get; set; }
 
+    [Column("thumbnails")]
+    public List<string> Thumbnails { get; set; } = [];
+
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
 

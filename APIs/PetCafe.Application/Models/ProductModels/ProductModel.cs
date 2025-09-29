@@ -13,6 +13,8 @@ public class ProductCreateModel
     public int MinStockLevel { get; set; } = 0;
     public string? ImageUrl { get; set; }
     public bool IsForPets { get; set; } = false;
+    public List<string> Thumbnails { get; set; } = [];
+
 }
 
 

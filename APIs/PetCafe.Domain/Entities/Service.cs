@@ -19,7 +19,7 @@ public class Service : BaseEntity
     public int DurationMinutes { get; set; }
 
     [Column("base_price")]
-    public double BasePrice { get; set; } // Giá cơ bản, có thể điều chỉnh theo area
+    public double BasePrice { get; set; } 
 
     [Column("max_participants")]
     public int MaxParticipants { get; set; } = 1;
@@ -27,14 +27,16 @@ public class Service : BaseEntity
     [Column("service_type")]
     [Required]
     [MaxLength(30)]
-    public string ServiceType { get; set; } = default!; // Training, Bathing, Care, Experience
+    public string ServiceType { get; set; } = default!;
 
     [Column("requires_area")]
-    public bool RequiresArea { get; set; } = true; // Service có cần chọn khu vực không
+    public bool RequiresArea { get; set; } = true;
 
     [Column("image_url")]
-    [MaxLength(500)]
     public string? ImageUrl { get; set; }
+    [Column("thumbnails")]
+    public List<string> Thumbnails { get; set; } = [];
+
 
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
