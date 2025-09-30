@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver.Linq;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.PetGroupModels;
 using PetCafe.Application.Models.ShareModels;
@@ -45,7 +46,12 @@ public class PetGroupService(
 
     public async Task<PetGroup> GetByIdAsync(Guid id)
     {
-        return await _unitOfWork.PetGroupRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+        return await _unitOfWork.PetGroupRepository.GetByIdAsync(id,
+          includeFunc: x => x
+            .Include(x=>x.Pets.Where(x=>!x.IsDeleted))
+            .Include(x => x.PetSpecies!)
+            .Include(x => x.PetBreed!)
+        ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
     }
 
     public async Task<BasePagingResponseModel<PetGroup>> GetAllPagingAsync(FilterQuery query)

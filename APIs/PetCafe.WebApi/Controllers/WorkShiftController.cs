@@ -17,7 +17,7 @@ public class WorkShiftController(IWorkShiftService _workShiftService) : Controll
         return Ok(workShift);
     }
 
-    [HttpGet("paging")]
+    [HttpGet]
     public async Task<IActionResult> GetAllPaging([FromQuery] FilterQuery query)
     {
         var workShifts = await _workShiftService.GetAllPagingAsync(query);

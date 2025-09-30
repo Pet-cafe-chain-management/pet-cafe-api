@@ -17,7 +17,7 @@ public class PetGroupController(IPetGroupService _petGroupService) : ControllerB
         return Ok(petGroup);
     }
 
-    [HttpGet("paging")]
+    [HttpGet]
     public async Task<IActionResult> GetAllPaging([FromQuery] FilterQuery query)
     {
         var petGroups = await _petGroupService.GetAllPagingAsync(query);
