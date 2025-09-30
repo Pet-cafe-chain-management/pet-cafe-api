@@ -75,5 +75,10 @@ public class MapperConfigurationsProfile : Profile
         CreateMap<Models.ServiceModels.ServiceCreateModel, Domain.Entities.Service>().ReverseMap();
         CreateMap<Models.ServiceModels.ServiceUpdateModel, Domain.Entities.Service>().ReverseMap();
 
+        // Slot
+        CreateMap<Models.SlotModels.SlotCreateModel, Domain.Entities.Slot>().ReverseMap();
+        CreateMap<Models.SlotModels.SlotUpdateModel, Domain.Entities.Slot>().ReverseMap();
+        
+
     }
 }

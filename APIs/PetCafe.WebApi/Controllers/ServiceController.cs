@@ -5,7 +5,10 @@ using PetCafe.Application.Services;
 
 namespace PetCafe.WebApi.Controllers;
 
-public class ServiceController(IServService _service) : BaseController
+public class ServiceController(
+        IServService _service,
+        ISlotService _slotService
+    ) : BaseController
 {
 
     [HttpGet("{id:guid}")]
@@ -42,4 +45,9 @@ public class ServiceController(IServService _service) : BaseController
         return NoContent();
     }
 
+    [HttpGet("{id:guid}/slots")]
+    public async Task<IActionResult> GetServiceSlots([FromRoute] Guid id, FilterQuery query)
+    {
+        return Ok(await _slotService.GetAllPagingByServiceAsync(id, query));
+    }
 }

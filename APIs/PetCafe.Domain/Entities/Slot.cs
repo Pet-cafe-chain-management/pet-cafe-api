@@ -40,7 +40,7 @@ public class Slot : BaseEntity
 
     [Column("status")]
     [MaxLength(20)]
-    public string Status { get; set; } = "Available"; // Available, Full, Cancelled, Maintenance
+    public string Status { get; set; } = SlotStatusConstant.AVAILABLE; 
 
     [Column("is_active")]
     public bool IsActive { get; set; } = true;

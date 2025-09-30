@@ -30,3 +30,11 @@ public static class DayConstant
         SUNDAY
     ];
 }
+
+public static class SlotStatusConstant
+{
+    public const string AVAILABLE = "AVAILABLE";
+    public const string FULL = "FULL";
+    public const string CANCELLED = "CANCELLED";
+    public const string MAINTENANCE = "MAINTENANCE";
+}

@@ -21,9 +21,6 @@ public class Service : BaseEntity
     [Column("base_price")]
     public double BasePrice { get; set; } 
 
-    [Column("max_participants")]
-    public int MaxParticipants { get; set; } = 1;
-
     [Column("service_type")]
     [Required]
     [MaxLength(30)]

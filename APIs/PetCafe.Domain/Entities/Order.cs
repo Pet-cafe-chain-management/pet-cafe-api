@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Domain.Entities;
 
@@ -8,16 +9,29 @@ public class Order : BaseEntity
 {
     [Column("customer_id")]
     [ForeignKey("Customer")]
-    public Guid CustomerId { get; set; }
+    public Guid? CustomerId { get; set; }
 
     [Column("employee_id")]
     [ForeignKey("Employee")]
-    public Guid EmployeeId { get; set; }
+    public Guid? EmployeeId { get; set; }
+
+    [Column("full_name")]
+    [Required]
+    [MaxLength(100)]
+    public string? FullName { get; set; } = default!;
+
+    [Column("address")]
+    [MaxLength(200)]
+    public string? Address { get; set; }
 
     [Column("order_number")]
     [Required]
     [MaxLength(20)]
     public string OrderNumber { get; set; } = default!;
+
+    [Column("phone")]
+    [MaxLength(15)]
+    public string? Phone { get; set; }
 
     [Column("order_date")]
     public DateTime OrderDate { get; set; }
@@ -33,23 +47,24 @@ public class Order : BaseEntity
 
     [Column("payment_status")]
     [MaxLength(20)]
-    public string PaymentStatus { get; set; } = "Pending"; // Pending, Paid, Refunded
+    public string PaymentStatus { get; set; } = PaymentStatusConstant.PENDING;
 
     [Column("payment_method")]
     [MaxLength(20)]
-    public string? PaymentMethod { get; set; } // Cash, Card, Mobile
+    public string? PaymentMethod { get; set; } = PaymentMethodConstant.QR_CODE;
 
     [Column("status")]
     [MaxLength(20)]
-    public string Status { get; set; } = "Processing"; // Processing, Completed, Cancelled
-
+    public string Status { get; set; } = OrderStatusConstant.PENDING;
     [Column("notes")]
     [MaxLength(500)]
     public string? Notes { get; set; }
 
+    [Column("type")]
+    public string Type { get; set; } = OrderTypeConstant.CUSTOMER;
     // Navigation properties
-    public virtual Customer Customer { get; set; } = default!;
-    public virtual Employee Employee { get; set; } = default!;
+    public virtual Customer? Customer { get; set; } = default!;
+    public virtual Employee? Employee { get; set; } = default!;
     public virtual ICollection<Transaction> Transactions { get; set; } = [];
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = [];
 }

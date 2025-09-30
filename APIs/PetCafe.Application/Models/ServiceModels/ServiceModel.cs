@@ -7,8 +7,6 @@ public class ServiceCreateModel
 
     public int DurationMinutes { get; set; }
     public double BasePrice { get; set; }
-    public int MaxParticipants { get; set; } = 1;
-
     public string ServiceType { get; set; } = default!;
     public bool RequiresArea { get; set; } = true;
     public string? ImageUrl { get; set; }

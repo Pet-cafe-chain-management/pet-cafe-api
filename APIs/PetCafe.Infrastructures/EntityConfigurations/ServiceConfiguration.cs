@@ -26,14 +26,5 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
         builder.HasIndex(x => x.Name);
         builder.HasIndex(x => new { x.ServiceType, x.IsActive });
 
-
-        builder.Property(x => x.MaxParticipants)
-            .HasDefaultValue(1);
-
-        builder.Property(x => x.RequiresArea)
-            .HasDefaultValue(true);
-
-        builder.Property(x => x.IsActive)
-            .HasDefaultValue(true);
     }
 }
