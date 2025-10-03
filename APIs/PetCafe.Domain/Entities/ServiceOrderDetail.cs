@@ -3,16 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PetCafe.Domain.Entities;
 
-[Table("order_details")]
-public class OrderDetail : BaseEntity
+[Table("service_order_details")]
+public class ServiceOrderDetail : BaseEntity
 {
-    [Column("order_id")]
-    [ForeignKey("Order")]
-    public Guid OrderId { get; set; }
-
-    [Column("product_id")]
-    [ForeignKey("Product")]
-    public Guid? ProductId { get; set; }
+    [Column("service_order_id")]
+    [ForeignKey("ServiceOrder")]
+    public Guid ServiceOrderId { get; set; }
 
     [Column("service_id")]
     [ForeignKey("Service")]
@@ -34,16 +30,15 @@ public class OrderDetail : BaseEntity
     [Column("total_price")]
     public double TotalPrice { get; set; }
 
-    [Column("is_for_feeding")]
-    public bool IsForFeeding { get; set; } = false;
-
     [Column("notes")]
     [MaxLength(200)]
     public string? Notes { get; set; }
 
+    [Column("booking_date")]
+    public DateTime? BookingDate { get; set; }
+
     // Navigation properties
-    public virtual Order Order { get; set; } = default!;
-    public virtual Product? Product { get; set; } = default!;
+    public virtual ServiceOrder ServiceOrder { get; set; } = default!;
     public virtual CustomerBooking? Booking { get; set; } = default!;
     public virtual Slot? Slot { get; set; } = default!;
     public virtual Service? Service { get; set; } = default!;

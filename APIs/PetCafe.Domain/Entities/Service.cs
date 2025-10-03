@@ -19,7 +19,7 @@ public class Service : BaseEntity
     public int DurationMinutes { get; set; }
 
     [Column("base_price")]
-    public double BasePrice { get; set; } 
+    public double BasePrice { get; set; }
 
     [Column("service_type")]
     [Required]
@@ -41,7 +41,7 @@ public class Service : BaseEntity
     // Navigation properties
     public virtual ICollection<Slot> Slots { get; set; } = [];
     public virtual ICollection<Task> Tasks { get; set; } = [];
-    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = [];
+    public virtual ICollection<ServiceOrderDetail> OrderDetails { get; set; } = [];
     public virtual ICollection<CustomerBooking> Bookings { get; set; } = [];
     public virtual ICollection<AreaService> AreaServices { get; set; } = [];
 }

@@ -3,7 +3,7 @@ namespace PetCafe.Domain.Constants;
 public static class OrderTypeConstant
 {
     public const string CUSTOMER = "CUSTOMER";
-    public const string STAFF = "STAFF";
+    public const string EMPLOYEE = "EMPLOYEE";
 }
 
 
@@ -28,5 +28,5 @@ public static class PaymentMethodConstant
 public static class PaymentStatusConstant
 {
     public const string PENDING = "PENDING";
-    public const string COMPLETED = "COMPLETED";
+    public const string PAID = "PAID";
 }

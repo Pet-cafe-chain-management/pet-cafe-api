@@ -4,21 +4,16 @@ using PetCafe.Domain.Entities;
 
 namespace PetCafe.Infrastructures.EntityConfigurations;
 
-public class OrderDetailConfiguration : IEntityTypeConfiguration<OrderDetail>
+public class ServiceOrderDetailConfiguration : IEntityTypeConfiguration<ServiceOrderDetail>
 {
-    public void Configure(EntityTypeBuilder<OrderDetail> builder)
+    public void Configure(EntityTypeBuilder<ServiceOrderDetail> builder)
     {
-        builder.HasIndex(x => new { x.OrderId, x.ProductId });
 
-        builder.HasOne(x => x.Order)
+        builder.HasOne(x => x.ServiceOrder)
             .WithMany(x => x.OrderDetails)
-            .HasForeignKey(x => x.OrderId)
+            .HasForeignKey(x => x.ServiceOrderId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.Product)
-            .WithMany(x => x.OrderDetails)
-            .HasForeignKey(x => x.ProductId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         // Fix the relationship with Slot - specify the navigation property on both sides
         builder.HasOne(x => x.Slot)
@@ -26,9 +21,12 @@ public class OrderDetailConfiguration : IEntityTypeConfiguration<OrderDetail>
             .HasForeignKey(x => x.SlotId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne(x => x.Service)
+            .WithMany(x => x.OrderDetails)  // This links to the collection in Slot
+            .HasForeignKey(x => x.ServiceId)
+            .OnDelete(DeleteBehavior.Cascade);
 
 
-        builder.Property(x => x.IsForFeeding)
-            .HasDefaultValue(false);
+
     }
 }

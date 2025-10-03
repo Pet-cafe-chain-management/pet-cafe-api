@@ -93,7 +93,16 @@ public class OrderRepository(AppDbContext context, ICurrentTime currentTime, ICl
 {
 }
 
-public class OrderDetailRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<OrderDetail>(context, currentTime, claimsService), IOrderDetailRepository
+public class ProductOrderDetailRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<ProductOrderDetail>(context, currentTime, claimsService), IProductOrderDetailRepository
+{
+}
+public class ServiceOrderDetailRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<ServiceOrderDetail>(context, currentTime, claimsService), IServiceOrderDetailRepository
+{
+}
+public class ServiceOrderRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<ServiceOrder>(context, currentTime, claimsService), IServiceOrderRepository
+{
+}
+public class ProductOrderRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<ProductOrder>(context, currentTime, claimsService), IProductOrderRepository
 {
 }
 

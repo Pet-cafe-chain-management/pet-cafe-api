@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
 using PetCafe.Domain.Constants;
 
 namespace PetCafe.Domain.Entities;
@@ -37,13 +38,13 @@ public class Order : BaseEntity
     public DateTime OrderDate { get; set; }
 
     [Column("total_amount")]
-    public double TotalAmount { get; set; }
+    public double TotalAmount { get; set; } = 0;
 
     [Column("discount_amount")]
     public double DiscountAmount { get; set; } = 0;
 
     [Column("final_amount")]
-    public double FinalAmount { get; set; }
+    public double FinalAmount { get; set; } = 0;
 
     [Column("payment_status")]
     [MaxLength(20)]
@@ -60,11 +61,40 @@ public class Order : BaseEntity
     [MaxLength(500)]
     public string? Notes { get; set; }
 
+    [Column("payment_data")]
+    public string? PaymentDataJson { get; set; }
+
+    [NotMapped]
+    public PaymentInfo? PaymentInfo
+    {
+        get => PaymentDataJson == null ? null : JsonSerializer.Deserialize<PaymentInfo>(PaymentDataJson);
+        set => PaymentDataJson = value == null ? null : JsonSerializer.Serialize(value);
+    }
+
     [Column("type")]
     public string Type { get; set; } = OrderTypeConstant.CUSTOMER;
     // Navigation properties
     public virtual Customer? Customer { get; set; } = default!;
     public virtual Employee? Employee { get; set; } = default!;
+    public virtual ProductOrder? ProductOrder { get; set; } = default!;
+    public virtual ServiceOrder? ServiceOrder { get; set; } = default!;
     public virtual ICollection<Transaction> Transactions { get; set; } = [];
-    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = [];
+
+
+}
+
+public class PaymentInfo
+{
+    public string? Bin { get; set; }
+    public string? AccountNumber { get; set; }
+    public string? AccountName { get; set; }
+    public string? Currency { get; set; }
+    public string? PaymentLinkId { get; set; }
+    public double Amount { get; set; }
+    public string? Description { get; set; }
+    public int OrderCode { get; set; }
+    public long ExpiredAt { get; set; }
+    public string? Status { get; set; }
+    public string? CheckoutUrl { get; set; }
+    public string? QrCode { get; set; }
 }

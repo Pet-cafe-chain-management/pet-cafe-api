@@ -36,7 +36,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ProductCategory> ProductCategories { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Order> Orders { get; set; }
-    public DbSet<OrderDetail> OrderDetails { get; set; }
+    public DbSet<ProductOrderDetail> ProductOrderDetails { get; set; }
+    public DbSet<ServiceOrderDetail> ServiceOrderDetails { get; set; }
+    public DbSet<ProductOrder> ProductOrders { get; set; }
+    public DbSet<ServiceOrder> ServiceOrders { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<Slot> Slots { get; set; }
 

@@ -33,7 +33,10 @@ public interface IUnitOfWork
     IProductCategoryRepository ProductCategoryRepository { get; }
     IProductRepository ProductRepository { get; }
     IOrderRepository OrderRepository { get; }
-    IOrderDetailRepository OrderDetailRepository { get; }
+    IProductOrderDetailRepository ProductOrderDetailRepository { get; }
+    IServiceOrderRepository ServiceOrderRepository { get; }
+    IServiceOrderDetailRepository ServiceOrderDetailRepository { get; }
+    IProductOrderRepository ProductOrderRepository { get; }
     ITransactionRepository TransactionRepository { get; }
     ISlotRepository SlotRepository { get; }
 

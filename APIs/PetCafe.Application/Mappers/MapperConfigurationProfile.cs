@@ -78,7 +78,11 @@ public class MapperConfigurationsProfile : Profile
         // Slot
         CreateMap<Models.SlotModels.SlotCreateModel, Domain.Entities.Slot>().ReverseMap();
         CreateMap<Models.SlotModels.SlotUpdateModel, Domain.Entities.Slot>().ReverseMap();
-        
 
+        // Order
+        CreateMap<Models.OrderModels.OrderCreateModel, Domain.Entities.Order>().ReverseMap();
+
+        // Transaction
+        CreateMap<Models.PayOsModels.WebhookData, Domain.Entities.Transaction>().ReverseMap();
     }
 }

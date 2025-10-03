@@ -7,6 +7,8 @@ public class AppSettings
     public FirebaseSettings FirebaseSettings { get; set; } = default!;
     public SepayOptions SepayOptions { get; set; } = default!;
     public string GoongAPIKey { get; set; } = default!;
+    public PayOSConfig PayOSConfig { get; set; } = default!;
+
 
 }
 
@@ -38,4 +40,14 @@ public class FirebaseSettings
     public string Bucket { get; set; } = default!;
     public string AuthEmail { get; set; } = default!;
     public string AuthPassword { get; set; } = default!;
+}
+
+
+public class PayOSConfig
+{
+    public string ClientId { get; set; } = default!;
+    public string ApiKey { get; set; } = default!;
+    public string ChecksumKey { get; set; } = default!;
+    public string SuccessURL { get; set; } = default!;
+    public string CancelURL { get; set; } = default!;
 }

@@ -1,23 +1,355 @@
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.OrderModels;
+using PetCafe.Application.Models.PayOsModels;
+using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services.Commons;
+using PetCafe.Application.Utilities;
+using PetCafe.Domain.Constants;
 using PetCafe.Domain.Entities;
+using Task = System.Threading.Tasks.Task;
 
 namespace PetCafe.Application.Services;
 
 public interface IOrderService
 {
     Task<Order> CreateAsync(OrderCreateModel model);
+    Task<bool> HandleWebhookAsync(WebhookResponseModel model);
+    Task<Order> GetByIdAsync(Guid id);
+    Task<bool> ConfirmOrderAsync(Guid id);
+    Task<BasePagingResponseModel<Order>> GetAllPagingAsync(OrderFilterQuery query, Guid? customerId);
 }
 
 public class OrderService(
     IUnitOfWork _unitOfWork,
-    IClaimsService _claimsService
+    IClaimsService _claimsService,
+    IPayOsService _payOsService
 ) : IOrderService
 {
-    public Task<Order> CreateAsync(OrderCreateModel model)
+
+    #region  Create Order
+    public async Task<Order> CreateAsync(OrderCreateModel model)
     {
         var order = _unitOfWork.Mapper.Map<Order>(model);
-        // order.Type = 
-        throw new NotImplementedException();
+        order.Type = _claimsService.GetCurrentUserRole == RoleConstants.EMPLOYEE ? OrderTypeConstant.EMPLOYEE : OrderTypeConstant.CUSTOMER;
+
+        if (order.Type == OrderTypeConstant.EMPLOYEE && model.Products != null && model.Products.Count > 0)
+        {
+            var product_order = await CreateProductOrderDetail(order.Id, model.Products!);
+            order.TotalAmount += product_order.FinalAmount;
+        }
+
+        if (model.Services != null && model.Services.Count > 0)
+        {
+            var service_order = await UpdateServiceOrderDetail(order.Id, model.Services!);
+            order.TotalAmount += service_order.FinalAmount;
+
+        }
+
+        order.OrderNumber = ((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds().ToString();
+        order.FinalAmount = order.TotalAmount - order.DiscountAmount;
+
+        if (order.PaymentMethod == PaymentMethodConstant.QR_CODE)
+        {
+            var payment = await _payOsService.CreatePaymentAsync(order.FinalAmount, Double.Parse(order.OrderNumber));
+            order.PaymentDataJson = JsonConvert.SerializeObject(payment.Data);
+        }
+        await _unitOfWork.OrderRepository.AddAsync(order);
+
+        return order;
     }
+
+
+
+    private async Task<ProductOrder> CreateProductOrderDetail(Guid orderId, List<ProductOrderModel> productModels)
+    {
+        var order_details = new List<ProductOrderDetail>();
+
+        var product_order = new ProductOrder
+        {
+            OrderId = orderId,
+            Status = OrderStatusConstant.PENDING,
+        };
+
+        foreach (var item in productModels)
+        {
+            var product = await _unitOfWork.ProductRepository.GetByIdAsync(item.ProductId) ?? throw new Exception("Không tìm thấy thông tin sản phẩm");
+            if (product.StockQuantity < item.Quantity) throw new BadRequestException($"Sản phẩm {product.Name} không đủ số lượng trong kho. Còn lại {product.StockQuantity}");
+            if (!product.IsActive) throw new BadRequestException($"Sản phẩm {product.Name} hiện đang tạm ngưng phục vụ!");
+            var detail = new ProductOrderDetail
+            {
+                ProductOrderId = product_order.Id,
+                ProductId = item.ProductId,
+                UnitPrice = product.Price,
+                IsForFeeding = product.IsForPets,
+                Notes = item.Notes,
+                Quantity = item.Quantity,
+                TotalPrice = product.Price * item.Quantity,
+            };
+            order_details.Add(detail);
+        }
+        product_order.TotalAmount = order_details.Sum(x => x.TotalPrice);
+        product_order.FinalAmount = product_order.TotalAmount - product_order.DiscountAmount;
+
+        await _unitOfWork.ProductOrderRepository.AddAsync(product_order);
+        await _unitOfWork.ProductOrderDetailRepository.AddRangeAsync(order_details);
+
+        return product_order;
+    }
+
+    private async Task<ServiceOrder> UpdateServiceOrderDetail(Guid orderId, List<ServiceOrderModel> serviceModels)
+    {
+        var order_details = new List<ServiceOrderDetail>();
+
+        var service_order = new ServiceOrder
+        {
+            OrderId = orderId,
+            Status = OrderStatusConstant.PENDING
+        };
+
+
+        foreach (var item in serviceModels)
+        {
+            var slot = await _unitOfWork.SlotRepository.GetByIdAsync(item.SlotId, includeFunc: x => x.Include(x => x.Service)) ?? throw new Exception("Không tìm thấy thông tin dịch vụ");
+
+            if (!slot.Service.IsActive) throw new BadRequestException($"Dịch vụ {slot.Service.Name} hiện đang tạm ngưng phục vụ!");
+
+            if (slot.ApplicableDays.Contains(DateTime.UtcNow.DayOfWeek.ToString())) throw new BadRequestException("Dịch vụ không phục vụ trong ngày!");
+
+            var customer_bookings = await _unitOfWork.BookingRepository.WhereAsync(x => x.SlotId == item.SlotId && x.BookingDate.Date == item.BookingDate.Date);
+
+            if (slot.AvailableCapacity == customer_bookings.Count || slot.AvailableCapacity <= 0) throw new BadRequestException($"Khung giờ hiện tại không còn chỗ trống!");
+
+
+            var detail = new ServiceOrderDetail
+            {
+                ServiceOrderId = service_order.Id,
+                ServiceId = slot.ServiceId,
+                SlotId = slot.Id,
+                UnitPrice = slot.Price,
+                Notes = item.Notes,
+                Quantity = 1,
+                TotalPrice = slot.Price,
+            };
+            order_details.Add(detail);
+
+        }
+
+        service_order.TotalAmount = order_details.Sum(x => x.TotalPrice);
+        service_order.FinalAmount = service_order.TotalAmount - service_order.DiscountAmount;
+
+        await _unitOfWork.ServiceOrderRepository.AddAsync(service_order);
+        await _unitOfWork.ServiceOrderDetailRepository.AddRangeAsync(order_details);
+
+        return service_order;
+    }
+
+    #endregion
+
+    public async Task<Order> GetByIdAsync(Guid id)
+    {
+        return await _unitOfWork.OrderRepository
+            .GetByIdAsync(id,
+                includeFunc: x => x
+                    .Include(x => x.ProductOrder!).ThenInclude(x => x.OrderDetails.Where(x => !x.IsDeleted)).ThenInclude(x => x.Product)
+                    .Include(x => x.ServiceOrder!).ThenInclude(x => x.OrderDetails.Where(x => !x.IsDeleted)).ThenInclude(x => x.Service)
+                    .Include(x => x.Customer!)
+                    .Include(x => x.Employee!)
+                    .Include(x => x.Transactions)
+            ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+    }
+
+    #region Webhook handler
+    public async Task<bool> HandleWebhookAsync(WebhookResponseModel model)
+    {
+        if (model.Code != "00") throw new Exception("Thanh toán thất bại!");
+        var order = await _unitOfWork
+            .OrderRepository
+            .FirstOrDefaultAsync(x => x.OrderNumber == model.Data!.OrderCode.ToString(),
+                includeFunc: x => x.Include(x => x.ServiceOrder!)
+        ) ?? throw new Exception("Thanh toán thất bại!");
+
+        order.Status = OrderStatusConstant.PAID;
+        order.PaymentStatus = PaymentStatusConstant.PAID;
+
+        var transaction = _unitOfWork.Mapper.Map<Transaction>(model.Data);
+        transaction.OrderId = order.Id;
+
+        if (order.ServiceOrder != null) await UpdateServiceOrder(order.ServiceOrder.Id);
+
+        await _unitOfWork.TransactionRepository.AddAsync(transaction);
+        _unitOfWork.OrderRepository.Update(order);
+
+        return await _unitOfWork.SaveChangesAsync();
+    }
+
+
+    private async Task UpdateProductOrder(Guid productOrderId)
+    {
+        var product_order = await _unitOfWork.ProductOrderRepository
+            .GetByIdAsync(
+                productOrderId,
+                includeFunc: x => x.Include(x => x.OrderDetails.Where(x => !x.IsDeleted))) ?? throw new BadRequestException("Thanh toán thất bại!");
+
+        foreach (var item in product_order.OrderDetails)
+        {
+            var product = await _unitOfWork.ProductRepository.GetByIdAsync(item.ProductId!.Value) ?? throw new BadRequestException("Thanh toán thất bại!");
+
+            if (product.StockQuantity < item.Quantity) throw new BadRequestException("Thanh toán thất bại!");
+
+            product.StockQuantity -= item.Quantity;
+            _unitOfWork.ProductRepository.Update(product);
+        }
+
+        product_order.Status = OrderStatusConstant.PAID;
+        _unitOfWork.ProductOrderRepository.Update(product_order);
+
+    }
+    private async Task UpdateServiceOrder(Guid serviceOrderId)
+    {
+        var serivce_order = await _unitOfWork.ServiceOrderRepository
+            .GetByIdAsync(
+                serviceOrderId,
+                includeFunc: x => x.Include(x => x.OrderDetails.Where(x => !x.IsDeleted))) ?? throw new BadRequestException("Thanh toán thất bại!");
+
+        foreach (var item in serivce_order.OrderDetails.Where(x => x.SlotId != null))
+        {
+            var slot = await _unitOfWork.SlotRepository.GetByIdAsync(item.SlotId!.Value) ?? throw new BadRequestException("Thanh toán thất bại!");
+
+            if (slot.AvailableCapacity <= 0) throw new BadRequestException("Thanh toán thất bại!");
+
+            slot.AvailableCapacity -= 1;
+            await _unitOfWork.BookingRepository.AddAsync(
+                new CustomerBooking
+                {
+                    SlotId = slot.Id,
+                    OrderDetailId = item.Id,
+                    ServiceId = slot.ServiceId,
+                    StartTime = slot.StartTime,
+                    EndTime = slot.EndTime,
+                    PetGroupId = slot.PetGroupId,
+                    BookingDate = item.BookingDate!.Value
+                }
+            );
+            _unitOfWork.SlotRepository.Update(slot);
+        }
+
+
+        serivce_order.Status = OrderStatusConstant.PAID;
+        _unitOfWork.ServiceOrderRepository.Update(serivce_order);
+
+    }
+
+    #endregion
+    public async Task<bool> ConfirmOrderAsync(Guid id)
+    {
+        var order = await _unitOfWork
+           .OrderRepository
+           .GetByIdAsync(id,
+               includeFunc: x => x.Include(x => x.ProductOrder!).Include(x => x.ServiceOrder!)
+       ) ?? throw new BadRequestException("Xác nhận thất bại!");
+
+        if (order.Type != OrderTypeConstant.EMPLOYEE) throw new BadRequestException("Không có quyền xác nhận đơn hàng này!");
+        order.Status = OrderStatusConstant.PAID;
+        order.PaymentStatus = PaymentStatusConstant.PAID;
+
+        if (order.ProductOrder != null) await UpdateProductOrder(order.ProductOrder.Id);
+        if (order.ServiceOrder != null) await UpdateServiceOrder(order.ServiceOrder.Id);
+
+        _unitOfWork.OrderRepository.Update(order);
+
+        return await _unitOfWork.SaveChangesAsync();
+    }
+
+    #region GetAllPagingAsync
+
+    public async Task<BasePagingResponseModel<Order>> GetAllPagingAsync(OrderFilterQuery query, Guid? customerId)
+    {
+        Expression<Func<Order, bool>>? filter = null;
+
+        if (customerId != null && customerId != Guid.Empty)
+        {
+            Expression<Func<Order, bool>> filter_customer = x => x.CustomerId == customerId;
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, filter_customer) : filter_customer;
+        }
+
+        if (query.MinPrice != null || query.MaxPrice != null)
+        {
+            int min = query.MinPrice ?? 0;
+            int max = query.MaxPrice ?? int.MaxValue;
+            var filter_price = FilterByPrice(max, min);
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, filter_price) : filter_price;
+        }
+
+        if (query.StartDate != null || query.EndDate != null)
+        {
+            DateTime start = query.StartDate ?? DateTime.MinValue;
+            DateTime end = query.EndDate ?? DateTime.MaxValue;
+            var filter_date = FilterByDate(start, end);
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, filter_date) : filter_date;
+        }
+
+        if (!string.IsNullOrEmpty(query.Status))
+        {
+            var filter_status = FilterByStatus(query.Status);
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, filter_status) : filter_status;
+        }
+
+        if (!string.IsNullOrEmpty(query.Type))
+        {
+            var filter_type = FilterByType(query.Type);
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, filter_type) : filter_type;
+        }
+
+        if (!string.IsNullOrEmpty(query.PaymentMethod))
+        {
+            var filter_payment = FilterByPaymentMethod(query.PaymentMethod);
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, filter_payment) : filter_payment;
+        }
+
+        var (Pagination, Entities) = await _unitOfWork.OrderRepository.ToPagination(
+            pageIndex: query.Page ?? 0,
+            pageSize: query.Limit ?? 10,
+            filter: filter,
+            searchTerm: query.Q,
+            searchFields: ["FullName", "Phone"],
+            sortOrders: query.OrderBy?.ToDictionary(
+                    k => k.OrderColumn ?? "CreatedAt",
+                    v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
+                ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
+            includeFunc: x => x.Include(x => x.Customer!).Include(x => x.Employee!).Include(x => x.ProductOrder!).Include(x => x.ServiceOrder!)
+        );
+
+        return BasePagingResponseModel<Order>.CreateInstance(Entities, Pagination); ;
+    }
+
+    private static Expression<Func<Order, bool>> FilterByPrice(int max, int min)
+    {
+        Expression<Func<Order, bool>> filter = x => x.FinalAmount >= min && x.FinalAmount <= max;
+        return filter;
+    }
+    private static Expression<Func<Order, bool>> FilterByType(string type)
+    {
+        Expression<Func<Order, bool>> filter = x => x.Type == type;
+        return filter;
+    }
+    private static Expression<Func<Order, bool>> FilterByPaymentMethod(string method)
+    {
+        Expression<Func<Order, bool>> filter = x => x.PaymentMethod == method;
+        return filter;
+    }
+    private static Expression<Func<Order, bool>> FilterByStatus(string status)
+    {
+        Expression<Func<Order, bool>> filter = x => x.Status == status;
+        return filter;
+    }
+    private static Expression<Func<Order, bool>> FilterByDate(DateTime startDate, DateTime endDate)
+    {
+        Expression<Func<Order, bool>> filter = x => x.OrderDate >= startDate && x.OrderDate <= endDate;
+        return filter;
+    }
+
+    #endregion
 }

@@ -1,11 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.CustomerModels;
+using PetCafe.Application.Models.OrderModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services;
 
 namespace PetCafe.WebApi.Controllers;
 
-public class CustomerController(ICustomerService _customerService) : BaseController
+public class CustomerController(
+    ICustomerService _customerService,
+    IOrderService _orderService
+) : BaseController
 {
 
     [HttpPut("{id:guid}")]
@@ -15,11 +19,16 @@ public class CustomerController(ICustomerService _customerService) : BaseControl
         return NoContent();
     }
 
-
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         return Ok(await _customerService.GetByIdAsync(id));
+    }
+
+    [HttpGet("{id:guid}/orders")]
+    public async Task<IActionResult> GetAllAsync([FromRoute] Guid id, [FromQuery] OrderFilterQuery query)
+    {
+        return Ok(await _orderService.GetAllPagingAsync(query, id));
     }
 
     [HttpGet]

@@ -40,7 +40,7 @@ public class Slot : BaseEntity
 
     [Column("status")]
     [MaxLength(20)]
-    public string Status { get; set; } = SlotStatusConstant.AVAILABLE; 
+    public string Status { get; set; } = SlotStatusConstant.AVAILABLE;
 
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
@@ -62,5 +62,5 @@ public class Slot : BaseEntity
     public virtual Area Area { get; set; } = null!;
 
     public virtual ICollection<CustomerBooking> CustomerBookings { get; set; } = [];
-    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = [];
+    public virtual ICollection<ServiceOrderDetail> OrderDetails { get; set; } = [];
 }

@@ -9,8 +9,8 @@ public class CustomerBookingConfiguration : IEntityTypeConfiguration<CustomerBoo
     public void Configure(EntityTypeBuilder<CustomerBooking> builder)
     {
         builder.HasIndex(x => new { x.CustomerId, x.BookingDate });
-        builder.HasIndex(x => new { x.ScheduledDate });
-        builder.HasIndex(x => new { x.ServiceId, x.ScheduledDate });
+        builder.Property(x => x.CustomerId).IsRequired(false);
+        builder.HasIndex(x => new { x.ServiceId, x.SlotId });
 
         builder.HasOne(x => x.Customer)
             .WithMany(x => x.Bookings)
@@ -26,10 +26,6 @@ public class CustomerBookingConfiguration : IEntityTypeConfiguration<CustomerBoo
             .WithOne(x => x.Booking)
             .HasForeignKey<CustomerBooking>(x => x.OrderDetailId)
             .OnDelete(DeleteBehavior.Cascade);
-
-
-        builder.Property(x => x.Participants)
-            .HasDefaultValue(1);
 
     }
 }

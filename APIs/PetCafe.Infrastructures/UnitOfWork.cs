@@ -26,7 +26,10 @@ public class UnitOfWork(
     IProductCategoryRepository productCategoryRepository,
     IProductRepository productRepository,
     IOrderRepository orderRepository,
-    IOrderDetailRepository orderDetailRepository,
+    IProductOrderDetailRepository productOrderDetailRepository,
+    IServiceOrderDetailRepository serviceOrderDetailRepository,
+    IProductOrderRepository productOrderRepository,
+    IServiceOrderRepository serviceOrderRepository,
     ICustomerBookingRepository customerBookingRepository,
     IAreaRepository areaRepository,
     IServiceRepository serviceRepository,
@@ -68,9 +71,7 @@ public class UnitOfWork(
     public IProductCategoryRepository ProductCategoryRepository => productCategoryRepository;
     public IProductRepository ProductRepository => productRepository;
     public IOrderRepository OrderRepository => orderRepository;
-    public IOrderDetailRepository OrderDetailRepository => orderDetailRepository;
     public ITransactionRepository TransactionRepository => transactionRepository;
-
     // Area & Service Management
     public IAreaRepository AreaRepository => areaRepository;
     public IServiceRepository ServiceRepository => serviceRepository;
@@ -86,6 +87,14 @@ public class UnitOfWork(
     public IMapper Mapper => mapper;
 
     public IStorageRepository StorageRepository => storageRepository;
+
+    public IProductOrderDetailRepository ProductOrderDetailRepository => productOrderDetailRepository;
+
+    public IServiceOrderRepository ServiceOrderRepository => serviceOrderRepository;
+
+    public IServiceOrderDetailRepository ServiceOrderDetailRepository => serviceOrderDetailRepository;
+
+    public IProductOrderRepository ProductOrderRepository => productOrderRepository;
 
     // Transaction methods
     public async Task<bool> SaveChangesAsync()

@@ -46,5 +46,5 @@ public class Product : BaseEntity
 
     // Navigation properties
     public virtual ProductCategory Category { get; set; } = default!;
-    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = [];
+    public virtual ICollection<ProductOrderDetail> OrderDetails { get; set; } = [];
 }

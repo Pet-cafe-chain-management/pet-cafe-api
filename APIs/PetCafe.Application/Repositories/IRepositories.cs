@@ -88,7 +88,16 @@ public interface IOrderRepository : IGenericRepository<Order>
 {
 }
 
-public interface IOrderDetailRepository : IGenericRepository<OrderDetail>
+public interface IProductOrderDetailRepository : IGenericRepository<ProductOrderDetail>
+{
+}
+public interface IServiceOrderDetailRepository : IGenericRepository<ServiceOrderDetail>
+{
+}
+public interface IProductOrderRepository : IGenericRepository<ProductOrder>
+{
+}
+public interface IServiceOrderRepository : IGenericRepository<ServiceOrder>
 {
 }
 
