@@ -19,7 +19,7 @@ public class ServiceController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllPaging([FromQuery] FilterQuery query)
+    public async Task<IActionResult> GetAllPaging([FromQuery] ServiceFilterQuery query)
     {
         var products = await _service.GetAllPagingAsync(query);
         return Ok(products);

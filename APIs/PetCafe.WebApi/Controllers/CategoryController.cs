@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.CategoryModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.WebApi.Controllers;
 
@@ -12,6 +14,7 @@ public class CategoryController(
 ) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> CreateAsync([FromBody] CategoryCreateModel model)
     {
         var category = await _categoryService.CreateAsync(model);
@@ -19,6 +22,7 @@ public class CategoryController(
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] CategoryUpdateModel model)
     {
         var category = await _categoryService.UpdateAsync(id, model);
@@ -26,6 +30,7 @@ public class CategoryController(
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> DeleteAsync([FromRoute] Guid id)
     {
         var result = await _categoryService.DeleteAsync(id);
