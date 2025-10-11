@@ -38,7 +38,7 @@ public class OrderController(IOrderService _orderService) : BaseController
     [HttpPost("/api/webhook-event-handler")]
     public async Task<IActionResult> PayOsWebHook([FromBody] WebhookResponseModel model)
     {
-        await _orderService.HandleWebhookAsync(model);
+        // await _orderService.HandleWebhookAsync(model);
         return Ok(new { success = true });
     }
 
