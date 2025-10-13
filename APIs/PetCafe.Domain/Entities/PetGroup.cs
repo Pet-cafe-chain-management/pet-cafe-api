@@ -15,8 +15,8 @@ public class PetGroup : BaseEntity
     [MaxLength(255)]
     public string? Description { get; set; }
 
-    [Column("max_capacity")]
-    public int MaxCapacity { get; set; }
+    // [Column("max_capacity")]
+    // public int MaxCapacity { get; set; }
 
     [Column("pet_species_id")]
     public Guid? PetSpeciesId { get; set; }

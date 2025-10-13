@@ -6,7 +6,7 @@ public class PetGroupCreateModel
 {
     public string Name { get; set; } = default!;
     public string? Description { get; set; }
-    public int MaxCapacity { get; set; }
+    // public int MaxCapacity { get; set; }
     public Guid? PetSpeciesId { get; set; }
     public Guid? PetBreedId { get; set; }
 }
@@ -27,8 +27,8 @@ public class PetGroupCreateModelValidator : AbstractValidator<PetGroupCreateMode
             .MaximumLength(500).WithMessage("Mô tả không được vượt quá 500 ký tự")
             .When(x => !string.IsNullOrEmpty(x.Description));
 
-        RuleFor(x => x.MaxCapacity)
-            .GreaterThan(0).WithMessage("Sức chứa tối đa phải lớn hơn 0");
+        // RuleFor(x => x.MaxCapacity)
+        //     .GreaterThan(0).WithMessage("Sức chứa tối đa phải lớn hơn 0");
 
         RuleFor(x => x.PetBreedId)
             .Must((model, breedId) => !breedId.HasValue || model.PetSpeciesId.HasValue)
