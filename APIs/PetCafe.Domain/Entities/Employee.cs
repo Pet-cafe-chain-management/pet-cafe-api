@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Domain.Entities;
 
@@ -40,6 +41,9 @@ public class Employee : BaseEntity
 
     [Column("area_id")]
     public Guid? AreaId { get; set; }
+
+    [Column("sub_role")]
+    public string SubRole { get; set; } = SubRoleConstants.WORKING_STAFF;
 
     // Navigation properties
 

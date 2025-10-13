@@ -1,4 +1,5 @@
 using FluentValidation;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Application.Models.EmployeeModels;
 
@@ -13,6 +14,7 @@ public class EmployeeCreateModel
     public required string Email { get; set; } = default!;
     public required string AvatarUrl { get; set; } = default!;
     public required string Password { get; set; }
+    public string SubRole { get; set; } = SubRoleConstants.WORKING_STAFF;
 }
 
 public class EmployeeUpdateModel : EmployeeCreateModel
@@ -60,6 +62,11 @@ public class EmployeeCreateModelValidator : AbstractValidator<EmployeeCreateMode
             .Matches("[a-z]").WithMessage("Mật khẩu phải có ít nhất 1 chữ cái viết thường")
             .Matches("[0-9]").WithMessage("Mật khẩu phải có ít nhất 1 chữ số")
             .Matches("[^a-zA-Z0-9]").WithMessage("Mật khẩu phải có ít nhất 1 ký tự đặc biệt");
+
+        RuleFor(x => x.SubRole)
+            .NotEmpty().WithMessage("Vui trò nhập vai trò của nhân viên")
+            .Must(subRole => subRole == SubRoleConstants.WORKING_STAFF || subRole == SubRoleConstants.SALE_STAFF)
+            .WithMessage($"Vai trò phụ phải là một trong các giá trị: {SubRoleConstants.WORKING_STAFF}, {SubRoleConstants.SALE_STAFF}");
     }
 }
 
