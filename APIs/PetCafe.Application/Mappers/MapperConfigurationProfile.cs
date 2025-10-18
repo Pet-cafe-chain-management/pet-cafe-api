@@ -84,5 +84,11 @@ public class MapperConfigurationsProfile : Profile
 
         // Transaction
         CreateMap<Models.PayOsModels.WebhookData, Domain.Entities.Transaction>().ReverseMap();
+
+        //WorkType
+
+        CreateMap<Models.WorkTypeModels.WorkTypeCreateModel, Domain.Entities.WorkType>().ReverseMap();
+        CreateMap<Models.WorkTypeModels.WorkTypeUpdateModel, Domain.Entities.WorkType>().ReverseMap();
+
     }
 }

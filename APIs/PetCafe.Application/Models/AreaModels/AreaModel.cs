@@ -10,6 +10,7 @@ public class AreaCreateModel
     public string? Location { get; set; }
     public int MaxCapacity { get; set; } = 0;
     public string? ImageUrl { get; set; }
+    public Guid WorkTypeId { get; set; }
 }
 
 public class AreaUpdateModel : AreaCreateModel
@@ -20,6 +21,7 @@ public class AreaUpdateModel : AreaCreateModel
 public class AreaFilterQuery : FilterQuery
 {
     public bool IsActive { get; set; } = true;
+    public Guid? WorkTypeId { get; set; }
 
 }
 public class AreaCreateModelValidator : AbstractValidator<AreaCreateModel>

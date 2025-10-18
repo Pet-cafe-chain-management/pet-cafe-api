@@ -28,6 +28,11 @@ public class TeamService(
 {
     public async Task<Team> CreateAsync(TeamCreateModel model)
     {
+        var area = await _unitOfWork.AreaRepository
+            .FirstOrDefaultAsync(x =>
+                x.WorkTypeId == model.WorkTypeId &&
+                x.Id == model.AreaId
+            ) ?? throw new BadRequestException("Không tìm thấy khu vực tương ứng với loại công việc");
         var team = _unitOfWork.Mapper.Map<Team>(model);
         await _unitOfWork.TeamRepository.AddAsync(team);
         await _unitOfWork.SaveChangesAsync();
@@ -36,6 +41,11 @@ public class TeamService(
 
     public async Task<Team> UpdateAsync(Guid id, TeamUpdateModel model)
     {
+        var area = await _unitOfWork.AreaRepository
+            .FirstOrDefaultAsync(x =>
+                x.WorkTypeId == model.WorkTypeId &&
+                x.Id == model.AreaId
+            ) ?? throw new BadRequestException("Không tìm thấy khu vực tương ứng với loại công việc");
         var team = await _unitOfWork.TeamRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
         _unitOfWork.Mapper.Map(model, team);
         _unitOfWork.TeamRepository.Update(team);
@@ -73,7 +83,7 @@ public class TeamService(
                    k => k.OrderColumn ?? "CreatedAt",
                    v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
                ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
-           includeFunc: x => x.Include(x => x.Leader!)
+           includeFunc: x => x.Include(x => x.Leader).Include(x => x.Area).Include(x => x.WorkType)
        );
         return BasePagingResponseModel<Team>.CreateInstance(Entities, Pagination);
     }

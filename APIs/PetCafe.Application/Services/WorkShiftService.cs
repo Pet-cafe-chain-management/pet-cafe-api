@@ -2,6 +2,7 @@ using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Models.WorkShiftModels;
 using PetCafe.Domain.Entities;
+using Task = System.Threading.Tasks.Task;
 
 namespace PetCafe.Application.Services;
 
@@ -20,6 +21,7 @@ public class WorkShiftService(
 {
     public async Task<WorkShift> CreateAsync(WorkShiftCreateModel model)
     {
+        await CheckDuplicateWorkShift(model.StartTime, model.EndTime, model.ApplicableDays);
         var workShift = _unitOfWork.Mapper.Map<WorkShift>(model);
         await _unitOfWork.WorkShiftRepository.AddAsync(workShift);
         await _unitOfWork.SaveChangesAsync();
@@ -28,13 +30,41 @@ public class WorkShiftService(
 
     public async Task<WorkShift> UpdateAsync(Guid id, WorkShiftUpdateModel model)
     {
+        await CheckDuplicateWorkShift(model.StartTime, model.EndTime, model.ApplicableDays);
         var workShift = await _unitOfWork.WorkShiftRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
         _unitOfWork.Mapper.Map(model, workShift);
         _unitOfWork.WorkShiftRepository.Update(workShift);
         await _unitOfWork.SaveChangesAsync();
         return workShift;
     }
+    private async Task CheckDuplicateWorkShift(TimeSpan startTime, TimeSpan endTime, List<string> applicableDays, Guid? excludeId = null)
+    {
+        var existingWorkShifts = await _unitOfWork.WorkShiftRepository.WhereAsync(
+            filter: ws => excludeId == null || ws.Id != excludeId,
+            withDeleted: false
+        );
 
+        foreach (var existingShift in existingWorkShifts)
+        {
+            bool hasOverlappingDays = existingShift.ApplicableDays.Intersect(applicableDays).Any();
+
+            if (hasOverlappingDays)
+            {
+                bool timeOverlap =
+                    (startTime >= existingShift.StartTime && startTime < existingShift.EndTime) ||
+                    (endTime > existingShift.StartTime && endTime <= existingShift.EndTime) ||
+                    (startTime <= existingShift.StartTime && endTime >= existingShift.EndTime);
+
+                if (timeOverlap)
+                {
+                    string overlappingDays = string.Join(", ", existingShift.ApplicableDays.Intersect(applicableDays));
+                    throw new BadRequestException(
+                        $"Ca làm việc bị trùng thời gian ({existingShift.StartTime.ToString(@"hh\:mm")} - {existingShift.EndTime.ToString(@"hh\:mm")}) " +
+                        $"vào các ngày: {overlappingDays} với ca làm việc '{existingShift.Name}'");
+                }
+            }
+        }
+    }
     public async Task<bool> DeleteAsync(Guid id)
     {
         var workShift = await _unitOfWork.WorkShiftRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");

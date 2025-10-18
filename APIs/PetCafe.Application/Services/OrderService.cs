@@ -121,7 +121,7 @@ public class OrderService(
 
             var customer_bookings = await _unitOfWork.BookingRepository.WhereAsync(x => x.SlotId == item.SlotId && x.BookingDate.Date == item.BookingDate.Date);
 
-            if (slot.AvailableCapacity == customer_bookings.Count || slot.AvailableCapacity <= 0) throw new BadRequestException($"Khung giờ hiện tại không còn chỗ trống!");
+            if (slot.MaxCapacity == customer_bookings.Count || slot.MaxCapacity <= 0) throw new BadRequestException($"Khung giờ hiện tại không còn chỗ trống!");
 
 
             var detail = new ServiceOrderDetail
@@ -217,11 +217,21 @@ public class OrderService(
 
         foreach (var item in serivce_order.OrderDetails.Where(x => x.SlotId != null))
         {
-            var slot = await _unitOfWork.SlotRepository.GetByIdAsync(item.SlotId!.Value) ?? throw new BadRequestException("Thanh toán thất bại!");
+            var slot = await _unitOfWork.SlotRepository.GetByIdAsync(
+                item.SlotId!.Value,
+                includeFunc: x => x.Include(x => x.Service)
+                                  .Include(x => x.Area)
+                                  .Include(x => x.Area.WorkType)) ?? throw new BadRequestException("Thanh toán thất bại!");
 
-            if (slot.AvailableCapacity <= 0) throw new BadRequestException("Thanh toán thất bại!");
+            var suitableTeam = await FindSuitableTeam(
+                slot.Area.Id,
+                slot.Area.WorkTypeId,
+                slot.StartTime,
+                slot.EndTime,
+                slot.ApplicableDays,
+                item.BookingDate!.Value
+            );
 
-            slot.AvailableCapacity -= 1;
             await _unitOfWork.BookingRepository.AddAsync(
                 new CustomerBooking
                 {
@@ -230,17 +240,68 @@ public class OrderService(
                     ServiceId = slot.ServiceId,
                     StartTime = slot.StartTime,
                     EndTime = slot.EndTime,
-                    BookingDate = item.BookingDate!.Value
+                    BookingDate = item.BookingDate!.Value,
+                    TeamId = suitableTeam!.Id
                 }
             );
-            _unitOfWork.SlotRepository.Update(slot);
         }
-
 
         serivce_order.Status = OrderStatusConstant.PAID;
         _unitOfWork.ServiceOrderRepository.Update(serivce_order);
-
     }
+
+    private async Task<Team?> FindSuitableTeam(
+        Guid areaId,
+        Guid workTypeId,
+        TimeSpan startTime,
+        TimeSpan endTime,
+        List<string> applicableDays,
+        DateTime bookingDate)
+    {
+        var teams = await _unitOfWork.TeamRepository.WhereAsync(
+            filter: t => t.AreaId == areaId && t.WorkTypeId == workTypeId && t.IsActive,
+            includeFunc: query => query.Include(t => t.TeamWorkShifts)
+                                      .ThenInclude(tws => tws.WorkShift)
+        );
+
+        if (teams.Count == 0) throw new BadRequestException("Thanh toán thất bại!");
+
+        string dayOfWeek = bookingDate.DayOfWeek.ToString();
+
+        var suitableTeams = new List<Team>();
+
+        foreach (var team in teams)
+        {
+            bool isTeamSuitable = false;
+
+            foreach (var teamWorkShift in team.TeamWorkShifts)
+            {
+                var workShift = teamWorkShift.WorkShift;
+
+                if (!workShift.ApplicableDays.Contains(dayOfWeek))
+                {
+                    continue;
+                }
+
+                if (workShift.StartTime <= startTime && workShift.EndTime >= endTime)
+                {
+                    isTeamSuitable = true;
+                    break;
+                }
+            }
+
+            if (isTeamSuitable)
+            {
+                suitableTeams.Add(team);
+            }
+        }
+
+        if (suitableTeams.Count != 0) return suitableTeams.First();
+
+
+        throw new BadRequestException("Thanh toán thất bại!");
+    }
+
 
     #endregion
     public async Task<bool> ConfirmOrderAsync(Guid id)

@@ -21,9 +21,6 @@ public class Service : BaseEntity
     [Column("base_price")]
     public double BasePrice { get; set; }
 
-    [Column("requires_area")]
-    public bool RequiresArea { get; set; } = true;
-
     [Column("image_url")]
     public string? ImageUrl { get; set; }
     [Column("thumbnails")]

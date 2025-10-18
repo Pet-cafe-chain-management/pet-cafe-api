@@ -7,18 +7,26 @@ public class ServiceCreateModel
 {
     public string Name { get; set; } = default!;
     public string? Description { get; set; }
-
     public int DurationMinutes { get; set; }
     public double BasePrice { get; set; }
-    public string ServiceType { get; set; } = default!;
-    public bool RequiresArea { get; set; } = true;
     public string? ImageUrl { get; set; }
     public List<string> Thumbnails { get; set; } = [];
+    public Guid WorkTypeId { get; set; }
 
 }
 
 
 public class ServiceUpdateModel : ServiceCreateModel
+{
+    public bool IsActive { get; set; } = true;
+}
+
+public class ServicePetGroupCreateModel
+{
+    public List<Guid> PetGroupIds { get; set; } = [];
+}
+
+public class ServicePetGroupUpdateModel : ServicePetGroupCreateModel
 {
 }
 
@@ -30,10 +38,10 @@ public class ServiceFilterQuery : FilterQuery
     public List<Guid>? PetSpeciesIds { get; set; } = [];
     public List<Guid>? PetBreedIds { get; set; } = [];
     public List<Guid>? AreaIds { get; set; } = [];
-    public List<string>? ServiceTypes { get; set; } = [];
     public double? MaxPrice { get; set; }
     public double? MinPrice { get; set; }
     public bool IsActive { get; set; } = true;
+    public Guid? WorkTypeId { get; set; }
 
 }
 
@@ -55,9 +63,6 @@ public class ServiceCreateModelValidator : AbstractValidator<ServiceCreateModel>
         RuleFor(x => x.BasePrice)
             .GreaterThanOrEqualTo(0).WithMessage("Giá cơ bản phải lớn hơn hoặc bằng 0");
 
-        RuleFor(x => x.ServiceType)
-            .NotEmpty().WithMessage("Loại dịch vụ không được để trống")
-            .MaximumLength(50).WithMessage("Loại dịch vụ không được vượt quá 50 ký tự");
 
         RuleFor(x => x.ImageUrl)
             .MaximumLength(1000).WithMessage("Đường dẫn ảnh không được vượt quá 1000 ký tự")

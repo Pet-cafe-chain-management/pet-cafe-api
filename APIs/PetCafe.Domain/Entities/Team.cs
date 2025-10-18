@@ -15,11 +15,6 @@ public class Team : BaseEntity
     [MaxLength(200)]
     public string? Description { get; set; }
 
-    [Column("team_type")]
-    [Required]
-    [MaxLength(30)]
-    public string TeamType { get; set; } = default!;
-
     [Column("leader_id")]
     [ForeignKey("Leader")]
     public Guid LeaderId { get; set; }

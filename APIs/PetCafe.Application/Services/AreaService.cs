@@ -1,7 +1,9 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.AreaModels;
 using PetCafe.Application.Models.ShareModels;
+using PetCafe.Application.Utilities;
 using PetCafe.Domain.Entities;
 
 namespace PetCafe.Application.Services;
@@ -50,17 +52,25 @@ public class AreaService(
 
     public async Task<BasePagingResponseModel<Area>> GetAllPagingAsync(AreaFilterQuery query)
     {
+        Expression<Func<Area, bool>>? filter = x => x.IsActive == query.IsActive;
+        if (query.WorkTypeId != null && query.WorkTypeId != Guid.Empty)
+        {
+            Expression<Func<Area, bool>> additional_filter = x => x.WorkTypeId == query.WorkTypeId;
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, additional_filter) : additional_filter;
+        }
 
         var (Pagination, Entities) = await _unitOfWork.AreaRepository.ToPagination(
              pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
-            filter: x => x.IsActive == query.IsActive,
+            filter: filter,
             searchTerm: query.Q,
             searchFields: ["Name", "Description", "Location"],
             sortOrders: query.OrderBy?.ToDictionary(
                     k => k.OrderColumn ?? "CreatedAt",
                     v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
-                ) ?? new Dictionary<string, bool> { { "CreatedAt", false } }
+                ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
+
+            includeFunc: x => x.Include(x => x.WorkType)
         );
         return BasePagingResponseModel<Area>.CreateInstance(Entities, Pagination); ;
     }

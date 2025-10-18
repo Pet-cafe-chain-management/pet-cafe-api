@@ -14,15 +14,15 @@ public class ServiceController(
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var product = await _service.GetByIdAsync(id);
-        return Ok(product);
+        var service = await _service.GetByIdAsync(id);
+        return Ok(service);
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAllPaging([FromQuery] ServiceFilterQuery query)
     {
-        var products = await _service.GetAllPagingAsync(query);
-        return Ok(products);
+        var services = await _service.GetAllPagingAsync(query);
+        return Ok(services);
     }
 
     [HttpPut("{id:guid}")]
@@ -34,8 +34,8 @@ public class ServiceController(
     [HttpPost]
     public async Task<IActionResult> Create(ServiceCreateModel model)
     {
-        var product = await _service.CreateAsync(model);
-        return Ok(product);
+        var service = await _service.CreateAsync(model);
+        return Ok(service);
     }
 
     [HttpDelete("{id:guid}")]
@@ -49,5 +49,26 @@ public class ServiceController(
     public async Task<IActionResult> GetServiceSlots([FromRoute] Guid id, FilterQuery query)
     {
         return Ok(await _slotService.GetAllPagingByServiceAsync(id, query));
+    }
+
+    [HttpPost("{id:guid}/pet-groups")]
+    public async Task<IActionResult> AssignPetGroupToService(Guid id, ServicePetGroupCreateModel model)
+    {
+        await _service.AssignPetGroupToService(id, model);
+        return Ok();
+    }
+
+    [HttpDelete("{id:guid}/pet-groups/{petGroupId:guid}")]
+
+    public async Task<IActionResult> RemovePetGroupFromService(Guid id, Guid petGroupId)
+    {
+        await _service.RemovePetGroupFromService(id, petGroupId);
+        return NoContent();
+    }
+
+    [HttpGet("{id:guid}/pet-groups")]
+    public async Task<IActionResult> GetPetGroupsByServiceId([FromRoute] Guid id, FilterQuery query)
+    {
+        return Ok(await _service.GetPetGroupsByServiceId(id, query));
     }
 }

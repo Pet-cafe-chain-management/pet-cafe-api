@@ -20,7 +20,7 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
 {
     public async Task<Slot> CreateAsync(SlotCreateModel model)
     {
-        await ValidateAreaAndTimeAvailability(model.AreaId, model.StartTime, model.EndTime, null);
+        await ValidateAreaAndTimeAvailability(model.AreaId, model.StartTime, model.EndTime, model.ApplicableDays, null);
 
         // Kiểm tra nhóm thú cưng có sẵn sàng tại thời điểm đó không
         await ValidatePetGroupAvailability(model.PetGroupId, model.StartTime, model.EndTime, null);
@@ -36,7 +36,7 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
         var slot = await _unitOfWork.SlotRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
 
         // Kiểm tra xem area và time có trùng với những slot khác không
-        await ValidateAreaAndTimeAvailability(model.AreaId, model.StartTime, model.EndTime, id);
+        await ValidateAreaAndTimeAvailability(model.AreaId, model.StartTime, model.EndTime, model.ApplicableDays, id);
 
         // Kiểm tra nhóm thú cưng có sẵn sàng tại thời điểm đó không
         await ValidatePetGroupAvailability(model.PetGroupId, model.StartTime, model.EndTime, id);
@@ -86,8 +86,7 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
         return BasePagingResponseModel<Slot>.CreateInstance(Entities, Pagination);
     }
 
-    // Phương thức kiểm tra xem area và time có trùng với những slot khác không
-    private async Task ValidateAreaAndTimeAvailability(Guid areaId, TimeSpan startTime, TimeSpan endTime, Guid? excludeSlotId)
+    private async Task ValidateAreaAndTimeAvailability(Guid areaId, TimeSpan startTime, TimeSpan endTime, List<string> applicableDays, Guid? excludeSlotId)
     {
         // Tìm các slot có cùng area và thời gian trùng lặp
         var overlappingSlots = await _unitOfWork.SlotRepository
@@ -100,9 +99,22 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
                 (excludeSlotId == null || s.Id != excludeSlotId) // Loại trừ slot hiện tại khi cập nhật
             );
 
-        if (overlappingSlots.Count != 0)
+        if (overlappingSlots.Count > 0)
         {
-            throw new BadRequestException("Khu vực này đã được đặt trong khoảng thời gian này. Vui lòng chọn thời gian hoặc khu vực khác!");
+            // Kiểm tra xem có trùng lặp về ngày áp dụng không
+            foreach (var slot in overlappingSlots)
+            {
+                // Kiểm tra xem có bất kỳ ngày nào trùng nhau không
+                bool hasOverlappingDays = slot.ApplicableDays.Intersect(applicableDays).Any();
+
+                if (hasOverlappingDays)
+                {
+                    string overlappingDays = string.Join(", ", slot.ApplicableDays.Intersect(applicableDays));
+                    throw new BadRequestException(
+                        $"Khu vực này đã được đặt trong khoảng thời gian {slot.StartTime.ToString(@"hh\:mm")} - {slot.EndTime.ToString(@"hh\:mm")} " +
+                        $"vào các ngày: {overlappingDays}. Vui lòng chọn thời gian, ngày hoặc khu vực khác!");
+                }
+            }
         }
     }
 

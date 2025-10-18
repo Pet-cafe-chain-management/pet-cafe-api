@@ -29,9 +29,6 @@ public class Slot : BaseEntity
     [Column("max_capacity")]
     public int MaxCapacity { get; set; }
 
-    [Column("available_capacity")]
-    public int AvailableCapacity { get; set; }
-
     [Column("price")]
     public double Price { get; set; }
 
