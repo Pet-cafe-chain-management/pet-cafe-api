@@ -46,7 +46,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     // Area & Service Management
     public DbSet<Area> Areas { get; set; }
     public DbSet<Service> Services { get; set; }
-    public DbSet<AreaService> AreaServices { get; set; }
+    public DbSet<WorkType> WorkTypes { get; set; }
+    public DbSet<ServicePetGroup> ServicePetGroups { get; set; }
+    public DbSet<DailyTask> DailyTasks { get; set; }
+    public DbSet<TeamWorkShift> TeamWorkShifts { get; set; }
     public DbSet<CustomerBooking> ServiceBookings { get; set; }
 
     // Notification System

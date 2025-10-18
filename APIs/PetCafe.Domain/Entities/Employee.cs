@@ -39,16 +39,10 @@ public class Employee : BaseEntity
     [Column("salary")]
     public double? Salary { get; set; } = 0;
 
-    [Column("area_id")]
-    public Guid? AreaId { get; set; }
-
     [Column("sub_role")]
     public string SubRole { get; set; } = SubRoleConstants.WORKING_STAFF;
 
     // Navigation properties
-
-    [ForeignKey("AreaId")]
-    public virtual Area? Area { get; set; } = default!;
     public virtual Account Account { get; set; } = default!;
     public virtual ICollection<TeamMember> TeamMembers { get; set; } = [];
     public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = [];

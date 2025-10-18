@@ -15,14 +15,12 @@ public class PetGroup : BaseEntity
     [MaxLength(255)]
     public string? Description { get; set; }
 
-    // [Column("max_capacity")]
-    // public int MaxCapacity { get; set; }
-
     [Column("pet_species_id")]
     public Guid? PetSpeciesId { get; set; }
 
     [ForeignKey("PetSpeciesId")]
     public virtual PetSpecies? PetSpecies { get; set; }
+
     [Column("pet_breed_id")]
     public Guid? PetBreedId { get; set; }
 
@@ -31,5 +29,6 @@ public class PetGroup : BaseEntity
     public virtual ICollection<Pet> Pets { get; set; } = [];
     public virtual ICollection<Slot> Slots { get; set; } = [];
     public virtual ICollection<Task> Tasks { get; set; } = [];
-    public virtual ICollection<CustomerBooking> CustomerBookings { get; set; } = [];
+    public virtual ICollection<ServicePetGroup> ServicePetGroups { get; set; } = [];
+
 }

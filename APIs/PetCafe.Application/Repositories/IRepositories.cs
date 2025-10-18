@@ -118,9 +118,6 @@ public interface IServiceRepository : IGenericRepository<Service>
 {
 }
 
-public interface IAreaServiceRepository : IGenericRepository<AreaService>
-{
-}
 
 public interface ICustomerBookingRepository : IGenericRepository<CustomerBooking>
 {
@@ -135,3 +132,16 @@ public interface IStorageRepository : IGenericRepository<Storage>
 {
 }
 
+public interface IWorkTypeRepository : IGenericRepository<WorkType>
+{
+}
+
+public interface IServicePetGroupRepository : IGenericRepository<ServicePetGroup>
+{
+}
+public interface IDailyTaskRepository : IGenericRepository<DailyTask>
+{
+}
+public interface ITeamWorkShiftRepository : IGenericRepository<TeamWorkShift>
+{
+}

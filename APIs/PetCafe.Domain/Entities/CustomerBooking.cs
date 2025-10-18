@@ -18,10 +18,6 @@ public class CustomerBooking : BaseEntity
     [ForeignKey("Slot")]
     public Guid SlotId { get; set; }
 
-    [Column("pet_group_id")]
-    [ForeignKey("PetGroup")]
-    public Guid PetGroupId { get; set; }
-
     [Column("order_detail_id")]
     public Guid OrderDetailId { get; set; }
 
@@ -48,10 +44,14 @@ public class CustomerBooking : BaseEntity
     [Column("feedback_date")]
     public DateTime? FeedbackDate { get; set; }
 
+    [Column("team_id")]
+    public Guid TeamId { get; set; }
+
     // Navigation properties
+    [ForeignKey("TeamId")]
+    public virtual Team Team { get; set; } = null!;
     public virtual Customer? Customer { get; set; } = default!;
     public virtual Service Service { get; set; } = default!;
-    public virtual PetGroup PetGroup { get; set; } = default!;
     public virtual ServiceOrderDetail OrderDetail { get; set; } = default!;
     public virtual Slot Slot { get; set; } = default!;
 }

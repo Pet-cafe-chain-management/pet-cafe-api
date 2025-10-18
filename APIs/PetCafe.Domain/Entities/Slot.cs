@@ -14,9 +14,6 @@ public class Slot : BaseEntity
     [Column("area_id")]
     public Guid AreaId { get; set; }
 
-    [Column("team_id")]
-    public Guid TeamId { get; set; }
-
     [Column("pet_gourp_id")]
     public Guid PetGroupId { get; set; }
 
@@ -52,15 +49,11 @@ public class Slot : BaseEntity
     [ForeignKey("PetGroupId")]
     public virtual PetGroup PetGroup { get; set; } = null!;
 
-    [ForeignKey("TeamId")]
-    public virtual Team Team { get; set; } = null!;
-
     [ForeignKey("ServiceId")]
     public virtual Service Service { get; set; } = null!;
 
     [ForeignKey("AreaId")]
     public virtual Area Area { get; set; } = null!;
-
     public virtual ICollection<CustomerBooking> CustomerBookings { get; set; } = [];
     public virtual ICollection<ServiceOrderDetail> OrderDetails { get; set; } = [];
 }

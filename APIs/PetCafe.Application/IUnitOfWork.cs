@@ -43,7 +43,10 @@ public interface IUnitOfWork
     // Area & Service Management
     IAreaRepository AreaRepository { get; }
     IServiceRepository ServiceRepository { get; }
-    IAreaServiceRepository AreaServiceRepository { get; }
+    IServicePetGroupRepository ServicePetGroupRepository { get; }
+    IWorkTypeRepository WorkTypeRepository { get; }
+    IDailyTaskRepository DailyTaskRepository { get; }
+    ITeamWorkShiftRepository TeamWorkShiftRepository { get; }
     ICustomerBookingRepository BookingRepository { get; }
 
     // Notification System

@@ -21,11 +21,6 @@ public class Service : BaseEntity
     [Column("base_price")]
     public double BasePrice { get; set; }
 
-    [Column("service_type")]
-    [Required]
-    [MaxLength(30)]
-    public string ServiceType { get; set; } = default!;
-
     [Column("requires_area")]
     public bool RequiresArea { get; set; } = true;
 
@@ -34,15 +29,19 @@ public class Service : BaseEntity
     [Column("thumbnails")]
     public List<string> Thumbnails { get; set; } = [];
 
-
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
 
+    [Column("work_type_id")]
+    [ForeignKey("WorkType")]
+    public Guid WorkTypeId { get; set; }
+
     // Navigation properties
+    public virtual WorkType WorkType { get; set; } = default!;
+
     public virtual ICollection<Slot> Slots { get; set; } = [];
-    public virtual ICollection<Task> Tasks { get; set; } = [];
     public virtual ICollection<ServiceOrderDetail> OrderDetails { get; set; } = [];
     public virtual ICollection<CustomerBooking> Bookings { get; set; } = [];
-    public virtual ICollection<AreaService> AreaServices { get; set; } = [];
+    public virtual ICollection<ServicePetGroup> ServicePetGroups { get; set; } = [];
 }
 

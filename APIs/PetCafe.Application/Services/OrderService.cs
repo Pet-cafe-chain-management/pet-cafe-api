@@ -230,7 +230,6 @@ public class OrderService(
                     ServiceId = slot.ServiceId,
                     StartTime = slot.StartTime,
                     EndTime = slot.EndTime,
-                    PetGroupId = slot.PetGroupId,
                     BookingDate = item.BookingDate!.Value
                 }
             );

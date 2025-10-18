@@ -33,8 +33,11 @@ public class UnitOfWork(
     ICustomerBookingRepository customerBookingRepository,
     IAreaRepository areaRepository,
     IServiceRepository serviceRepository,
-    IAreaServiceRepository areaServiceRepository,
+    IServicePetGroupRepository servicePetGroupRepository,
+    IWorkTypeRepository workTypeRepository,
+    IDailyTaskRepository dailyTaskRepository,
     IPetGroupRepository petGroupRepository,
+    ITeamWorkShiftRepository teamWorkShiftRepository,
     INotificationRepository notificationRepository,
     ITransactionRepository transactionRepository,
     ISlotRepository slotRepository,
@@ -75,7 +78,6 @@ public class UnitOfWork(
     // Area & Service Management
     public IAreaRepository AreaRepository => areaRepository;
     public IServiceRepository ServiceRepository => serviceRepository;
-    public IAreaServiceRepository AreaServiceRepository => areaServiceRepository;
     public IPetGroupRepository PetGroupRepository => petGroupRepository;
 
     // Notification System
@@ -95,6 +97,14 @@ public class UnitOfWork(
     public IServiceOrderDetailRepository ServiceOrderDetailRepository => serviceOrderDetailRepository;
 
     public IProductOrderRepository ProductOrderRepository => productOrderRepository;
+
+    public IServicePetGroupRepository ServicePetGroupRepository => servicePetGroupRepository;
+
+    public IWorkTypeRepository WorkTypeRepository => workTypeRepository;
+
+    public IDailyTaskRepository DailyTaskRepository => dailyTaskRepository;
+
+    public ITeamWorkShiftRepository TeamWorkShiftRepository => teamWorkShiftRepository;
 
     // Transaction methods
     public async Task<bool> SaveChangesAsync()

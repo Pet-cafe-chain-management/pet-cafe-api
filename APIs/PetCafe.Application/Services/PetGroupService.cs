@@ -48,7 +48,7 @@ public class PetGroupService(
     {
         return await _unitOfWork.PetGroupRepository.GetByIdAsync(id,
           includeFunc: x => x
-            .Include(x=>x.Pets.Where(x=>!x.IsDeleted))
+            .Include(x => x.Pets.Where(x => !x.IsDeleted))
             .Include(x => x.PetSpecies!)
             .Include(x => x.PetBreed!)
         ) ?? throw new BadRequestException("Không tìm thấy thông tin!");

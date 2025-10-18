@@ -21,10 +21,10 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
     public async Task<Slot> CreateAsync(SlotCreateModel model)
     {
         await ValidateAreaAndTimeAvailability(model.AreaId, model.StartTime, model.EndTime, null);
- 
+
         // Kiểm tra nhóm thú cưng có sẵn sàng tại thời điểm đó không
         await ValidatePetGroupAvailability(model.PetGroupId, model.StartTime, model.EndTime, null);
-        
+
         var slot = _unitOfWork.Mapper.Map<Slot>(model);
         await _unitOfWork.SlotRepository.AddAsync(slot);
         await _unitOfWork.SaveChangesAsync();
@@ -34,10 +34,10 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
     public async Task<Slot> UpdateAsync(Guid id, SlotUpdateModel model)
     {
         var slot = await _unitOfWork.SlotRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
-        
+
         // Kiểm tra xem area và time có trùng với những slot khác không
         await ValidateAreaAndTimeAvailability(model.AreaId, model.StartTime, model.EndTime, id);
-        
+
         // Kiểm tra nhóm thú cưng có sẵn sàng tại thời điểm đó không
         await ValidatePetGroupAvailability(model.PetGroupId, model.StartTime, model.EndTime, id);
         _unitOfWork.Mapper.Map(model, slot);
@@ -59,7 +59,6 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
             includeFunc: x => x
                 .Include(x => x.Area)
                 .Include(x => x.Service)
-                .Include(x => x.Team)
                 .Include(x => x.PetGroup).ThenInclude(x => x.Pets.Where(x => !x.IsDeleted))
                 .Include(x => x.PetGroup).ThenInclude(x => x.PetSpecies!)
                 .Include(x => x.PetGroup).ThenInclude(x => x.PetBreed!)
@@ -71,7 +70,7 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
         var (Pagination, Entities) = await _unitOfWork.SlotRepository.ToPagination(
              pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
-            filter: x=> x.ServiceId == serviceId,
+            filter: x => x.ServiceId == serviceId,
             searchTerm: query.Q,
             searchFields: ["Name", "Description"],
             sortOrders: query.OrderBy?.ToDictionary(
@@ -80,10 +79,9 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
                 ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
             includeFunc: x => x
                 .Include(x => x.Area)
-                .Include(x=>x.Service)
-                .Include(x=>x.Team)
-                .Include(x=>x.PetGroup).ThenInclude(x=>x.PetSpecies!)
-                .Include(x=>x.PetGroup).ThenInclude(x=>x.PetBreed!)
+                .Include(x => x.Service)
+                .Include(x => x.PetGroup).ThenInclude(x => x.PetSpecies!)
+                .Include(x => x.PetGroup).ThenInclude(x => x.PetBreed!)
         );
         return BasePagingResponseModel<Slot>.CreateInstance(Entities, Pagination);
     }
@@ -121,7 +119,7 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
                 (s.StartTime >= startTime && s.EndTime <= endTime)) && // Slot khác nằm hoàn toàn trong khoảng thời gian của slot hiện tại
                 (excludeSlotId == null || s.Id != excludeSlotId) // Loại trừ slot hiện tại khi cập nhật
             );
-            
+
 
         if (overlappingSlots.Count != 0)
         {

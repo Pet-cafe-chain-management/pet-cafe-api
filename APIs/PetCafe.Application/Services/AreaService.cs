@@ -60,8 +60,7 @@ public class AreaService(
             sortOrders: query.OrderBy?.ToDictionary(
                     k => k.OrderColumn ?? "CreatedAt",
                     v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
-                ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
-            includeFunc: x => x.Include(x => x.Employees.Where(e => !e.IsDeleted))
+                ) ?? new Dictionary<string, bool> { { "CreatedAt", false } }
         );
         return BasePagingResponseModel<Area>.CreateInstance(Entities, Pagination); ;
     }

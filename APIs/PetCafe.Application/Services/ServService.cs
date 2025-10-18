@@ -122,11 +122,6 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
             filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
         }
 
-        if (query.ServiceTypes != null && query.ServiceTypes.Count > 0)
-        {
-            Expression<Func<Service, bool>> tmp_filter = x => query.ServiceTypes.Contains(x.ServiceType);
-            filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
-        }
 
         if (_claimsService.GetCurrentUserRole == RoleConstants.MANAGER)
         {

@@ -84,7 +84,6 @@ public class EmployeeService(
                     v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
                 ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
             includeFunc: x => x
-                    .Include(x => x.Area!)
                     .Include(x => x.Account)
 
         );

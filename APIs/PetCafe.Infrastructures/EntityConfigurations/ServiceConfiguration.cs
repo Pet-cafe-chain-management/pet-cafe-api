@@ -24,7 +24,7 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
                 .Metadata.SetValueComparer(storageComparer);
 
         builder.HasIndex(x => x.Name);
-        builder.HasIndex(x => new { x.ServiceType, x.IsActive });
+        builder.HasIndex(x => new { x.IsActive });
 
     }
 }

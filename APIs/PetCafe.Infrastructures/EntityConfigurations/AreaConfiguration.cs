@@ -12,5 +12,11 @@ public class AreaConfiguration : IEntityTypeConfiguration<Area>
 
         builder.Property(x => x.IsActive)
             .HasDefaultValue(true);
+
+
+        builder.HasOne(x => x.WorkType)
+            .WithMany(x => x.Areas)
+            .HasForeignKey(x => x.WorkTypeId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

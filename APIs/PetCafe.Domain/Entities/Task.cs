@@ -44,10 +44,6 @@ public class Task : BaseEntity
     [ForeignKey("PetGroup")]
     public Guid? PetGroupId { get; set; }
 
-    [Column("service_id")]
-    [ForeignKey("Service")]
-    public Guid? ServiceId { get; set; }
-
     [Column("pet_id")]
     [ForeignKey("Pet")]
     public Guid? PetId { get; set; }
@@ -60,8 +56,8 @@ public class Task : BaseEntity
     public virtual Team Team { get; set; } = default!;
     public virtual Area? Area { get; set; } = default!;
     public virtual PetGroup? PetGroup { get; set; } = default!;
-    public virtual Service? Service { get; set; } = default!;
     public virtual Pet? Pet { get; set; } = default!;
     public virtual WorkShift WorkShift { get; set; } = default!;
     public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = [];
+    public virtual ICollection<DailyTask> DailyTasks { get; set; } = [];
 }

@@ -122,16 +122,27 @@ public class ServiceRepository(AppDbContext context, ICurrentTime currentTime, I
 {
 }
 
-public class AreaServiceRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<AreaService>(context, currentTime, claimsService), IAreaServiceRepository
-{
-}
-
-
 // Notification System
 public class NotificationRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<Notification>(context, currentTime, claimsService), INotificationRepository
 {
 }
 
 public class StorageRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<Storage>(context, currentTime, claimsService), IStorageRepository
+{
+}
+
+public class ServicePetGroupRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<ServicePetGroup>(context, currentTime, claimsService), IServicePetGroupRepository
+{
+}
+
+public class WorkTypeRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<WorkType>(context, currentTime, claimsService), IWorkTypeRepository
+{
+}
+
+public class DailyTaskRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<DailyTask>(context, currentTime, claimsService), IDailyTaskRepository
+{
+}
+
+public class TeamWorkShiftRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<TeamWorkShift>(context, currentTime, claimsService), ITeamWorkShiftRepository
 {
 }

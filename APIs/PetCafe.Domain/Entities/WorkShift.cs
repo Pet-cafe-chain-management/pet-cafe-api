@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Domain.Entities;
 
@@ -24,6 +25,10 @@ public class WorkShift : BaseEntity
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
 
+    [Column("applicable_days")]
+    public List<string> ApplicableDays { get; set; } = DayConstant.ALLDAYS;
     public virtual ICollection<EmployeeSchedule> Schedules { get; set; } = [];
     public virtual ICollection<Task> Tasks { get; set; } = [];
+    public virtual ICollection<TeamWorkShift> TeamWorkShifts { get; set; } = [];
+
 }
