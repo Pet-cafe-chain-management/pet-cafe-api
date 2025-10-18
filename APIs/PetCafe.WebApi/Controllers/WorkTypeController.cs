@@ -12,7 +12,6 @@ namespace PetCafe.WebApi.Controllers;
 public class WorkTypeController(IWorkTypeService _workTypeService) : ControllerBase
 {
     [HttpGet("{id:guid}")]
-    [Authorize]
     public async Task<IActionResult> GetById(Guid id)
     {
         var workType = await _workTypeService.GetByIdAsync(id);
@@ -20,7 +19,6 @@ public class WorkTypeController(IWorkTypeService _workTypeService) : ControllerB
     }
 
     [HttpGet]
-    [Authorize]
     public async Task<IActionResult> GetAllPaging([FromQuery] FilterQuery query)
     {
         var workTypes = await _workTypeService.GetAllPagingAsync(query);

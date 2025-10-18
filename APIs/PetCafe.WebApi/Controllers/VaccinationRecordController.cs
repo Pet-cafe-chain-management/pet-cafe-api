@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.VaccinationRecordModels;
 using PetCafe.Application.Services;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.WebApi.Controllers;
 
@@ -9,6 +11,7 @@ namespace PetCafe.WebApi.Controllers;
 public class VaccinationRecordController(IVaccinationRecordService _vaccinationRecordService) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Roles = $"{RoleConstants.MANAGER},{RoleConstants.EMPLOYEE}")]
     public async Task<IActionResult> Create([FromBody] VaccinationRecordCreateModel model)
     {
         var result = await _vaccinationRecordService.CreateAsync(model);
@@ -16,6 +19,7 @@ public class VaccinationRecordController(IVaccinationRecordService _vaccinationR
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = $"{RoleConstants.MANAGER},{RoleConstants.EMPLOYEE}")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] VaccinationRecordUpdateModel model)
     {
         await _vaccinationRecordService.UpdateAsync(id, model);
@@ -23,6 +27,7 @@ public class VaccinationRecordController(IVaccinationRecordService _vaccinationR
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = $"{RoleConstants.MANAGER},{RoleConstants.EMPLOYEE}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         await _vaccinationRecordService.DeleteAsync(id);

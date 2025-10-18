@@ -20,8 +20,8 @@ public class FileController(IFileService fileService) : BaseController
     }
 
     [HttpPost]
-    public async Task<IActionResult> UploadFile(IFormFile formFile)
+    public async Task<IActionResult> UploadFile(IFormFile file)
     {
-        return Ok(await _fileService.UploadFileAsync(formFile));
+        return Ok(await _fileService.UploadFileAsync(file));
     }
 }

@@ -43,6 +43,8 @@ public static class DependencyInjection
         {
             options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
             options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.SnakeCaseLower;
+            options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+
         });
 
         services.AddHttpContextAccessor();
@@ -127,10 +129,16 @@ public static class DependencyInjection
                         .SelectMany(x => x.Value!.Errors.Select(e => $"{x.Key}: {e.ErrorMessage}"))
                         .ToList();
 
+                    var jsonOptions = new JsonSerializerOptions
+                    {
+                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                    };
+
                     var exceptionResult = JsonSerializer.Serialize(new
                     {
                         error = errors
-                    });
+                    }, jsonOptions);
+
                     return new BadRequestObjectResult(exceptionResult);
                 };
             });

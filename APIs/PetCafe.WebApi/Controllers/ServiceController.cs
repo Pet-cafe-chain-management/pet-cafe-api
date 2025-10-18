@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.ServiceModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.WebApi.Controllers;
 
@@ -26,12 +28,14 @@ public class ServiceController(
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Update(Guid id, ServiceUpdateModel model)
     {
         await _service.UpdateAsync(id, model);
         return NoContent();
     }
     [HttpPost]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Create(ServiceCreateModel model)
     {
         var service = await _service.CreateAsync(model);
@@ -39,6 +43,7 @@ public class ServiceController(
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _service.DeleteAsync(id);
@@ -52,6 +57,7 @@ public class ServiceController(
     }
 
     [HttpPost("{id:guid}/pet-groups")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> AssignPetGroupToService(Guid id, ServicePetGroupCreateModel model)
     {
         await _service.AssignPetGroupToService(id, model);
@@ -59,7 +65,7 @@ public class ServiceController(
     }
 
     [HttpDelete("{id:guid}/pet-groups/{petGroupId:guid}")]
-
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> RemovePetGroupFromService(Guid id, Guid petGroupId)
     {
         await _service.RemovePetGroupFromService(id, petGroupId);

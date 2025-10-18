@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Models.VaccineTypeModels;
 using PetCafe.Application.Services;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.WebApi.Controllers;
 
@@ -25,6 +27,8 @@ public class VaccineTypeController(IVaccineTypeService _vaccineTypeService) : Co
     }
 
     [HttpPost]
+    [Authorize(Roles = RoleConstants.MANAGER)]
+
     public async Task<IActionResult> Create([FromBody] VaccineTypeCreateModel model)
     {
         var vaccineType = await _vaccineTypeService.CreateAsync(model);
@@ -32,6 +36,7 @@ public class VaccineTypeController(IVaccineTypeService _vaccineTypeService) : Co
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] VaccineTypeUpdateModel model)
     {
         await _vaccineTypeService.UpdateAsync(id, model);
@@ -39,6 +44,7 @@ public class VaccineTypeController(IVaccineTypeService _vaccineTypeService) : Co
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var success = await _vaccineTypeService.DeleteAsync(id);

@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Models.WorkShiftModels;
 using PetCafe.Application.Services;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.WebApi.Controllers;
 
@@ -11,6 +13,7 @@ public class WorkShiftController(IWorkShiftService _workShiftService) : Controll
 {
 
     [HttpGet("{id:guid}")]
+    [Authorize]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var workShift = await _workShiftService.GetByIdAsync(id);
@@ -18,6 +21,7 @@ public class WorkShiftController(IWorkShiftService _workShiftService) : Controll
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetAllPaging([FromQuery] FilterQuery query)
     {
         var workShifts = await _workShiftService.GetAllPagingAsync(query);
@@ -25,6 +29,7 @@ public class WorkShiftController(IWorkShiftService _workShiftService) : Controll
     }
 
     [HttpPost]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Create([FromBody] WorkShiftCreateModel model)
     {
         var workShift = await _workShiftService.CreateAsync(model);
@@ -32,6 +37,7 @@ public class WorkShiftController(IWorkShiftService _workShiftService) : Controll
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] WorkShiftUpdateModel model)
     {
         await _workShiftService.UpdateAsync(id, model);
@@ -39,9 +45,10 @@ public class WorkShiftController(IWorkShiftService _workShiftService) : Controll
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        var result = await _workShiftService.DeleteAsync(id);
+        await _workShiftService.DeleteAsync(id);
         return NoContent();
     }
 }

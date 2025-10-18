@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.AreaModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.WebApi.Controllers;
 
 public class AreaController(IAreaService _areaService) : BaseController
 {
     [HttpGet("{id:guid}")]
-    [Authorize]
     public async Task<IActionResult> GetById(Guid id)
     {
         var area = await _areaService.GetByIdAsync(id);
@@ -17,7 +17,6 @@ public class AreaController(IAreaService _areaService) : BaseController
     }
 
     [HttpGet]
-    [Authorize]
     public async Task<IActionResult> GetAllPaging([FromQuery] AreaFilterQuery query)
     {
         var areas = await _areaService.GetAllPagingAsync(query);
@@ -25,7 +24,8 @@ public class AreaController(IAreaService _areaService) : BaseController
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = RoleConstants.MANAGER)]
+
     public async Task<IActionResult> Update(Guid id, AreaUpdateModel model)
     {
         await _areaService.UpdateAsync(id, model);
@@ -34,7 +34,7 @@ public class AreaController(IAreaService _areaService) : BaseController
 
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Create(AreaCreateModel model)
     {
         var area = await _areaService.CreateAsync(model);
@@ -42,7 +42,7 @@ public class AreaController(IAreaService _areaService) : BaseController
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _areaService.DeleteAsync(id);

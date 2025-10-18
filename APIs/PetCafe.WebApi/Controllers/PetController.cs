@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.PetModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.WebApi.Controllers;
 
@@ -12,6 +14,7 @@ public class PetController(
 {
 
     [HttpPost]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> CreatePet([FromBody] PetCreateModel model)
     {
         var pet = await _petService.CreateAsync(model);
@@ -19,6 +22,7 @@ public class PetController(
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> UpdatePet([FromRoute] Guid id, [FromBody] PetUpdateModel model)
     {
         var pet = await _petService.UpdateAsync(id, model);
@@ -26,6 +30,7 @@ public class PetController(
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> DeletePet([FromRoute] Guid id)
     {
         await _petService.DeleteAsync(id);

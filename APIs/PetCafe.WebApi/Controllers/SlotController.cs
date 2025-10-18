@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.SlotModels;
 using PetCafe.Application.Services;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.WebApi.Controllers;
 
@@ -15,12 +17,14 @@ public class SlotController(ISlotService _slotService) : BaseController
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Update(Guid id, SlotUpdateModel model)
     {
         await _slotService.UpdateAsync(id, model);
         return NoContent();
     }
     [HttpPost]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Create(SlotCreateModel model)
     {
         var product = await _slotService.CreateAsync(model);
@@ -28,6 +32,7 @@ public class SlotController(ISlotService _slotService) : BaseController
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _slotService.DeleteAsync(id);
