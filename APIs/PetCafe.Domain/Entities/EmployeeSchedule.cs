@@ -14,23 +14,6 @@ public class EmployeeSchedule : BaseEntity
     [ForeignKey("WorkShift")]
     public Guid WorkShiftId { get; set; }
 
-    [Column("work_date")]
-    public DateTime WorkDate { get; set; }
-
-    [Column("status")]
-    [MaxLength(20)]
-    public string Status { get; set; } = "Scheduled"; // Scheduled, Present, Absent, Late
-
-    [Column("check_in_time")]
-    public DateTime? CheckInTime { get; set; }
-
-    [Column("check_out_time")]
-    public DateTime? CheckOutTime { get; set; }
-
-    [Column("notes")]
-    [MaxLength(500)]
-    public string? Notes { get; set; }
-
     // Navigation properties
     public virtual Employee Employee { get; set; } = default!;
     public virtual WorkShift WorkShift { get; set; } = default!;

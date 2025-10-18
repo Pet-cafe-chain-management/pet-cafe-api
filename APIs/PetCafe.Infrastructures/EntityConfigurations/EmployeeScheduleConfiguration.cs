@@ -8,8 +8,6 @@ public class EmployeeScheduleConfiguration : IEntityTypeConfiguration<EmployeeSc
 {
     public void Configure(EntityTypeBuilder<EmployeeSchedule> builder)
     {
-        builder.HasIndex(x => new { x.EmployeeId, x.WorkDate }).IsUnique();
-        builder.HasIndex(x => x.WorkDate);
 
         builder.HasOne(x => x.Employee)
             .WithMany(x => x.Schedules)
@@ -20,8 +18,5 @@ public class EmployeeScheduleConfiguration : IEntityTypeConfiguration<EmployeeSc
             .WithMany(x => x.Schedules)
             .HasForeignKey(x => x.WorkShiftId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Property(x => x.Status)
-            .HasDefaultValue("Scheduled");
     }
 }

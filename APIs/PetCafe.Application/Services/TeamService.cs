@@ -18,7 +18,7 @@ public interface ITeamService
     Task<List<TeamMember>> GetMembersByTeamIdAsync(Guid teamId);
     Task<bool> AddMemeberToTeam(List<MemberCreateModel> models, Guid id);
     Task<bool> UpdateMemberInTeam(List<MemberUpdateModel> models, Guid id);
-    Task<bool> RemoveMemberFromTeam(List<Guid> memberIds, Guid id);
+    Task<bool> RemoveMemberFromTeam(Guid teamMemberId);
 }
 
 
@@ -123,17 +123,12 @@ public class TeamService(
         return await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<bool> RemoveMemberFromTeam(List<Guid> memberIds, Guid id)
+    public async Task<bool> RemoveMemberFromTeam(Guid teamMemberId)
     {
-        var team = await _unitOfWork.TeamRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
-        var existingMembers = await _unitOfWork.TeamMemberRepository.WhereAsync(x => x.TeamId == id && memberIds.Contains(x.EmployeeId));
+        var member = await _unitOfWork.TeamMemberRepository.GetByIdAsync(teamMemberId)
+            ?? throw new BadRequestException("Không tìm thấy thông tin!");
 
-        if (existingMembers.Count == 0) throw new BadRequestException("Không tìm thấy thành viên trong đội!");
-
-        foreach (var member in existingMembers)
-        {
-            _unitOfWork.TeamMemberRepository.SoftRemove(member);
-        }
+        _unitOfWork.TeamMemberRepository.SoftRemove(member);
         return await _unitOfWork.SaveChangesAsync();
     }
 

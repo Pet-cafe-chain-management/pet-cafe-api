@@ -2,12 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Models.TeamModels;
+using PetCafe.Application.Models.TeamWorkShiftModels;
 using PetCafe.Application.Services;
 using PetCafe.Domain.Constants;
 
 namespace PetCafe.WebApi.Controllers;
 
-public class TeamController(ITeamService _teamService) : BaseController
+public class TeamController(ITeamService _teamService, ITeamWorkShiftService _teamWorkShiftService) : BaseController
 {
 
     [HttpGet]
@@ -67,19 +68,38 @@ public class TeamController(ITeamService _teamService) : BaseController
         await _teamService.UpdateMemberInTeam(models, id);
         return NoContent();
     }
-    [HttpDelete("{id:guid}/members")]
-    [Authorize(Roles = RoleConstants.MANAGER)]
-    public async Task<IActionResult> RemoveMembersFromTeam(Guid id, [FromBody] List<Guid> memberIds)
-    {
-        await _teamService.RemoveMemberFromTeam(memberIds, id);
-        return NoContent();
-    }
+
     [HttpGet("{id:guid}/members")]
     [Authorize]
 
     public async Task<IActionResult> GetMembersByTeamId(Guid id)
     {
         var members = await _teamService.GetMembersByTeamIdAsync(id);
+        return Ok(members);
+    }
+
+    [HttpPost("{id:guid}/work-shifts")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
+    public async Task<IActionResult> AssignWorkShift(Guid id, [FromBody] TeamWorkShiftCreateModel models)
+    {
+        await _teamWorkShiftService.AssignWorkShift(id, models);
+        return StatusCode(201);
+    }
+
+    [HttpDelete("{id:guid}/work-shifts")]
+    [Authorize(Roles = RoleConstants.MANAGER)]
+    public async Task<IActionResult> RemoveWorkShift(Guid id)
+    {
+        await _teamWorkShiftService.RemoveWorkShift(id);
+        return NoContent();
+    }
+
+    [HttpGet("{id:guid}/work-shifts")]
+    [Authorize]
+
+    public async Task<IActionResult> GetTeamWorkShift(Guid id, FilterQuery query)
+    {
+        var members = await _teamWorkShiftService.GetTeamWorkShift(id, query);
         return Ok(members);
     }
 

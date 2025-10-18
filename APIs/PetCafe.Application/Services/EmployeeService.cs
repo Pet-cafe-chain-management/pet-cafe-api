@@ -15,6 +15,7 @@ public interface IEmployeeService
     Task DeleteAsync(Guid id);
     Task<Employee> GetByIdAsync(Guid id);
     Task<BasePagingResponseModel<Employee>> GetAllPagingAsync(FilterQuery query);
+
 }
 
 
