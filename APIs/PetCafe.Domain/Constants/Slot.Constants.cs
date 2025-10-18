@@ -3,19 +3,19 @@ namespace PetCafe.Domain.Constants;
 public static class DayConstant
 {
 
-    public const string MONDAY = "Monday";
+    public const string MONDAY = "MONDAY";
 
-    public const string TUESDAY = "Tuesday";
+    public const string TUESDAY = "TUESDAY";
 
-    public const string WEDNESDAY = "Wednesday";
+    public const string WEDNESDAY = "WEDNESDAY";
 
-    public const string THURSDAY = "Thursday";
+    public const string THURSDAY = "THURSDAY";
 
-    public const string FRIDAY = "Friday";
+    public const string FRIDAY = "FRIDAY";
 
-    public const string SATURDAY = "Saturday";
+    public const string SATURDAY = "SATURDAY";
 
-    public const string SUNDAY = "Sunday";
+    public const string SUNDAY = "SUNDAY";
 
 
     public static readonly List<string> ALLDAYS =

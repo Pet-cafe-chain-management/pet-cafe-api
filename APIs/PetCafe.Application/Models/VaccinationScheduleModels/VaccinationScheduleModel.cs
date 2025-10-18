@@ -19,7 +19,7 @@ public class VaccinationScheduleUpdateModel : VaccinationScheduleCreateModel
 public class VaccinationScheduleScheduleFilterQuery : FilterQuery
 {
     public Guid? PetId { get; set; }
-    public string VaccineType { get; set; } = string.Empty;
+    public string? VaccineType { get; set; } = string.Empty;
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
     public string? Status { get; set; }

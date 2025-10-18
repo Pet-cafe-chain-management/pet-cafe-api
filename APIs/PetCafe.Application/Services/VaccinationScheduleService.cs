@@ -61,9 +61,9 @@ public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationS
 
     public async Task<BasePagingResponseModel<VaccinationSchedule>> GetAllAsync(VaccinationScheduleScheduleFilterQuery query)
     {
-        Expression<Func<VaccinationSchedule, bool>>? filter = x => x.VaccineType.Name.Contains(query.VaccineType);
+        Expression<Func<VaccinationSchedule, bool>>? filter = null;
 
-        if (query.PetId != null || query.PetId != Guid.Empty)
+        if (query.PetId != null && query.PetId != Guid.Empty)
         {
             Expression<Func<VaccinationSchedule, bool>> filter_pet = x => x.PetId == query.PetId;
             filter = filter != null ? FilterCustoms.CombineFilters(filter, filter_pet) : filter_pet;
@@ -89,6 +89,11 @@ public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationS
         {
             Expression<Func<VaccinationSchedule, bool>> filter_status = x => x.Status == query.Status;
             filter = filter != null ? FilterCustoms.CombineFilters(filter, filter_status) : filter_status;
+        }
+        if (!string.IsNullOrEmpty(query.VaccineType))
+        {
+            Expression<Func<VaccinationSchedule, bool>> addtional_filter = x => x.VaccineType.Name.Contains(query.VaccineType);
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, addtional_filter) : addtional_filter;
         }
 
         var (Pagination, Entities) = await _unitOfWork.VaccinationScheduleRepository.ToPagination(

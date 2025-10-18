@@ -7,7 +7,6 @@ public class SlotCreateModel
 {
     public Guid ServiceId { get; set; }
     public Guid AreaId { get; set; }
-    public Guid TeamId { get; set; }
     public Guid PetGroupId { get; set; }
     public List<string> ApplicableDays { get; set; } = DayConstant.ALLDAYS;
     public TimeSpan StartTime { get; set; }
@@ -33,9 +32,6 @@ public class SlotCreateModelValidator : AbstractValidator<SlotCreateModel>
 
         RuleFor(x => x.AreaId)
             .NotEmpty().WithMessage("ID khu vực không được để trống");
-
-        RuleFor(x => x.TeamId)
-            .NotEmpty().WithMessage("ID đội không được để trống");
 
         RuleFor(x => x.PetGroupId)
             .NotEmpty().WithMessage("ID nhóm thú cưng không được để trống");
