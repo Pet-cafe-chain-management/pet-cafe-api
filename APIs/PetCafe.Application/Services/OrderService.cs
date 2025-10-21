@@ -25,6 +25,7 @@ public interface IOrderService
 public class OrderService(
     IUnitOfWork _unitOfWork,
     IClaimsService _claimsService,
+    ICurrentTime _currentTime,
     IPayOsService _payOsService
 ) : IOrderService
 {
@@ -107,7 +108,8 @@ public class OrderService(
         var service_order = new ServiceOrder
         {
             OrderId = orderId,
-            Status = OrderStatusConstant.PENDING
+            Status = OrderStatusConstant.PENDING,
+            OrderDate = _currentTime.GetCurrentTime
         };
 
 
@@ -133,6 +135,7 @@ public class OrderService(
                 Notes = item.Notes,
                 Quantity = 1,
                 TotalPrice = slot.Price,
+                BookingDate = item.BookingDate
             };
             order_details.Add(detail);
 
@@ -168,9 +171,10 @@ public class OrderService(
         if (model.Code != "00") throw new Exception("Thanh toán thất bại!");
         var order = await _unitOfWork
             .OrderRepository
-            .FirstOrDefaultAsync(x => x.OrderNumber == model.Data!.OrderCode.ToString(),
-                includeFunc: x => x.Include(x => x.ServiceOrder!)
-        ) ?? throw new Exception("Thanh toán thất bại!");
+            .FirstOrDefaultAsync(x =>
+                x.OrderNumber == model.Data!.OrderCode.ToString() ||
+                model.Data!.Description!.Contains(x.OrderNumber)
+            ) ?? throw new Exception("Thanh toán thất bại!");
 
         order.Status = OrderStatusConstant.PAID;
         order.PaymentStatus = PaymentStatusConstant.PAID;
@@ -178,7 +182,7 @@ public class OrderService(
         var transaction = _unitOfWork.Mapper.Map<Transaction>(model.Data);
         transaction.OrderId = order.Id;
 
-        if (order.ServiceOrder != null) await UpdateServiceOrder(order.ServiceOrder.Id);
+        await UpdateServiceOrder(order.Id);
 
         await _unitOfWork.TransactionRepository.AddAsync(transaction);
         _unitOfWork.OrderRepository.Update(order);
@@ -187,12 +191,14 @@ public class OrderService(
     }
 
 
-    private async Task UpdateProductOrder(Guid productOrderId)
+    private async Task UpdateProductOrder(Guid orderId)
     {
         var product_order = await _unitOfWork.ProductOrderRepository
-            .GetByIdAsync(
-                productOrderId,
-                includeFunc: x => x.Include(x => x.OrderDetails.Where(x => !x.IsDeleted))) ?? throw new BadRequestException("Thanh toán thất bại!");
+            .FirstOrDefaultAsync(
+                x => x.OrderId == orderId,
+                includeFunc: x => x.Include(x => x.OrderDetails.Where(x => !x.IsDeleted)));
+
+        if (product_order == null) return;
 
         foreach (var item in product_order.OrderDetails)
         {
@@ -208,12 +214,13 @@ public class OrderService(
         _unitOfWork.ProductOrderRepository.Update(product_order);
 
     }
-    private async Task UpdateServiceOrder(Guid serviceOrderId)
+    private async Task UpdateServiceOrder(Guid orderId)
     {
         var serivce_order = await _unitOfWork.ServiceOrderRepository
-            .GetByIdAsync(
-                serviceOrderId,
-                includeFunc: x => x.Include(x => x.OrderDetails.Where(x => !x.IsDeleted))) ?? throw new BadRequestException("Thanh toán thất bại!");
+            .FirstOrDefaultAsync(x => x.OrderId == orderId,
+                includeFunc: x => x.Include(x => x.OrderDetails.Where(x => !x.IsDeleted)));
+
+        if (serivce_order == null) return;
 
         foreach (var item in serivce_order.OrderDetails.Where(x => x.SlotId != null))
         {
@@ -226,8 +233,6 @@ public class OrderService(
             var suitableTeam = await FindSuitableTeam(
                 slot.Area.Id,
                 slot.Area.WorkTypeId,
-                slot.StartTime,
-                slot.EndTime,
                 slot.ApplicableDays,
                 item.BookingDate!.Value
             );
@@ -253,8 +258,6 @@ public class OrderService(
     private async Task<Team?> FindSuitableTeam(
         Guid areaId,
         Guid workTypeId,
-        TimeSpan startTime,
-        TimeSpan endTime,
         List<string> applicableDays,
         DateTime bookingDate)
     {
@@ -266,7 +269,8 @@ public class OrderService(
 
         if (teams.Count == 0) throw new BadRequestException("Thanh toán thất bại!");
 
-        string dayOfWeek = bookingDate.DayOfWeek.ToString();
+        string dayOfWeek = bookingDate.DayOfWeek.ToString().ToUpper();
+        TimeSpan bookingTime = bookingDate.TimeOfDay;
 
         var suitableTeams = new List<Team>();
 
@@ -283,7 +287,7 @@ public class OrderService(
                     continue;
                 }
 
-                if (workShift.StartTime <= startTime && workShift.EndTime >= endTime)
+                if (workShift.StartTime <= bookingTime && workShift.EndTime >= bookingTime)
                 {
                     isTeamSuitable = true;
                     break;
@@ -308,16 +312,14 @@ public class OrderService(
     {
         var order = await _unitOfWork
            .OrderRepository
-           .GetByIdAsync(id,
-               includeFunc: x => x.Include(x => x.ProductOrder!).Include(x => x.ServiceOrder!)
-       ) ?? throw new BadRequestException("Xác nhận thất bại!");
+           .GetByIdAsync(id) ?? throw new BadRequestException("Xác nhận thất bại!");
 
         if (order.Type != OrderTypeConstant.EMPLOYEE) throw new BadRequestException("Không có quyền xác nhận đơn hàng này!");
         order.Status = OrderStatusConstant.PAID;
         order.PaymentStatus = PaymentStatusConstant.PAID;
 
-        if (order.ProductOrder != null) await UpdateProductOrder(order.ProductOrder.Id);
-        if (order.ServiceOrder != null) await UpdateServiceOrder(order.ServiceOrder.Id);
+        await UpdateProductOrder(order.Id);
+        await UpdateServiceOrder(order.Id);
 
         _unitOfWork.OrderRepository.Update(order);
 

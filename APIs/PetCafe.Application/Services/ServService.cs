@@ -81,7 +81,7 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
 
         if (query.SearchDate.HasValue)
         {
-            var dayOfWeek = query.SearchDate.Value.DayOfWeek.ToString();
+            var dayOfWeek = query.SearchDate.Value.DayOfWeek.ToString().ToUpper();
 
             Expression<Func<Service, bool>> tmp_filter = x => x.Slots.Any(slot => slot.ApplicableDays.Contains(dayOfWeek));
             filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
