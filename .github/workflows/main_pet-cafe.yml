@@ -21,7 +21,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-        - name: Update appsettings.json with CON_STRING
+      - name: Update appsettings.json with CON_STRING
         run: |
           $appsettings = "APIs\PetCafe.WebApi\appsettings.json"
           (Get-Content $appsettings) -replace '"PostgreConnection":\s*""', '"PostgreConnection": "${{ secrets.POSTGRECONNECTION }}"' | Set-Content $appsettings
