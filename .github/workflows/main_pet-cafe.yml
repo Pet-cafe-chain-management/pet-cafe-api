@@ -11,7 +11,7 @@ env:
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 9.0.x
   WORKING_DIRECTORY: APIs/PetCafe.WebApi
-  PUBLISH_DIR: '${{ github.workspace }}/publish'
+  PUBLISH_DIR: "${{ github.workspace }}/publish"
 
 jobs:
   build-and-deploy:
@@ -20,6 +20,22 @@ jobs:
       # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Update appsettings.json with CON_STRING
+        run: |
+          $appsettings = "src/its.gamify.api/appsettings.json"
+          (Get-Content $appsettings) -replace '"PostgreConnection":\s*""', '"PostgreConnection": "${{ secrets.POSTGRECONNECTION }}"' | Set-Content $appsettings
+          (Get-Content $appsettings) -replace '"SecretKey":\s*""', '"SecretKey": "${{ secrets.SECRETKEY }}"' | Set-Content $appsettings
+          (Get-Content $appsettings) -replace '"SenderId":\s*""', '"SenderId": "${{ secrets.SENDERID }}"' | Set-Content $appsettings
+          (Get-Content $appsettings) -replace '"ApiKeY":\s*""', '"ApiKeY": "${{ secrets.APIKEY }}"' | Set-Content $appsettings
+          (Get-Content $appsettings) -replace '"Bucket":\s*""', '"Bucket": "${{ secrets.BUCKET }}"' | Set-Content $appsettings
+          (Get-Content $appsettings) -replace '"AuthEmail":\s*""', '"AuthEmail": "${{ secrets.AUTHEMAIL }}"' | Set-Content $appsettings
+          (Get-Content $appsettings) -replace '"AuthPassword":\s*""', '"AuthPassword": "${{ secrets.AUTHPASSWORD }}"' | Set-Content $appsettings
+          (Get-Content $appsettings) -replace '"ClientId":\s*""', '"ClientId": "${{ secrets.CLIENTID }}"' | Set-Content $appsettings
+          (Get-Content $appsettings) -replace '"ApiKey":\s*""', '"ApiKey": "${{ secrets.APIKEYPAYOS }}"' | Set-Content $appsettings
+          (Get-Content $appsettings) -replace '"ChecksumKey":\s*""', '"ChecksumKey": "${{ secrets.CHECKSUMKEY }}"' | Set-Content $appsettings
+          (Get-Content $appsettings) -replace '"GoongAPIKey":\s*""', '"GoongAPIKey": "${{ secrets.GOONGAPIKEY }}"' | Set-Content $appsettings
+        shell: pwsh
 
       # 2️⃣ Setup .NET SDK
       - name: Setup .NET SDK
