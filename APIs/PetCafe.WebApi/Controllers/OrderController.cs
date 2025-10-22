@@ -15,6 +15,12 @@ public class OrderController(IOrderService _orderService) : BaseController
         return Ok(await _orderService.GetByIdAsync(id));
     }
 
+    [HttpGet("{order_code:double}")]
+    public async Task<IActionResult> GetByOrderCodeAsync([FromRoute] double order_code)
+    {
+        return Ok(await _orderService.GetByOrderCodeAsync(order_code));
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAllAsync([FromQuery] OrderFilterQuery query)
     {

@@ -18,6 +18,7 @@ public interface IOrderService
     Task<Order> CreateAsync(OrderCreateModel model);
     Task<bool> HandleWebhookAsync(WebhookResponseModel model);
     Task<Order> GetByIdAsync(Guid id);
+    Task<Order> GetByOrderCodeAsync(double orderCode);
     Task<bool> ConfirmOrderAsync(Guid id);
     Task<BasePagingResponseModel<Order>> GetAllPagingAsync(OrderFilterQuery query, Guid? customerId);
 }
@@ -156,6 +157,18 @@ public class OrderService(
     {
         return await _unitOfWork.OrderRepository
             .GetByIdAsync(id,
+                includeFunc: x => x
+                    .Include(x => x.ProductOrder!).ThenInclude(x => x.OrderDetails.Where(x => !x.IsDeleted)).ThenInclude(x => x.Product)
+                    .Include(x => x.ServiceOrder!).ThenInclude(x => x.OrderDetails.Where(x => !x.IsDeleted)).ThenInclude(x => x.Service)
+                    .Include(x => x.Customer!)
+                    .Include(x => x.Employee!)
+                    .Include(x => x.Transactions)
+            ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+    }
+    public async Task<Order> GetByOrderCodeAsync(double orderCode)
+    {
+        return await _unitOfWork.OrderRepository
+            .FirstOrDefaultAsync(x => x.OrderNumber == orderCode.ToString(),
                 includeFunc: x => x
                     .Include(x => x.ProductOrder!).ThenInclude(x => x.OrderDetails.Where(x => !x.IsDeleted)).ThenInclude(x => x.Product)
                     .Include(x => x.ServiceOrder!).ThenInclude(x => x.OrderDetails.Where(x => !x.IsDeleted)).ThenInclude(x => x.Service)
