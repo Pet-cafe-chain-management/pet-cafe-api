@@ -21,9 +21,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Update appsettings.json with CON_STRING
+        - name: Update appsettings.json with CON_STRING
         run: |
-          $appsettings = "src/its.gamify.api/appsettings.json"
+          $appsettings = "APIs\PetCafe.WebApi\appsettings.json"
           (Get-Content $appsettings) -replace '"PostgreConnection":\s*""', '"PostgreConnection": "${{ secrets.POSTGRECONNECTION }}"' | Set-Content $appsettings
           (Get-Content $appsettings) -replace '"SecretKey":\s*""', '"SecretKey": "${{ secrets.SECRETKEY }}"' | Set-Content $appsettings
           (Get-Content $appsettings) -replace '"SenderId":\s*""', '"SenderId": "${{ secrets.SENDERID }}"' | Set-Content $appsettings
