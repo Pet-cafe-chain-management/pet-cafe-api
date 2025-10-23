@@ -12,6 +12,11 @@ public class CustomerController(
 ) : BaseController
 {
 
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CustomerCreateModel model)
+    {
+        return Ok(await _customerService.CreateAsync(model));
+    }
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] CustomerUpdateModel model)
     {
