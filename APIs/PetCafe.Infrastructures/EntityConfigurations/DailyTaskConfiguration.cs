@@ -19,5 +19,10 @@ public class DailyTaskConfiguration : IEntityTypeConfiguration<DailyTask>
             .HasForeignKey(x => x.TaskId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne(x => x.Slot)
+            .WithMany(x => x.DailyTasks)
+            .HasForeignKey(x => x.SlotId)
+            .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

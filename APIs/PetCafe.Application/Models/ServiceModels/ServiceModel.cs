@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.ShareModels;
 
 namespace PetCafe.Application.Models.ServiceModels;
@@ -11,7 +12,7 @@ public class ServiceCreateModel
     public double BasePrice { get; set; }
     public string? ImageUrl { get; set; }
     public List<string> Thumbnails { get; set; } = [];
-    public Guid WorkTypeId { get; set; }
+    public Guid TaskId { get; set; }
 
 }
 
@@ -21,27 +22,35 @@ public class ServiceUpdateModel : ServiceCreateModel
     public bool IsActive { get; set; } = true;
 }
 
-public class ServicePetGroupCreateModel
-{
-    public List<Guid> PetGroupIds { get; set; } = [];
-}
-
-public class ServicePetGroupUpdateModel : ServicePetGroupCreateModel
-{
-}
 
 public class ServiceFilterQuery : FilterQuery
 {
+    [FromQuery(Name = "task_id")]
     public DateTime? SearchDate { get; set; }
+
+    [FromQuery(Name = "start_time")]
     public TimeSpan? StartTime { get; set; }
+
+    [FromQuery(Name = "end_time")]
     public TimeSpan? EndTime { get; set; }
+
+    [FromQuery(Name = "pet_species_ids")]
     public List<Guid>? PetSpeciesIds { get; set; } = [];
+
+    [FromQuery(Name = "pet_breed_ids")]
     public List<Guid>? PetBreedIds { get; set; } = [];
+
+    [FromQuery(Name = "area_ids")]
     public List<Guid>? AreaIds { get; set; } = [];
+
+    [FromQuery(Name = "max_price")]
     public double? MaxPrice { get; set; }
+
+    [FromQuery(Name = "min_price")]
     public double? MinPrice { get; set; }
+
+    [FromQuery(Name = "is_active")]
     public bool IsActive { get; set; } = true;
-    public Guid? WorkTypeId { get; set; }
 
 }
 

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.ServiceModels;
 using PetCafe.Application.Models.ShareModels;
+using PetCafe.Application.Models.SlotModels;
 using PetCafe.Application.Services.Commons;
 using PetCafe.Application.Utilities;
 using PetCafe.Domain.Constants;
@@ -14,32 +15,48 @@ namespace PetCafe.Application.Services;
 
 public interface IServService
 {
-
     Task<Service> GetByIdAsync(Guid id);
     Task<BasePagingResponseModel<Service>> GetAllPagingAsync(ServiceFilterQuery query);
     Task<Service> CreateAsync(ServiceCreateModel model);
     Task<Service> UpdateAsync(Guid id, ServiceUpdateModel model);
     Task<bool> DeleteAsync(Guid id);
 
-    Task<bool> AssignPetGroupToService(Guid id, ServicePetGroupCreateModel model);
-    Task<bool> RemovePetGroupFromService(Guid serviceId, Guid petGroupId);
-    Task<BasePagingResponseModel<PetGroup>> GetPetGroupsByServiceId(Guid serviceId, FilterQuery query);
+    Task<BasePagingResponseModel<Slot>> GetSlotsByServiceIdAsync(Guid serviceId, SlotFilterQuery query);
+
 }
 
 public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService) : IServService
 {
     public async Task<Service> CreateAsync(ServiceCreateModel model)
     {
+
+        var task = await _unitOfWork.TaskRepository.GetByIdAsync(model.TaskId) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
         var service = _unitOfWork.Mapper.Map<Service>(model);
+        task.ServiceId = service.Id;
+        _unitOfWork.TaskRepository.Update(task);
         await _unitOfWork.ServiceRepository.AddAsync(service);
+
+        var slots = await _unitOfWork.SlotRepository.WhereAsync(x => x.TaskId == model.TaskId);
+        if (slots.Count > 0)
+        {
+            foreach (var slot in slots)
+            {
+                slot.ServiceId = service.Id;
+                slot.ServiceStatus = SlotStatusConstant.UNAVAILABLE;
+                _unitOfWork.SlotRepository.Update(slot);
+            }
+        }
         await _unitOfWork.SaveChangesAsync();
         return service;
     }
 
     public async Task<Service> UpdateAsync(Guid id, ServiceUpdateModel model)
     {
+        var task = await _unitOfWork.TaskRepository.GetByIdAsync(model.TaskId) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
         var service = await _unitOfWork.ServiceRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
         _unitOfWork.Mapper.Map(model, service);
+        task.ServiceId = service.Id;
+        _unitOfWork.TaskRepository.Update(task);
         _unitOfWork.ServiceRepository.Update(service);
         await _unitOfWork.SaveChangesAsync();
         return service;
@@ -55,7 +72,7 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
     public async Task<Service> GetByIdAsync(Guid id)
     {
         return await _unitOfWork.ServiceRepository.GetByIdAsync(id,
-            includeFunc: x => x.Include(x => x.Slots.Where(x => !x.IsDeleted)).ThenInclude(x => x.PetGroup)
+            includeFunc: x => x.Include(x => x.Slots.Where(x => !x.IsDeleted)).ThenInclude(x => x.PetGroup!)
         ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
     }
 
@@ -70,20 +87,12 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
             filter = x => x.IsActive == query.IsActive;
         }
 
-        // if (_claimsService.GetCurrentUserRole != RoleConstants.MANAGER)
-        // {
-        //     Expression<Func<Service, bool>> tmp_filter = x => x.Slots.Any(slot =>
-        //          slot.IsActive &&
-        //          slot.Status == SlotStatusConstant.AVAILABLE &&
-        //          slot.AvailableCapacity > 0);
-        //     filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
-        // }
 
         if (query.SearchDate.HasValue)
         {
             var dayOfWeek = query.SearchDate.Value.DayOfWeek.ToString().ToUpper();
 
-            Expression<Func<Service, bool>> tmp_filter = x => x.Slots.Any(slot => slot.ApplicableDays.Contains(dayOfWeek));
+            Expression<Func<Service, bool>> tmp_filter = x => x.Slots.Any(slot => slot.DayOfWeek == dayOfWeek);
             filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
 
         }
@@ -114,14 +123,14 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
         if (query.PetBreedIds != null && query.PetBreedIds.Count > 0)
         {
             Expression<Func<Service, bool>> tmp_filter = x => x.Slots.Any(slot =>
-               query.PetBreedIds.Contains(slot.PetGroup.PetBreedId!.Value));
+               query.PetBreedIds.Contains(slot.PetGroup!.PetBreedId!.Value));
             filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
         }
 
         if (query.PetSpeciesIds != null && query.PetSpeciesIds.Count > 0)
         {
             Expression<Func<Service, bool>> tmp_filter = x => x.Slots.Any(slot =>
-               query.PetSpeciesIds.Contains(slot.PetGroup.PetSpeciesId!.Value));
+               query.PetSpeciesIds.Contains(slot.PetGroup!.PetSpeciesId!.Value));
             filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
         }
 
@@ -130,13 +139,6 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
             Expression<Func<Service, bool>> tmp_filter = x => x.Slots.Any(slot =>
                query.AreaIds.Contains(slot.AreaId));
             filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
-        }
-
-
-        if (query.WorkTypeId != null && query.WorkTypeId != Guid.Empty)
-        {
-            Expression<Func<Service, bool>> additional_filter = x => x.WorkTypeId == query.WorkTypeId;
-            filter = filter != null ? FilterCustoms.CombineFilters(filter, additional_filter) : additional_filter;
         }
 
         #endregion
@@ -153,87 +155,46 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
                 ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
             includeFunc: x => x
                     .Include(x => x.Slots.Where(x => !x.IsDeleted)).ThenInclude(x => x.PetGroup)
-                    .Include(x => x.WorkType)
+                    .Include(x => x.Task)
         );
         return BasePagingResponseModel<Service>.CreateInstance(Entities, Pagination);
     }
 
-    public async Task<bool> AssignPetGroupToService(Guid id, ServicePetGroupCreateModel model)
+    public async Task<BasePagingResponseModel<Slot>> GetSlotsByServiceIdAsync(Guid serviceId, SlotFilterQuery query)
     {
-        var service = await _unitOfWork.ServiceRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
-
-        // Kiểm tra trùng lặp pet_group_id
-        await ValidateDuplicatePetGroups(id, model.PetGroupIds);
-
-        foreach (var pet_group_id in model.PetGroupIds)
+        Expression<Func<Slot, bool>> filter = x => x.ServiceId == serviceId;
+        if (query.DayOfWeek != null)
         {
-            await _unitOfWork.ServicePetGroupRepository.AddAsync(new ServicePetGroup
-            {
-                PetGroupId = pet_group_id,
-                ServiceId = service.Id
-            });
+            Expression<Func<Slot, bool>> tmp_filter = x => x.DayOfWeek == query.DayOfWeek;
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
         }
-
-        return await _unitOfWork.SaveChangesAsync();
-    }
-
-    private async Task ValidateDuplicatePetGroups(Guid serviceId, List<Guid> petGroupIds)
-    {
-        var existingPetGroups = await _unitOfWork.ServicePetGroupRepository.WhereAsync(
-            filter: spg => spg.ServiceId == serviceId,
-            withDeleted: false
-        );
-
-        var existingPetGroupIds = existingPetGroups.Select(spg => spg.PetGroupId).ToList();
-
-        var duplicatePetGroupIds = petGroupIds.Where(id => existingPetGroupIds.Contains(id)).ToList();
-
-        if (duplicatePetGroupIds.Count != 0)
+        if (query.StartTime != null)
         {
-            var duplicatePetGroups = await _unitOfWork.PetGroupRepository.WhereAsync(
-                filter: pg => duplicatePetGroupIds.Contains(pg.Id),
-                withDeleted: false
-            );
-
-            var petGroupNames = duplicatePetGroups.Select(pg => pg.Name).ToList();
-            string duplicateNames = string.Join(", ", petGroupNames);
-
-            throw new BadRequestException($"Các nhóm thú cưng sau đây đã được gán cho dịch vụ này: {duplicateNames}");
+            Expression<Func<Slot, bool>> tmp_filter = x => x.StartTime >= query.StartTime;
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
         }
-
-        foreach (var petGroupId in petGroupIds)
+        if (query.EndTime != null)
         {
-            var petGroup = await _unitOfWork.PetGroupRepository.GetByIdAsync(petGroupId) ?? throw new BadRequestException($"Không tìm thấy nhóm thú cưng với ID: {petGroupId}");
+            Expression<Func<Slot, bool>> tmp_filter = x => x.EndTime <= query.EndTime;
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
         }
-    }
-
-    public async Task<bool> RemovePetGroupFromService(Guid serviceId, Guid petGroupId)
-    {
-        var servicePetGroup = await _unitOfWork.ServicePetGroupRepository.FirstOrDefaultAsync(x => x.PetGroupId == petGroupId && x.ServiceId == serviceId) ?? throw new BadRequestException($"Nhóm thú cưng này không tồn tại");
-        _unitOfWork.ServicePetGroupRepository.SoftRemove(servicePetGroup);
-        return await _unitOfWork.SaveChangesAsync();
-    }
-
-    public async Task<BasePagingResponseModel<PetGroup>> GetPetGroupsByServiceId(Guid serviceId, FilterQuery query)
-    {
-        var existingPetGroups = await _unitOfWork.ServicePetGroupRepository.WhereAsync(
-           filter: spg => spg.ServiceId == serviceId,
-           withDeleted: false
-       );
-        var petGroupIds = existingPetGroups.Select(spg => spg.PetGroupId).ToList();
-
-
-        var (Pagination, Entities) = await _unitOfWork.PetGroupRepository.ToPagination(
-             pageIndex: query.Page ?? 0,
+        var (Pagination, Entities) = await _unitOfWork.SlotRepository.ToPagination(
+            pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
-            filter: x => petGroupIds.Contains(x.Id),
+            filter: filter,
             searchTerm: query.Q,
             searchFields: ["Name", "Description"],
             sortOrders: query.OrderBy?.ToDictionary(
                     k => k.OrderColumn ?? "CreatedAt",
                     v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
-                ) ?? new Dictionary<string, bool> { { "CreatedAt", false } }
+                ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
+            includeFunc: x => x
+                .Include(x => x.Area)
+                .Include(x => x.Service)
+                .Include(x => x.PetGroup).ThenInclude(x => x!.PetSpecies!)
+                .Include(x => x.PetGroup).ThenInclude(x => x!.PetBreed!)
+                .Include(x => x.Team)
         );
-        return BasePagingResponseModel<PetGroup>.CreateInstance(Entities, Pagination);
+        return BasePagingResponseModel<Slot>.CreateInstance(Entities, Pagination);
     }
 }

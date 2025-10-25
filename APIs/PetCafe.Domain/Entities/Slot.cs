@@ -9,16 +9,22 @@ public class Slot : BaseEntity
 {
 
     [Column("service_id")]
-    public Guid ServiceId { get; set; }
+    public Guid? ServiceId { get; set; }
+
+    [Column("task_id")]
+    public Guid TaskId { get; set; }
 
     [Column("area_id")]
     public Guid AreaId { get; set; }
 
-    [Column("pet_gourp_id")]
-    public Guid PetGroupId { get; set; }
+    [Column("team_id")]
+    public Guid TeamId { get; set; }
 
-    [Column("applicable_days")]
-    public List<string> ApplicableDays { get; set; } = DayConstant.ALLDAYS;
+    [Column("pet_group_id")]
+    public Guid? PetGroupId { get; set; }
+
+    [Column("pet_id")]
+    public Guid? PetId { get; set; }
 
     [Column("start_time")]
     public TimeSpan StartTime { get; set; }
@@ -32,25 +38,34 @@ public class Slot : BaseEntity
     [Column("price")]
     public double Price { get; set; }
 
-    [Column("status")]
-    [MaxLength(20)]
-    public string Status { get; set; } = SlotStatusConstant.AVAILABLE;
+    [Column("day_of_week")]
+    public string DayOfWeek { get; set; } = DayConstant.MONDAY;
 
     [Column("is_active")]
-    public bool IsActive { get; set; } = true;
+    public string ServiceStatus { get; set; } = SlotStatusConstant.AVAILABLE;
 
     [Column("special_notes")]
     [MaxLength(500)]
     public string? SpecialNotes { get; set; }
 
     [ForeignKey("PetGroupId")]
-    public virtual PetGroup PetGroup { get; set; } = null!;
+    public virtual PetGroup? PetGroup { get; set; } = null!;
 
     [ForeignKey("ServiceId")]
-    public virtual Service Service { get; set; } = null!;
+    public virtual Service? Service { get; set; } = null!;
+
+    [ForeignKey("PetId")]
+    public virtual Pet? Pet { get; set; } = null!;
 
     [ForeignKey("AreaId")]
     public virtual Area Area { get; set; } = null!;
+
+    [ForeignKey("TeamId")]
+    public virtual Team Team { get; set; } = null!;
+
+    [ForeignKey("TaskId")]
+    public virtual Task Task { get; set; } = null!;
     public virtual ICollection<CustomerBooking> CustomerBookings { get; set; } = [];
     public virtual ICollection<ServiceOrderDetail> OrderDetails { get; set; } = [];
+    public virtual ICollection<DailyTask> DailyTasks { get; set; } = [];
 }

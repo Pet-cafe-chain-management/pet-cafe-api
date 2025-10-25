@@ -25,7 +25,6 @@ public interface IUnitOfWork
     ITeamRepository TeamRepository { get; }
     ITeamMemberRepository TeamMemberRepository { get; }
     ITaskRepository TaskRepository { get; }
-    ITaskAssignmentRepository TaskAssignmentRepository { get; }
     IWorkShiftRepository WorkShiftRepository { get; }
     IEmployeeScheduleRepository EmployeeScheduleRepository { get; }
 
@@ -43,12 +42,12 @@ public interface IUnitOfWork
     // Area & Service Management
     IAreaRepository AreaRepository { get; }
     IServiceRepository ServiceRepository { get; }
-    IServicePetGroupRepository ServicePetGroupRepository { get; }
     IWorkTypeRepository WorkTypeRepository { get; }
+    IAreaWorkTypeRepository AreaWorkTypeRepository { get; }
+    ITeamWorkTypeRepository TeamWorkTypeRepository { get; }
     IDailyTaskRepository DailyTaskRepository { get; }
     ITeamWorkShiftRepository TeamWorkShiftRepository { get; }
     ICustomerBookingRepository BookingRepository { get; }
-
     // Notification System
     INotificationRepository NotificationRepository { get; }
     IStorageRepository StorageRepository { get; }

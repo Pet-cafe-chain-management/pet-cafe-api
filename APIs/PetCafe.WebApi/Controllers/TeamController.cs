@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.ShareModels;
+using PetCafe.Application.Models.SlotModels;
 using PetCafe.Application.Models.TeamModels;
 using PetCafe.Application.Models.TeamWorkShiftModels;
 using PetCafe.Application.Services;
@@ -13,7 +14,7 @@ public class TeamController(ITeamService _teamService, ITeamWorkShiftService _te
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetAll([FromQuery] FilterQuery query)
+    public async Task<IActionResult> GetAll([FromQuery] TeamFilterQuery query)
     {
         {
             var teams = await _teamService.GetAllPagingAsync(query);
@@ -27,6 +28,17 @@ public class TeamController(ITeamService _teamService, ITeamWorkShiftService _te
     {
         var team = await _teamService.GetByIdAsync(id);
         return Ok(team);
+    }
+    /// <summary>
+    /// Lấy danh sách WorkType không thuộc Team đã chọn
+    /// </summary>
+    /// <param name="id">ID của Team</param>
+    /// <returns>Danh sách WorkType không thuộc Team đã chọn</returns>
+    [HttpGet("{id:guid}/work-types")]
+    public async Task<IActionResult> GetWorkTypeNotInTeam(Guid id)
+    {
+        var workTypes = await _teamService.GetWorkTypeNotInTeamAsync(id);
+        return Ok(workTypes);
     }
 
     [HttpPost]
@@ -103,4 +115,11 @@ public class TeamController(ITeamService _teamService, ITeamWorkShiftService _te
         return Ok(members);
     }
 
+    [HttpGet("{id:guid}/slots")]
+    [Authorize]
+    public async Task<IActionResult> GetSlots(Guid id, [FromQuery] SlotFilterQuery query)
+    {
+        var slots = await _teamService.GetSlotsByTeamIdAsync(id, query);
+        return Ok(slots);
+    }
 }

@@ -28,10 +28,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Team> Teams { get; set; }
     public DbSet<TeamMember> TeamMembers { get; set; }
     public DbSet<Task> Tasks { get; set; }
-    public DbSet<TaskAssignment> TaskAssignments { get; set; }
     public DbSet<WorkShift> WorkShifts { get; set; }
     public DbSet<EmployeeSchedule> EmployeeSchedules { get; set; }
-
     // Product & Sales Management
     public DbSet<ProductCategory> ProductCategories { get; set; }
     public DbSet<Product> Products { get; set; }
@@ -47,7 +45,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Area> Areas { get; set; }
     public DbSet<Service> Services { get; set; }
     public DbSet<WorkType> WorkTypes { get; set; }
-    public DbSet<ServicePetGroup> ServicePetGroups { get; set; }
+    public DbSet<AreaWorkType> AreaWorkTypes { get; set; }
+    public DbSet<TeamWorkType> TeamWorkTypes { get; set; }
     public DbSet<DailyTask> DailyTasks { get; set; }
     public DbSet<TeamWorkShift> TeamWorkShifts { get; set; }
     public DbSet<CustomerBooking> ServiceBookings { get; set; }

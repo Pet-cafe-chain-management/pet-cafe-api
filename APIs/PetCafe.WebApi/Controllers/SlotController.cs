@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.SlotModels;
+using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services;
 using PetCafe.Domain.Constants;
 

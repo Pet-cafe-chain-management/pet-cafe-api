@@ -45,7 +45,6 @@ public class Employee : BaseEntity
     // Navigation properties
     public virtual Account Account { get; set; } = default!;
     public virtual ICollection<TeamMember> TeamMembers { get; set; } = [];
-    public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = [];
     public virtual ICollection<Order> Orders { get; set; } = [];
     public virtual ICollection<EmployeeSchedule> Schedules { get; set; } = [];
 }

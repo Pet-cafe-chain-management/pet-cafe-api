@@ -16,6 +16,18 @@ public class AreaController(IAreaService _areaService) : BaseController
         return Ok(area);
     }
 
+    /// <summary>
+    /// Lấy danh sách WorkType không thuộc Area đã chọn
+    /// </summary>
+    /// <param name="id">ID của Area</param>
+    /// <returns>Danh sách WorkType không thuộc Area đã chọn</returns>
+    [HttpGet("{id:guid}/work-types")]
+    public async Task<IActionResult> GetWorkTypeNotInArea(Guid id)
+    {
+        var workTypes = await _areaService.GetWorkTypeNotInAreaAsync(id);
+        return Ok(workTypes);
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAllPaging([FromQuery] AreaFilterQuery query)
     {

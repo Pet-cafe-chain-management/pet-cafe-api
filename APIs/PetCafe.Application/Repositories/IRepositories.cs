@@ -63,9 +63,6 @@ public interface ITaskRepository : IGenericRepository<Task>
 {
 }
 
-public interface ITaskAssignmentRepository : IGenericRepository<TaskAssignment>
-{
-}
 
 public interface IWorkShiftRepository : IGenericRepository<WorkShift>
 {
@@ -136,12 +133,15 @@ public interface IWorkTypeRepository : IGenericRepository<WorkType>
 {
 }
 
-public interface IServicePetGroupRepository : IGenericRepository<ServicePetGroup>
-{
-}
 public interface IDailyTaskRepository : IGenericRepository<DailyTask>
 {
 }
 public interface ITeamWorkShiftRepository : IGenericRepository<TeamWorkShift>
+{
+}
+public interface IAreaWorkTypeRepository : IGenericRepository<AreaWorkType>
+{
+}
+public interface ITeamWorkTypeRepository : IGenericRepository<TeamWorkType>
 {
 }

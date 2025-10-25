@@ -68,9 +68,6 @@ public class TaskRepository(AppDbContext context, ICurrentTime currentTime, ICla
 {
 }
 
-public class TaskAssignmentRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<TaskAssignment>(context, currentTime, claimsService), ITaskAssignmentRepository
-{
-}
 
 public class WorkShiftRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<WorkShift>(context, currentTime, claimsService), IWorkShiftRepository
 {
@@ -131,9 +128,6 @@ public class StorageRepository(AppDbContext context, ICurrentTime currentTime, I
 {
 }
 
-public class ServicePetGroupRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<ServicePetGroup>(context, currentTime, claimsService), IServicePetGroupRepository
-{
-}
 
 public class WorkTypeRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<WorkType>(context, currentTime, claimsService), IWorkTypeRepository
 {
@@ -144,5 +138,11 @@ public class DailyTaskRepository(AppDbContext context, ICurrentTime currentTime,
 }
 
 public class TeamWorkShiftRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<TeamWorkShift>(context, currentTime, claimsService), ITeamWorkShiftRepository
+{
+}
+public class AreaWorkTypeRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<AreaWorkType>(context, currentTime, claimsService), IAreaWorkTypeRepository
+{
+}
+public class TeamWorkTypeRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<TeamWorkType>(context, currentTime, claimsService), ITeamWorkTypeRepository
 {
 }

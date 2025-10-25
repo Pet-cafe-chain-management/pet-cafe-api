@@ -26,5 +26,9 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
         builder.HasIndex(x => x.Name);
         builder.HasIndex(x => new { x.IsActive });
 
+        builder.HasOne(x => x.Task)
+           .WithOne(x => x.Service)
+           .HasForeignKey<Service>(x => x.TaskId)
+           .OnDelete(DeleteBehavior.Cascade);
     }
 }

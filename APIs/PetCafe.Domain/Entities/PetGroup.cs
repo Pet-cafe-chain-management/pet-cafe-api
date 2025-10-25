@@ -28,7 +28,5 @@ public class PetGroup : BaseEntity
     public virtual PetBreed? PetBreed { get; set; }
     public virtual ICollection<Pet> Pets { get; set; } = [];
     public virtual ICollection<Slot> Slots { get; set; } = [];
-    public virtual ICollection<Task> Tasks { get; set; } = [];
-    public virtual ICollection<ServicePetGroup> ServicePetGroups { get; set; } = [];
 
 }

@@ -19,25 +19,16 @@ public class Team : BaseEntity
     [ForeignKey("Leader")]
     public Guid LeaderId { get; set; }
 
-    [Column("area_id")]
-    [ForeignKey("Area")]
-    public Guid AreaId { get; set; }
-
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
 
-    [Column("work_type_id")]
-    [ForeignKey("WorkType")]
-    public Guid WorkTypeId { get; set; }
-
     // Navigation properties
-    public virtual WorkType WorkType { get; set; } = default!;
     public virtual Employee Leader { get; set; } = default!;
-    public virtual Area Area { get; set; } = default!;
     public virtual ICollection<TeamMember> TeamMembers { get; set; } = [];
     public virtual ICollection<CustomerBooking> Bookings { get; set; } = [];
-    public virtual ICollection<Task> Tasks { get; set; } = [];
+    public virtual ICollection<Slot> Slots { get; set; } = [];
     public virtual ICollection<DailyTask> DailyTasks { get; set; } = [];
     public virtual ICollection<TeamWorkShift> TeamWorkShifts { get; set; } = [];
+    public virtual ICollection<TeamWorkType> TeamWorkTypes { get; set; } = [];
 
 }

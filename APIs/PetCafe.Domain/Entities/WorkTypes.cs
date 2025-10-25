@@ -19,7 +19,7 @@ public class WorkType : BaseEntity
     public bool IsActive { get; set; } = true;
 
     // Navigation properties
-    public virtual ICollection<Service> Services { get; set; } = [];
-    public virtual ICollection<Area> Areas { get; set; } = [];
-    public virtual ICollection<Team> Teams { get; set; } = [];
+    public virtual ICollection<Task> Tasks { get; set; } = [];
+    public virtual ICollection<AreaWorkType> AreaWorkTypes { get; set; } = [];
+    public virtual ICollection<TeamWorkType> TeamWorkTypes { get; set; } = [];
 }

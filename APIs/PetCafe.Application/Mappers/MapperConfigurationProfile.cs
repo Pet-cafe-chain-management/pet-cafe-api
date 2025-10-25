@@ -90,5 +90,9 @@ public class MapperConfigurationsProfile : Profile
         CreateMap<Models.WorkTypeModels.WorkTypeCreateModel, Domain.Entities.WorkType>().ReverseMap();
         CreateMap<Models.WorkTypeModels.WorkTypeUpdateModel, Domain.Entities.WorkType>().ReverseMap();
 
+        // Task
+        CreateMap<Models.TaskModels.TaskCreateModel, Domain.Entities.Task>().ReverseMap();
+        CreateMap<Models.TaskModels.TaskUpdateModel, Domain.Entities.Task>().ReverseMap();
+
     }
 }

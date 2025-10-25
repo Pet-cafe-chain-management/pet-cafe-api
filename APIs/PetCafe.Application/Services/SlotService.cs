@@ -20,30 +20,51 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
 {
     public async Task<Slot> CreateAsync(SlotCreateModel model)
     {
-        await ValidateAreaAndTimeAvailability(model.AreaId, model.StartTime, model.EndTime, model.ApplicableDays, null);
-
-        // Kiểm tra nhóm thú cưng có sẵn sàng tại thời điểm đó không
-        await ValidatePetGroupAvailability(model.PetGroupId, model.StartTime, model.EndTime, null);
-
+        await ValidateSlot(model.TaskId, model);
         var slot = _unitOfWork.Mapper.Map<Slot>(model);
-        await _unitOfWork.SlotRepository.AddAsync(slot);
+        await CheckDuplicateSlot(model);
+        await _unitOfWork.SlotRepository.AddAsync(slot); ;
         await _unitOfWork.SaveChangesAsync();
         return slot;
     }
 
     public async Task<Slot> UpdateAsync(Guid id, SlotUpdateModel model)
     {
+        await ValidateSlot(model.TaskId, model);
         var slot = await _unitOfWork.SlotRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
-
-        // Kiểm tra xem area và time có trùng với những slot khác không
-        await ValidateAreaAndTimeAvailability(model.AreaId, model.StartTime, model.EndTime, model.ApplicableDays, id);
-
-        // Kiểm tra nhóm thú cưng có sẵn sàng tại thời điểm đó không
-        await ValidatePetGroupAvailability(model.PetGroupId, model.StartTime, model.EndTime, id);
+        await CheckDuplicateSlot(model, slot.Id);
         _unitOfWork.Mapper.Map(model, slot);
         _unitOfWork.SlotRepository.Update(slot);
         await _unitOfWork.SaveChangesAsync();
         return slot;
+    }
+
+    public async Task ValidateSlot(Guid taskId, SlotCreateModel model)
+    {
+        var task = await _unitOfWork.TaskRepository.GetByIdAsync(taskId) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
+
+        var area = await _unitOfWork
+            .AreaWorkTypeRepository
+            .FirstOrDefaultAsync(x =>
+                x.WorkTypeId == task.WorkTypeId &&
+                x.AreaId == model.AreaId
+        ) ?? throw new BadRequestException("Khu vực không cùng chung công việc!");
+
+        var team = await _unitOfWork
+            .TeamWorkTypeRepository
+            .FirstOrDefaultAsync(x =>
+                x.WorkTypeId == task.WorkTypeId &&
+                x.TeamId == model.TeamId
+            ) ?? throw new BadRequestException("Nhóm không cùng chung công việc!");
+
+        var team_work_shift = await _unitOfWork
+            .TeamWorkShiftRepository
+            .FirstOrDefaultAsync(x =>
+                x.TeamId == model.TeamId &&
+                x.WorkShift.ApplicableDays.Contains(model.DayOfWeek) &&
+                model.StartTime >= x.WorkShift.StartTime &&
+                model.EndTime <= x.WorkShift.EndTime
+            ) ?? throw new BadRequestException("Nhóm không hoạt động trong khoảng thời gian này!");
     }
 
     public async Task<bool> DeleteAsync(Guid id)
@@ -59,9 +80,9 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
             includeFunc: x => x
                 .Include(x => x.Area)
                 .Include(x => x.Service)
-                .Include(x => x.PetGroup).ThenInclude(x => x.Pets.Where(x => !x.IsDeleted))
-                .Include(x => x.PetGroup).ThenInclude(x => x.PetSpecies!)
-                .Include(x => x.PetGroup).ThenInclude(x => x.PetBreed!)
+                .Include(x => x.PetGroup).ThenInclude(x => x!.Pets.Where(x => !x.IsDeleted))
+                .Include(x => x.PetGroup).ThenInclude(x => x!.PetSpecies!)
+                .Include(x => x.PetGroup).ThenInclude(x => x!.PetBreed!)
         ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
     }
 
@@ -80,62 +101,29 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
             includeFunc: x => x
                 .Include(x => x.Area)
                 .Include(x => x.Service)
-                .Include(x => x.PetGroup).ThenInclude(x => x.PetSpecies!)
-                .Include(x => x.PetGroup).ThenInclude(x => x.PetBreed!)
+                .Include(x => x.PetGroup).ThenInclude(x => x!.PetSpecies!)
+                .Include(x => x.PetGroup).ThenInclude(x => x!.PetBreed!)
+                .Include(x => x.Team)
         );
         return BasePagingResponseModel<Slot>.CreateInstance(Entities, Pagination);
     }
 
-    private async Task ValidateAreaAndTimeAvailability(Guid areaId, TimeSpan startTime, TimeSpan endTime, List<string> applicableDays, Guid? excludeSlotId)
+    private async Task CheckDuplicateSlot(SlotCreateModel model, Guid? excludeId = null)
     {
-        // Tìm các slot có cùng area và thời gian trùng lặp
-        var overlappingSlots = await _unitOfWork.SlotRepository
-            .WhereAsync(s =>
-                s.AreaId == areaId &&
-                !s.IsDeleted &&
-                ((s.StartTime <= startTime && s.EndTime > startTime) || // Slot hiện tại bắt đầu trong khoảng thời gian của slot khác
-                (s.StartTime < endTime && s.EndTime >= endTime) || // Slot hiện tại kết thúc trong khoảng thời gian của slot khác
-                (s.StartTime >= startTime && s.EndTime <= endTime)) && // Slot khác nằm hoàn toàn trong khoảng thời gian của slot hiện tại
-                (excludeSlotId == null || s.Id != excludeSlotId) // Loại trừ slot hiện tại khi cập nhật
+        var existingSlot = await _unitOfWork
+            .SlotRepository
+            .FirstOrDefaultAsync(x =>
+                (excludeId == null || x.Id != excludeId) &&
+                (x.AreaId == model.AreaId || x.TeamId == model.TeamId || x.PetGroupId == model.PetGroupId) &&
+                x.DayOfWeek == model.DayOfWeek &&
+                (
+                    (model.StartTime >= x.StartTime && model.StartTime < x.EndTime) ||
+                    (model.EndTime > x.StartTime && model.EndTime <= x.EndTime) ||
+                    (model.StartTime <= x.StartTime && model.EndTime >= x.EndTime)
+                )
             );
 
-        if (overlappingSlots.Count > 0)
-        {
-            // Kiểm tra xem có trùng lặp về ngày áp dụng không
-            foreach (var slot in overlappingSlots)
-            {
-                // Kiểm tra xem có bất kỳ ngày nào trùng nhau không
-                bool hasOverlappingDays = slot.ApplicableDays.Intersect(applicableDays).Any();
-
-                if (hasOverlappingDays)
-                {
-                    string overlappingDays = string.Join(", ", slot.ApplicableDays.Intersect(applicableDays));
-                    throw new BadRequestException(
-                        $"Khu vực này đã được đặt trong khoảng thời gian {slot.StartTime.ToString(@"hh\:mm")} - {slot.EndTime.ToString(@"hh\:mm")} " +
-                        $"vào các ngày: {overlappingDays}. Vui lòng chọn thời gian, ngày hoặc khu vực khác!");
-                }
-            }
-        }
-    }
-
-    // Phương thức kiểm tra nhóm thú cưng có sẵn sàng tại thời điểm đó không
-    private async Task ValidatePetGroupAvailability(Guid petGroupId, TimeSpan startTime, TimeSpan endTime, Guid? excludeSlotId)
-    {
-        // Tìm các slot có cùng nhóm thú cưng và thời gian trùng lặp
-        var overlappingSlots = await _unitOfWork.SlotRepository
-            .WhereAsync(s =>
-                s.PetGroupId == petGroupId &&
-                !s.IsDeleted &&
-                ((s.StartTime <= startTime && s.EndTime > startTime) || // Slot hiện tại bắt đầu trong khoảng thời gian của slot khác
-                (s.StartTime < endTime && s.EndTime >= endTime) || // Slot hiện tại kết thúc trong khoảng thời gian của slot khác
-                (s.StartTime >= startTime && s.EndTime <= endTime)) && // Slot khác nằm hoàn toàn trong khoảng thời gian của slot hiện tại
-                (excludeSlotId == null || s.Id != excludeSlotId) // Loại trừ slot hiện tại khi cập nhật
-            );
-
-
-        if (overlappingSlots.Count != 0)
-        {
-            throw new BadRequestException("Nhóm thú cưng này đã được đặt trong khoảng thời gian này. Vui lòng chọn thời gian khác hoặc nhóm thú cưng khác!");
-        }
+        if (existingSlot != null)
+            throw new BadRequestException("Thông tin slot trùng với thông tin hiện có!");
     }
 }

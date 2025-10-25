@@ -59,8 +59,8 @@ public class Pet : BaseEntity
 
     [ForeignKey("GroupId")]
     public virtual PetGroup? Group { get; set; }
-
     public virtual ICollection<HealthRecord> HealthRecords { get; set; } = [];
     public virtual ICollection<VaccinationRecord> VaccinationRecords { get; set; } = [];
     public virtual ICollection<VaccinationSchedule> VaccinationSchedules { get; set; } = [];
+    public virtual ICollection<Slot> Slot { get; set; } = [];
 }

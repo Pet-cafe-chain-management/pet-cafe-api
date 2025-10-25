@@ -1,47 +1,41 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using PetCafe.Application.Models.ShareModels;
 using PetCafe.Domain.Constants;
 
 namespace PetCafe.Application.Models.SlotModels;
 
 public class SlotCreateModel
 {
-    public Guid ServiceId { get; set; }
+    public Guid TaskId { get; set; }
     public Guid AreaId { get; set; }
     public Guid PetGroupId { get; set; }
-    public List<string> ApplicableDays { get; set; } = DayConstant.ALLDAYS;
+    public Guid TeamId { get; set; }
+    public Guid? PetId { get; set; }
     public TimeSpan StartTime { get; set; }
     public TimeSpan EndTime { get; set; }
     public int MaxCapacity { get; set; }
-    public double Price { get; set; }
     public string? SpecialNotes { get; set; }
+    public string DayOfWeek { get; set; } = DayConstant.MONDAY;
 
 }
 
+
 public class SlotUpdateModel : SlotCreateModel
 {
-    public bool IsActive { get; set; } = true;
-    public string? Status { get; set; }
+    public double Price { get; set; }
+    public string ServiceStatus { get; set; } = SlotStatusConstant.AVAILABLE;
 }
 
 public class SlotCreateModelValidator : AbstractValidator<SlotCreateModel>
 {
     public SlotCreateModelValidator()
     {
-        RuleFor(x => x.ServiceId)
-            .NotEmpty().WithMessage("ID dịch vụ không được để trống");
-
         RuleFor(x => x.AreaId)
             .NotEmpty().WithMessage("ID khu vực không được để trống");
 
         RuleFor(x => x.PetGroupId)
             .NotEmpty().WithMessage("ID nhóm thú cưng không được để trống");
-
-        RuleFor(x => x.ApplicableDays)
-            .NotEmpty().WithMessage("Danh sách ngày áp dụng không được để trống");
-
-        RuleForEach(x => x.ApplicableDays)
-            .Must(day => DayConstant.ALLDAYS.Contains(day))
-            .WithMessage("Ngày áp dụng phải là một trong các giá trị: " + string.Join(", ", DayConstant.ALLDAYS));
 
         RuleFor(x => x.StartTime)
             .NotEmpty().WithMessage("Thời gian bắt đầu không được để trống");
@@ -53,12 +47,14 @@ public class SlotCreateModelValidator : AbstractValidator<SlotCreateModel>
         RuleFor(x => x.MaxCapacity)
             .GreaterThan(0).WithMessage("Sức chứa tối đa phải lớn hơn 0");
 
-        RuleFor(x => x.Price)
-            .GreaterThanOrEqualTo(0).WithMessage("Giá phải lớn hơn hoặc bằng 0");
 
         RuleFor(x => x.SpecialNotes)
             .MaximumLength(500).WithMessage("Ghi chú đặc biệt không được vượt quá 500 ký tự")
             .When(x => !string.IsNullOrEmpty(x.SpecialNotes));
+
+        RuleFor(x => x.DayOfWeek)
+            .NotEmpty().WithMessage("Ngày trong tuần không được để trống")
+            .Must(day => DayConstant.ALLDAYS.Contains(day)).WithMessage("Ngày trong tuần không hợp lệ: " + string.Join(", ", DayConstant.ALLDAYS));
     }
 }
 
@@ -68,13 +64,27 @@ public class SlotUpdateModelValidator : AbstractValidator<SlotUpdateModel>
     {
         Include(new SlotCreateModelValidator());
 
-        RuleFor(x => x.Status)
+        RuleFor(x => x.Price)
+             .GreaterThanOrEqualTo(0).WithMessage("Giá phải lớn hơn hoặc bằng 0");
+
+        RuleFor(x => x.ServiceStatus)
             .Must(status => string.IsNullOrEmpty(status) ||
                            status == SlotStatusConstant.AVAILABLE ||
                            status == SlotStatusConstant.CANCELLED ||
-                           status == SlotStatusConstant.MAINTENANCE ||
-                           status == SlotStatusConstant.FULL)
+                           status == SlotStatusConstant.MAINTENANCE)
             .WithMessage("Trạng thái không hợp lệ")
-            .When(x => x.Status != null);
+            .When(x => x.ServiceStatus != null);
     }
 }
+
+
+public class SlotFilterQuery : FilterQuery
+{
+    [FromQuery(Name = "day_of_week")]
+    public string? DayOfWeek { get; set; }
+    [FromQuery(Name = "start_time")]
+    public TimeSpan? StartTime { get; set; }
+    [FromQuery(Name = "end_time")]
+    public TimeSpan? EndTime { get; set; }
+}
+

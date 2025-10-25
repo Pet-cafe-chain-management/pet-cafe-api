@@ -20,7 +20,6 @@ public class UnitOfWork(
     ITeamRepository teamRepository,
     ITeamMemberRepository teamMemberRepository,
     ITaskRepository taskRepository,
-    ITaskAssignmentRepository taskAssignmentRepository,
     IWorkShiftRepository workShiftRepository,
     IEmployeeScheduleRepository employeeScheduleRepository,
     IProductCategoryRepository productCategoryRepository,
@@ -33,8 +32,9 @@ public class UnitOfWork(
     ICustomerBookingRepository customerBookingRepository,
     IAreaRepository areaRepository,
     IServiceRepository serviceRepository,
-    IServicePetGroupRepository servicePetGroupRepository,
     IWorkTypeRepository workTypeRepository,
+    IAreaWorkTypeRepository areaWorkTypeRepository,
+    ITeamWorkTypeRepository teamWorkTypeRepository,
     IDailyTaskRepository dailyTaskRepository,
     IPetGroupRepository petGroupRepository,
     ITeamWorkShiftRepository teamWorkShiftRepository,
@@ -66,7 +66,6 @@ public class UnitOfWork(
     public ITeamRepository TeamRepository => teamRepository;
     public ITeamMemberRepository TeamMemberRepository => teamMemberRepository;
     public ITaskRepository TaskRepository => taskRepository;
-    public ITaskAssignmentRepository TaskAssignmentRepository => taskAssignmentRepository;
     public IWorkShiftRepository WorkShiftRepository => workShiftRepository;
     public IEmployeeScheduleRepository EmployeeScheduleRepository => employeeScheduleRepository;
 
@@ -98,13 +97,15 @@ public class UnitOfWork(
 
     public IProductOrderRepository ProductOrderRepository => productOrderRepository;
 
-    public IServicePetGroupRepository ServicePetGroupRepository => servicePetGroupRepository;
-
     public IWorkTypeRepository WorkTypeRepository => workTypeRepository;
 
     public IDailyTaskRepository DailyTaskRepository => dailyTaskRepository;
 
     public ITeamWorkShiftRepository TeamWorkShiftRepository => teamWorkShiftRepository;
+
+    public IAreaWorkTypeRepository AreaWorkTypeRepository => areaWorkTypeRepository;
+
+    public ITeamWorkTypeRepository TeamWorkTypeRepository => teamWorkTypeRepository;
 
     // Transaction methods
     public async Task<bool> SaveChangesAsync()

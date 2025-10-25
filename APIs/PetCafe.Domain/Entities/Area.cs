@@ -29,12 +29,7 @@ public class Area : BaseEntity
     [MaxLength(500)]
     public string? ImageUrl { get; set; }
 
-    [Column("work_type_id")]
-    [ForeignKey("WorkType")]
-    public Guid WorkTypeId { get; set; }
     // Navigation properties
-    public virtual WorkType WorkType { get; set; } = default!;
     public virtual ICollection<Slot> Slots { get; set; } = [];
-    public virtual ICollection<Task> Tasks { get; set; } = [];
-    public virtual ICollection<Team> Teams { get; set; } = [];
+    public virtual ICollection<AreaWorkType> AreaWorkTypes { get; set; } = [];
 }

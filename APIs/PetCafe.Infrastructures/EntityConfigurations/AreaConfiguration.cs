@@ -14,9 +14,5 @@ public class AreaConfiguration : IEntityTypeConfiguration<Area>
             .HasDefaultValue(true);
 
 
-        builder.HasOne(x => x.WorkType)
-            .WithMany(x => x.Areas)
-            .HasForeignKey(x => x.WorkTypeId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -10,7 +10,7 @@ public class AreaCreateModel
     public string? Location { get; set; }
     public int MaxCapacity { get; set; } = 0;
     public string? ImageUrl { get; set; }
-    public Guid WorkTypeId { get; set; }
+    public List<Guid>? WorkTypeIds { get; set; } = [];
 }
 
 public class AreaUpdateModel : AreaCreateModel

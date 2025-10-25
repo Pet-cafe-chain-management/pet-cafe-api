@@ -15,13 +15,42 @@ public class SlotConfiguration : IEntityTypeConfiguration<Slot>
                                  c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                                  c => c.ToList()
                              );
-        builder.Property(b => b.ApplicableDays)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new()
-                )
-                .HasColumnType("json")
-                .Metadata.SetValueComparer(storageComparer);
+
+        builder.HasOne(s => s.Service)
+           .WithMany()
+           .HasForeignKey(s => s.ServiceId)
+           .IsRequired(false)
+           .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(s => s.Task)
+            .WithMany()
+            .HasForeignKey(s => s.TaskId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(s => s.Area)
+            .WithMany()
+            .HasForeignKey(s => s.AreaId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(s => s.Team)
+            .WithMany()
+            .HasForeignKey(s => s.TeamId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(s => s.PetGroup)
+            .WithMany()
+            .HasForeignKey(s => s.PetGroupId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(s => s.Pet)
+            .WithMany()
+            .HasForeignKey(s => s.PetId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
 
