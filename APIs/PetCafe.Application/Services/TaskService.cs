@@ -131,7 +131,6 @@ public class TaskService(
         return BasePagingResponseModel<Task>.CreateInstance(Entities, Pagination);
     }
 
-
     public async Task<bool> DeleteTaskAsync(Guid id)
     {
         var task = await _unitOfWork.TaskRepository.GetByIdAsync(id)

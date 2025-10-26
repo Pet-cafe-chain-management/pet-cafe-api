@@ -62,5 +62,5 @@ public class Pet : BaseEntity
     public virtual ICollection<HealthRecord> HealthRecords { get; set; } = [];
     public virtual ICollection<VaccinationRecord> VaccinationRecords { get; set; } = [];
     public virtual ICollection<VaccinationSchedule> VaccinationSchedules { get; set; } = [];
-    public virtual ICollection<Slot> Slot { get; set; } = [];
+    public virtual ICollection<Slot> Slots { get; set; } = [];
 }

@@ -17,37 +17,37 @@ public class SlotConfiguration : IEntityTypeConfiguration<Slot>
                              );
 
         builder.HasOne(s => s.Service)
-           .WithMany()
+           .WithMany(x => x.Slots)
            .HasForeignKey(s => s.ServiceId)
            .IsRequired(false)
            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(s => s.Task)
-            .WithMany()
+           .WithMany(x => x.Slots)
             .HasForeignKey(s => s.TaskId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(s => s.Area)
-            .WithMany()
+            .WithMany(x => x.Slots)
             .HasForeignKey(s => s.AreaId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(s => s.Team)
-            .WithMany()
+            .WithMany(x => x.Slots)
             .HasForeignKey(s => s.TeamId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(s => s.PetGroup)
-            .WithMany()
+            .WithMany(x => x.Slots)
             .HasForeignKey(s => s.PetGroupId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(s => s.Pet)
-            .WithMany()
+            .WithMany(x => x.Slots)
             .HasForeignKey(s => s.PetId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
