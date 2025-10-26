@@ -21,7 +21,6 @@ public class UnitOfWork(
     ITeamMemberRepository teamMemberRepository,
     ITaskRepository taskRepository,
     IWorkShiftRepository workShiftRepository,
-    IEmployeeScheduleRepository employeeScheduleRepository,
     IProductCategoryRepository productCategoryRepository,
     IProductRepository productRepository,
     IOrderRepository orderRepository,
@@ -38,6 +37,7 @@ public class UnitOfWork(
     IDailyTaskRepository dailyTaskRepository,
     IPetGroupRepository petGroupRepository,
     ITeamWorkShiftRepository teamWorkShiftRepository,
+    IDailyScheduleRepository dailyScheduleRepository,
     INotificationRepository notificationRepository,
     ITransactionRepository transactionRepository,
     ISlotRepository slotRepository,
@@ -67,7 +67,6 @@ public class UnitOfWork(
     public ITeamMemberRepository TeamMemberRepository => teamMemberRepository;
     public ITaskRepository TaskRepository => taskRepository;
     public IWorkShiftRepository WorkShiftRepository => workShiftRepository;
-    public IEmployeeScheduleRepository EmployeeScheduleRepository => employeeScheduleRepository;
 
     // Product & Sales Management
     public IProductCategoryRepository ProductCategoryRepository => productCategoryRepository;
@@ -106,6 +105,8 @@ public class UnitOfWork(
     public IAreaWorkTypeRepository AreaWorkTypeRepository => areaWorkTypeRepository;
 
     public ITeamWorkTypeRepository TeamWorkTypeRepository => teamWorkTypeRepository;
+
+    public IDailyScheduleRepository DailyScheduleRepository => dailyScheduleRepository;
 
     // Transaction methods
     public async Task<bool> SaveChangesAsync()

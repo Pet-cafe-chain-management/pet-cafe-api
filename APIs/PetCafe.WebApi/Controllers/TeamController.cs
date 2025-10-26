@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PetCafe.Application.Models.DailyTaskModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Models.SlotModels;
 using PetCafe.Application.Models.TeamModels;
@@ -121,5 +122,13 @@ public class TeamController(ITeamService _teamService, ITeamWorkShiftService _te
     {
         var slots = await _teamService.GetSlotsByTeamIdAsync(id, query);
         return Ok(slots);
+    }
+
+    [HttpGet("{id:guid}/daily-tasks")]
+    [Authorize]
+    public async Task<IActionResult> GetDailyTasks(Guid id, [FromQuery] DailyTaskFilterQuery query)
+    {
+        var dailyTasks = await _teamService.GetDailyTasksByTeamIdAsync(id, query);
+        return Ok(dailyTasks);
     }
 }

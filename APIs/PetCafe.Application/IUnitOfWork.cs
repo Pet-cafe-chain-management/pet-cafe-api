@@ -26,7 +26,6 @@ public interface IUnitOfWork
     ITeamMemberRepository TeamMemberRepository { get; }
     ITaskRepository TaskRepository { get; }
     IWorkShiftRepository WorkShiftRepository { get; }
-    IEmployeeScheduleRepository EmployeeScheduleRepository { get; }
 
     // Product & Sales Management
     IProductCategoryRepository ProductCategoryRepository { get; }
@@ -48,6 +47,7 @@ public interface IUnitOfWork
     IDailyTaskRepository DailyTaskRepository { get; }
     ITeamWorkShiftRepository TeamWorkShiftRepository { get; }
     ICustomerBookingRepository BookingRepository { get; }
+    IDailyScheduleRepository DailyScheduleRepository { get; }
     // Notification System
     INotificationRepository NotificationRepository { get; }
     IStorageRepository StorageRepository { get; }

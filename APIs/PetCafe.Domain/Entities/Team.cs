@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Domain.Entities;
 
@@ -22,6 +23,9 @@ public class Team : BaseEntity
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
 
+    [Column("status")]
+    [MaxLength(20)]
+    public string Status { get; set; } = TeamStatusConstant.INACTIVE;
     // Navigation properties
     public virtual Employee Leader { get; set; } = default!;
     public virtual ICollection<TeamMember> TeamMembers { get; set; } = [];

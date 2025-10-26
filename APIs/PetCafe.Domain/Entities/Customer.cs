@@ -16,8 +16,7 @@ public class Customer : BaseEntity
     public string FullName { get; set; } = default!;
 
     [Column("avatar_url")]
-    [Required]
-    public string AvatarUrl { get; set; } = default!;
+    public string? AvatarUrl { get; set; }
 
     [Column("email")]
     [Required]

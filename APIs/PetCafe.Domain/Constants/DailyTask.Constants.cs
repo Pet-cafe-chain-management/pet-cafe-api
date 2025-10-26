@@ -6,5 +6,6 @@ public static class DailyTaskStatusConstant
     public const string IN_PROGRESS = "IN_PROGRESS";
     public const string COMPLETED = "COMPLETED";
     public const string CANCELLED = "CANCELLED";
+    public const string MISSED = "MISSED";
     public const string SKIPPED = "SKIPPED";
 }

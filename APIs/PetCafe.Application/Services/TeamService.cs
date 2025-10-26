@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
+using PetCafe.Application.Models.DailyTaskModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Models.SlotModels;
 using PetCafe.Application.Models.TeamModels;
@@ -20,7 +21,7 @@ public interface ITeamService
     Task<List<WorkType>> GetWorkTypeNotInTeamAsync(Guid teamId);
 
     Task<BasePagingResponseModel<Slot>> GetSlotsByTeamIdAsync(Guid teamId, SlotFilterQuery query);
-
+    Task<BasePagingResponseModel<DailyTask>> GetDailyTasksByTeamIdAsync(Guid teamId, DailyTaskFilterQuery query);
     Task<List<TeamMember>> GetMembersByTeamIdAsync(Guid teamId);
     Task<bool> AddMemeberToTeam(List<MemberCreateModel> models, Guid id);
     Task<bool> UpdateMemberInTeam(List<MemberUpdateModel> models, Guid id);
@@ -215,5 +216,35 @@ public class TeamService(
                 .Include(x => x.Team)
         );
         return BasePagingResponseModel<Slot>.CreateInstance(Entities, Pagination);
+    }
+
+    public async Task<BasePagingResponseModel<DailyTask>> GetDailyTasksByTeamIdAsync(Guid teamId, DailyTaskFilterQuery query)
+    {
+        Expression<Func<DailyTask, bool>> filter = x => x.TeamId == teamId;
+        if (query.FromDate.HasValue)
+        {
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.AssignedDate >= query.FromDate.Value) : x => x.AssignedDate >= query.FromDate.Value;
+        }
+        if (query.ToDate.HasValue)
+        {
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.AssignedDate <= query.ToDate.Value) : x => x.AssignedDate <= query.ToDate.Value;
+        }
+        if (!string.IsNullOrEmpty(query.Status))
+        {
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.Status == query.Status) : x => x.Status == query.Status;
+        }
+        var (Pagination, Entities) = await _unitOfWork.DailyTaskRepository.ToPagination(
+            pageIndex: query.Page ?? 0,
+            pageSize: query.Limit ?? 10,
+            filter: filter,
+            searchTerm: query.Q,
+            searchFields: ["Task.Title", "Slot.Name", "Slot.Time", "Slot.DayOfWeek", "Slot.Area", "Slot.Team", "Slot.PetGroup", "Slot.Pet", "Slot.SpecialNotes"],
+            sortOrders: query.OrderBy?.ToDictionary(
+                    k => k.OrderColumn ?? "CreatedAt",
+                    v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
+                ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
+            includeFunc: x => x.Include(x => x.Task).Include(x => x.Slot).Include(x => x.Team)
+        );
+        return BasePagingResponseModel<DailyTask>.CreateInstance(Entities, Pagination);
     }
 }

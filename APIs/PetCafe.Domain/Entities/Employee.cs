@@ -46,5 +46,5 @@ public class Employee : BaseEntity
     public virtual Account Account { get; set; } = default!;
     public virtual ICollection<TeamMember> TeamMembers { get; set; } = [];
     public virtual ICollection<Order> Orders { get; set; } = [];
-    public virtual ICollection<EmployeeSchedule> Schedules { get; set; } = [];
+    public virtual ICollection<DailySchedule> DailySchedules { get; set; } = [];
 }

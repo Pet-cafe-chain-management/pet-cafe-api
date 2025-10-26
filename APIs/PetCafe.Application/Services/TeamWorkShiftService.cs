@@ -3,6 +3,7 @@ using PetCafe.Domain.Entities;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.Models.ShareModels;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Application.Services;
 
@@ -66,31 +67,60 @@ public class TeamWorkShiftService(
                 throw new BadRequestException($"Các ca làm việc sau đã được gán cho nhóm: {string.Join(", ", duplicateWorkShiftNames)}");
             }
 
-            throw new BadRequestException($"Nhóm đã được gán ca làm việc. Vui lòng xóa các ca hiện tại trước khi gán mới.");
         }
 
         // 3. Kiểm tra xem các work shifts có bị trùng thời gian không
         CheckWorkShiftTimeOverlap(workShifts);
 
-        // 4. Kiểm tra trùng lịch của các thành viên trước khi assign
+        // 4. Kiểm tra trùng lịch của các thành viên trước khi assign (kiểm tra qua tất cả các team)
         var teamMembers = team.TeamMembers.Where(tm => tm.IsActive).ToList();
-        if (teamMembers.Any())
+        if (teamMembers.Count != 0)
         {
+            // Lấy tất cả các work shifts hiện tại của nhân viên trong tất cả các team
             foreach (var member in teamMembers)
             {
-                // Lấy lịch hiện tại của nhân viên
                 var employeeId = member.EmployeeId;
-                var existingSchedules = await _unitOfWork.EmployeeScheduleRepository.WhereAsync(
-                    es => es.EmployeeId == employeeId,
-                    includeFunc: q => q.Include(es => es.WorkShift)
+
+                // Lấy tất cả các DailySchedule hiện tại của nhân viên (từ tất cả các team)
+                var existingDailySchedules = await _unitOfWork.DailyScheduleRepository.WhereAsync(
+                    ds => ds.EmployeeId == employeeId,
+                    includeFunc: q => q.Include(ds => ds.WorkShift).Include(ds => ds.TeamMember)
                 );
 
                 foreach (var workShift in workShifts)
                 {
-                    // Kiểm tra xem có bị trùng lịch không
-                    if (IsTimeOverlap(existingSchedules.Select(es => es.WorkShift).ToList(), workShift))
+                    // Với mỗi ngày trong tháng mà work shift có hiệu lực
+                    var today = DateTime.UtcNow.Date;
+                    var endOfMonth = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
+
+                    for (var date = today; date <= endOfMonth; date = date.AddDays(1))
                     {
-                        throw new BadRequestException($"Nhân viên {member.Employee.FullName} đã có lịch trùng với ca làm việc {workShift.Name}");
+                        var dayOfWeek = date.DayOfWeek.ToString().ToUpper();
+
+                        // Kiểm tra xem work shift có áp dụng cho ngày này không
+                        if (!workShift.ApplicableDays.Contains(dayOfWeek))
+                        {
+                            continue;
+                        }
+
+                        // Kiểm tra xem nhân viên đã có lịch vào ngày này chưa (từ bất kỳ team nào)
+                        var hasScheduleOnDate = existingDailySchedules
+                            .Any(ds => ds.Date.Date == date);
+
+                        if (hasScheduleOnDate)
+                        {
+                            // Lấy work shift của lịch hiện tại trong ngày đó
+                            var existingSchedulesOnDate = existingDailySchedules
+                                .Where(ds => ds.Date.Date == date)
+                                .Select(ds => ds.WorkShift)
+                                .ToList();
+
+                            // Kiểm tra xem có bị trùng thời gian không
+                            if (IsTimeOverlap(existingSchedulesOnDate, workShift))
+                            {
+                                throw new BadRequestException($"Nhân viên {member.Employee.FullName} đã có lịch trùng với ca làm việc {workShift.Name} vào ngày {date:dd/MM/yyyy}");
+                            }
+                        }
                     }
                 }
             }
@@ -105,34 +135,67 @@ public class TeamWorkShiftService(
 
         await _unitOfWork.TeamWorkShiftRepository.AddRangeAsync(newTeamWorkShifts);
 
-        // 6. Tạo EmployeeSchedule cho tất cả các thành viên trong team
+        // 6. Tạo DailySchedule cho tất cả các thành viên trong team đến cuối tháng
         if (teamMembers.Count != 0)
         {
-            var employeeSchedules = new List<EmployeeSchedule>();
+            var dailySchedules = new List<DailySchedule>();
+            var today = DateTime.UtcNow.Date;
+            var endOfMonth = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
+
+            // Lấy tất cả các team member IDs
+            var teamMemberIds = teamMembers.Select(tm => tm.Id).ToList();
+
+            // Lấy tất cả các work shift IDs
+            var workShiftIdsToAssign = workShifts.Select(ws => ws.Id).ToList();
+
+            // Lấy tất cả các daily schedules hiện có cho team members này
+            var existingSchedules = await _unitOfWork.DailyScheduleRepository.WhereAsync(
+                ds => teamMemberIds.Contains(ds.TeamMemberId)
+                    && workShiftIdsToAssign.Contains(ds.WorkShiftId)
+                    && ds.Date >= today
+                    && ds.Date <= endOfMonth
+            );
+
             foreach (var member in teamMembers)
             {
                 foreach (var workShift in workShifts)
                 {
-                    // Kiểm tra xem nhân viên đã có lịch với ca làm việc này chưa
-                    var existingSchedule = await _unitOfWork.EmployeeScheduleRepository.FirstOrDefaultAsync(
-                        es => es.EmployeeId == member.EmployeeId && es.WorkShiftId == workShift.Id
-                    );
-
-                    if (existingSchedule == null)
+                    // Tạo lịch cho mỗi ngày từ hôm nay đến cuối tháng
+                    for (var date = today; date <= endOfMonth; date = date.AddDays(1))
                     {
-                        employeeSchedules.Add(new EmployeeSchedule
+                        var dayOfWeek = date.DayOfWeek.ToString().ToUpper();
+
+                        // Kiểm tra xem work shift có áp dụng cho ngày này không
+                        if (!workShift.ApplicableDays.Contains(dayOfWeek))
                         {
-                            EmployeeId = member.EmployeeId,
-                            WorkShiftId = workShift.Id
-                        });
+                            continue;
+                        }
+
+                        // Kiểm tra xem đã có lịch chưa (để tránh duplicate)
+                        var existingSchedule = existingSchedules
+                            .FirstOrDefault(ds => ds.TeamMemberId == member.Id
+                                && ds.WorkShiftId == workShift.Id
+                                && ds.Date.Date == date);
+
+                        if (existingSchedule == null)
+                        {
+                            dailySchedules.Add(new DailySchedule
+                            {
+                                TeamMemberId = member.Id,
+                                EmployeeId = member.EmployeeId,
+                                WorkShiftId = workShift.Id,
+                                Date = date,
+                                Status = DailyScheduleStatusConstant.PENDING
+                            });
+                        }
                     }
                 }
             }
 
-            // Thêm employee schedules vào database nếu có
-            if (employeeSchedules.Any())
+            // Thêm daily schedules vào database nếu có
+            if (dailySchedules.Count != 0)
             {
-                await _unitOfWork.EmployeeScheduleRepository.AddRangeAsync(employeeSchedules);
+                await _unitOfWork.DailyScheduleRepository.AddRangeAsync(dailySchedules);
             }
         }
 

@@ -17,8 +17,11 @@ public class DailyTask : BaseEntity
     [Column("assigned_date")]
     public DateTime AssignedDate { get; set; }
 
-    [Column("start_date")]
-    public DateTime? StartDate { get; set; }
+    [Column("start_time")]
+    public TimeSpan StartTime { get; set; }
+
+    [Column("end_time")]
+    public TimeSpan? EndTime { get; set; }
 
     [Column("completion_date")]
     public DateTime? CompletionDate { get; set; }
@@ -29,7 +32,7 @@ public class DailyTask : BaseEntity
 
     [Column("slot_id")]
     [ForeignKey("Slot")]
-    public Guid SlotId { get; set; }
+    public Guid? SlotId { get; set; }
 
     [Column("notes")]
     [MaxLength(500)]
@@ -37,6 +40,6 @@ public class DailyTask : BaseEntity
 
     // Navigation properties
     public virtual Task Task { get; set; } = default!;
-    public virtual Slot Slot { get; set; } = default!;
+    public virtual Slot? Slot { get; set; } = null!;
     public virtual Team Team { get; set; } = default!;
 }

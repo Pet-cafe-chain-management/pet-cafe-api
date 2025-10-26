@@ -73,10 +73,6 @@ public class WorkShiftRepository(AppDbContext context, ICurrentTime currentTime,
 {
 }
 
-public class EmployeeScheduleRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<EmployeeSchedule>(context, currentTime, claimsService), IEmployeeScheduleRepository
-{
-}
-
 // Product & Sales Management
 public class ProductCategoryRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<ProductCategory>(context, currentTime, claimsService), IProductCategoryRepository
 {
@@ -144,5 +140,9 @@ public class AreaWorkTypeRepository(AppDbContext context, ICurrentTime currentTi
 {
 }
 public class TeamWorkTypeRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<TeamWorkType>(context, currentTime, claimsService), ITeamWorkTypeRepository
+{
+}
+
+public class DailyScheduleRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<DailySchedule>(context, currentTime, claimsService), IDailyScheduleRepository
 {
 }

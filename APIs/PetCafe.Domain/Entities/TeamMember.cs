@@ -21,4 +21,5 @@ public class TeamMember : BaseEntity
     // Navigation properties
     public virtual Team Team { get; set; } = default!;
     public virtual Employee Employee { get; set; } = default!;
+    public virtual ICollection<DailySchedule> DailySchedules { get; set; } = [];
 }

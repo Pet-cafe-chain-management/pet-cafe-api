@@ -68,10 +68,6 @@ public interface IWorkShiftRepository : IGenericRepository<WorkShift>
 {
 }
 
-public interface IEmployeeScheduleRepository : IGenericRepository<EmployeeSchedule>
-{
-}
-
 // Product & Sales Management
 public interface IProductCategoryRepository : IGenericRepository<ProductCategory>
 {
@@ -143,5 +139,9 @@ public interface IAreaWorkTypeRepository : IGenericRepository<AreaWorkType>
 {
 }
 public interface ITeamWorkTypeRepository : IGenericRepository<TeamWorkType>
+{
+}
+
+public interface IDailyScheduleRepository : IGenericRepository<DailySchedule>
 {
 }

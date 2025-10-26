@@ -29,7 +29,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<TeamMember> TeamMembers { get; set; }
     public DbSet<Task> Tasks { get; set; }
     public DbSet<WorkShift> WorkShifts { get; set; }
-    public DbSet<EmployeeSchedule> EmployeeSchedules { get; set; }
     // Product & Sales Management
     public DbSet<ProductCategory> ProductCategories { get; set; }
     public DbSet<Product> Products { get; set; }
@@ -50,7 +49,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<DailyTask> DailyTasks { get; set; }
     public DbSet<TeamWorkShift> TeamWorkShifts { get; set; }
     public DbSet<CustomerBooking> ServiceBookings { get; set; }
-
+    public DbSet<DailySchedule> DailySchedules { get; set; }
     // Notification System
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Storage> Storages { get; set; }

@@ -27,7 +27,7 @@ public class WorkShift : BaseEntity
 
     [Column("applicable_days")]
     public List<string> ApplicableDays { get; set; } = DayConstant.ALLDAYS;
-    public virtual ICollection<EmployeeSchedule> Schedules { get; set; } = [];
     public virtual ICollection<TeamWorkShift> TeamWorkShifts { get; set; } = [];
+    public virtual ICollection<DailySchedule> DailySchedules { get; set; } = [];
 
 }
