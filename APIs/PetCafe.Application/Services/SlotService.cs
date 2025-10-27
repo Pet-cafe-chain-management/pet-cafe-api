@@ -63,7 +63,7 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
                 x.TeamId == model.TeamId &&
                 x.WorkShift.ApplicableDays.Contains(model.DayOfWeek) &&
                 model.StartTime >= x.WorkShift.StartTime &&
-                model.EndTime <= x.WorkShift.EndTime
+                model.EndTime <= x.WorkShift.EndTime, includeFunc: x => x.Include(x => x.WorkShift)
             ) ?? throw new BadRequestException("Nhóm không hoạt động trong khoảng thời gian này!");
     }
 
