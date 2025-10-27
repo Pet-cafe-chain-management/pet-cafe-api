@@ -57,14 +57,19 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
                 x.TeamId == model.TeamId
             ) ?? throw new BadRequestException("Nhóm không cùng chung công việc!");
 
-        var team_work_shift = await _unitOfWork
+        var team_work_shifts = await _unitOfWork
             .TeamWorkShiftRepository
-            .FirstOrDefaultAsync(x =>
-                x.TeamId == model.TeamId &&
-                x.WorkShift.ApplicableDays.Contains(model.DayOfWeek) &&
-                model.StartTime >= x.WorkShift.StartTime &&
-                model.EndTime <= x.WorkShift.EndTime, includeFunc: x => x.Include(x => x.WorkShift)
-            ) ?? throw new BadRequestException("Nhóm không hoạt động trong khoảng thời gian này!");
+            .WhereAsync(
+                x => x.TeamId == model.TeamId,
+                includeFunc: x => x.Include(x => x.WorkShift)
+            );
+
+        var validTeamWorkShift = team_work_shifts.FirstOrDefault(x =>
+            x.WorkShift.ApplicableDays != null &&
+            x.WorkShift.ApplicableDays.Contains(model.DayOfWeek) &&
+            model.StartTime >= x.WorkShift.StartTime &&
+            model.EndTime <= x.WorkShift.EndTime)
+            ?? throw new BadRequestException("Nhóm không hoạt động trong khoảng thời gian này!");
     }
 
     public async Task<bool> DeleteAsync(Guid id)
