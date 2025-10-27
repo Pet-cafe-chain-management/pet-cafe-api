@@ -12,6 +12,8 @@ public class TaskCreateModel
     public string Status { get; set; } = TaskStatusConstant.ACTIVE; // Pending, InProgress, Completed, Cancelled
     public int? EstimatedHours { get; set; }
     public bool IsRecurring { get; set; } = false;
+    public bool IsPublic { get; set; } = false;
+
     public Guid WorkTypeId { get; set; }
 }
 
@@ -59,4 +61,9 @@ public class TaskFilterQuery : FilterQuery
 
     [FromQuery(Name = "priority")]
     public string? Priority { get; set; }
+
+    [FromQuery(Name = "is_public")]
+    public bool? IsPublic { get; set; }
+    [FromQuery(Name = "is_recurring")]
+    public bool? IsRecurring { get; set; }
 }

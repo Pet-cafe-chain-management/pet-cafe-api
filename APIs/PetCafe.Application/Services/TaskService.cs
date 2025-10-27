@@ -95,7 +95,16 @@ public class TaskService(
     public async Task<BasePagingResponseModel<Task>> GetAllTasksAsync(TaskFilterQuery query)
     {
         Expression<Func<Task, bool>>? filter = null;
-
+        if (query.IsPublic.HasValue)
+        {
+            Expression<Func<Task, bool>> filter_is_public = x => x.IsPublic == query.IsPublic.Value;
+            filter = filter == null ? filter_is_public : FilterCustoms.CombineFilters(filter, filter_is_public);
+        }
+        if (query.IsRecurring.HasValue)
+        {
+            Expression<Func<Task, bool>> filter_is_recurring = x => x.IsRecurring == query.IsRecurring.Value;
+            filter = filter == null ? filter_is_recurring : FilterCustoms.CombineFilters(filter, filter_is_recurring);
+        }
         if (query.WorkTypeId.HasValue)
         {
             Expression<Func<Task, bool>> filter_work_type = x => x.WorkTypeId == query.WorkTypeId.Value;
