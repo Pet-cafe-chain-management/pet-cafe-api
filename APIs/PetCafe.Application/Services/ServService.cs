@@ -30,7 +30,7 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
     public async Task<Service> CreateAsync(ServiceCreateModel model)
     {
 
-        var task = await _unitOfWork.TaskRepository.GetByIdAsync(model.TaskId) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
+        var task = await _unitOfWork.TaskRepository.FirstOrDefaultAsync(x => x.Id == model.TaskId && x.IsPublic) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
         var service = _unitOfWork.Mapper.Map<Service>(model);
         task.ServiceId = service.Id;
         _unitOfWork.TaskRepository.Update(task);
@@ -52,7 +52,7 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
 
     public async Task<Service> UpdateAsync(Guid id, ServiceUpdateModel model)
     {
-        var task = await _unitOfWork.TaskRepository.GetByIdAsync(model.TaskId) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
+        var task = await _unitOfWork.TaskRepository.FirstOrDefaultAsync(x => x.Id == model.TaskId && x.IsPublic) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
         var service = await _unitOfWork.ServiceRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
         _unitOfWork.Mapper.Map(model, service);
         task.ServiceId = service.Id;

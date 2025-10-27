@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using PetCafe.Domain.Constants;
@@ -25,6 +26,10 @@ public class Task : BaseEntity
     [Column("status")]
     [MaxLength(20)]
     public string Status { get; set; } = TaskStatusConstant.ACTIVE;
+
+    [Column("is_public", TypeName = "boolean")]
+    [DefaultValue(false)]
+    public bool IsPublic { get; set; } = false;
 
     [Column("is_recurring")]
     public bool IsRecurring { get; set; } = false;
