@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Models.SlotModels;
+using PetCafe.Domain.Constants;
 using PetCafe.Domain.Entities;
 using Task = System.Threading.Tasks.Task;
 
@@ -20,9 +21,15 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
 {
     public async Task<Slot> CreateAsync(SlotCreateModel model)
     {
-        await ValidateSlot(model.TaskId, model);
+        var task = await _unitOfWork.TaskRepository.GetByIdAsync(model.TaskId) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
+        await ValidateSlot(task, model);
         var slot = _unitOfWork.Mapper.Map<Slot>(model);
         await CheckDuplicateSlot(model);
+        if (task.ServiceId != null)
+        {
+            slot.ServiceId = task.ServiceId;
+            slot.ServiceStatus = SlotStatusConstant.UNAVAILABLE;
+        }
         await _unitOfWork.SlotRepository.AddAsync(slot); ;
         await _unitOfWork.SaveChangesAsync();
         return slot;
@@ -30,7 +37,8 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
 
     public async Task<Slot> UpdateAsync(Guid id, SlotUpdateModel model)
     {
-        await ValidateSlot(model.TaskId, model);
+        var task = await _unitOfWork.TaskRepository.GetByIdAsync(model.TaskId) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
+        await ValidateSlot(task, model);
         var slot = await _unitOfWork.SlotRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
         await CheckDuplicateSlot(model, slot.Id);
         _unitOfWork.Mapper.Map(model, slot);
@@ -39,9 +47,8 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
         return slot;
     }
 
-    public async Task ValidateSlot(Guid taskId, SlotCreateModel model)
+    public async Task ValidateSlot(Domain.Entities.Task task, SlotCreateModel model)
     {
-        var task = await _unitOfWork.TaskRepository.GetByIdAsync(taskId) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
 
         var area = await _unitOfWork
             .AreaWorkTypeRepository
