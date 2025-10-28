@@ -20,6 +20,8 @@ public interface IDailyTaskService
     Task AutoAssignTasksAsync();
 
     Task AutoChangeStatusAsync();
+
+    Task CreateDailyTasksFromSlotAsync(Slot slot, Domain.Entities.Task task, List<DateTime> dates, List<DailyTask>? existingDailyTasks = null);
 }
 
 
@@ -201,5 +203,63 @@ public class DailyTaskService(
         }
         _unitOfWork.DailyTaskRepository.UpdateRange(dailyTasks);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task CreateDailyTasksFromSlotAsync(Slot slot, Domain.Entities.Task task, List<DateTime> dates, List<DailyTask>? existingDailyTasks = null)
+    {
+        var dailyTasksToAdd = new List<DailyTask>();
+
+        foreach (var date in dates)
+        {
+            var dayOfWeek = date.DayOfWeek.ToString().ToUpper();
+
+            // Nếu ngày trong tuần của slot khớp với ngày được chỉ định
+            if (slot.DayOfWeek == dayOfWeek)
+            {
+                bool exists = false;
+
+                // Nếu có danh sách existingDailyTasks, check trong memory
+                if (existingDailyTasks != null)
+                {
+                    exists = existingDailyTasks.Any(x =>
+                        x.SlotId == slot.Id &&
+                        x.AssignedDate.Date == date.Date
+                    );
+                }
+                else
+                {
+                    // Nếu không có, query từ database
+                    var existingDailyTask = await _unitOfWork.DailyTaskRepository.FirstOrDefaultAsync(x =>
+                        x.SlotId == slot.Id &&
+                        x.AssignedDate.Date == date.Date
+                    );
+                    exists = existingDailyTask != null;
+                }
+
+                if (!exists)
+                {
+                    dailyTasksToAdd.Add(new DailyTask
+                    {
+                        Title = task.Title,
+                        Description = task.Description,
+                        Priority = task.Priority,
+                        TeamId = slot.TeamId,
+                        Status = DailyTaskStatusConstant.SCHEDULED,
+                        AssignedDate = date,
+                        StartTime = slot.StartTime,
+                        EndTime = slot.EndTime,
+                        TaskId = task.Id,
+                        SlotId = slot.Id,
+                    });
+                }
+            }
+        }
+
+        // Bulk insert các DailyTasks
+        if (dailyTasksToAdd.Count > 0)
+        {
+            await _unitOfWork.DailyTaskRepository.AddRangeAsync(dailyTasksToAdd);
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 }

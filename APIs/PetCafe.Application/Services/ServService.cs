@@ -54,6 +54,11 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
     {
         var task = await _unitOfWork.TaskRepository.FirstOrDefaultAsync(x => x.Id == model.TaskId && x.IsPublic) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
         var service = await _unitOfWork.ServiceRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+        if (model.IsActive)
+        {
+            var slots = await _unitOfWork.SlotRepository.WhereAsync(x => x.ServiceId == service.Id && x.ServiceStatus == SlotStatusConstant.AVAILABLE);
+            if (slots.Count <= 0) throw new BadRequestException("Không có khung giờ nào được kích hoạt!");
+        }
         _unitOfWork.Mapper.Map(model, service);
         task.ServiceId = service.Id;
         _unitOfWork.TaskRepository.Update(task);

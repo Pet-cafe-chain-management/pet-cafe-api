@@ -17,7 +17,7 @@ public interface ISlotService
     Task<bool> DeleteAsync(Guid id);
 }
 
-public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
+public class SlotService(IUnitOfWork _unitOfWork, IDailyTaskService _dailyTaskService) : ISlotService
 {
     public async Task<Slot> CreateAsync(SlotCreateModel model)
     {
@@ -30,8 +30,32 @@ public class SlotService(IUnitOfWork _unitOfWork) : ISlotService
             slot.ServiceId = task.ServiceId;
             slot.ServiceStatus = SlotStatusConstant.UNAVAILABLE;
         }
-        await _unitOfWork.SlotRepository.AddAsync(slot); ;
+        await _unitOfWork.SlotRepository.AddAsync(slot);
         await _unitOfWork.SaveChangesAsync();
+
+        // Tạo DailyTasks cho các ngày còn lại trong tuần nếu task là recurring
+        if (task.IsRecurring)
+        {
+            var today = DateTime.UtcNow.Date;
+            var currentDayOfWeek = today.DayOfWeek;
+
+            // Tính số ngày còn lại từ hôm nay đến Chủ nhật
+            var daysUntilSunday = 7 - (int)currentDayOfWeek;
+
+            // Tạo danh sách các ngày còn lại trong tuần (từ ngày mai đến Chủ nhật)
+            var remainingDates = new List<DateTime>();
+            for (int i = 1; i <= daysUntilSunday; i++)
+            {
+                remainingDates.Add(today.AddDays(i));
+            }
+
+            // Sử dụng method dùng chung để tạo DailyTasks
+            if (remainingDates.Count > 0)
+            {
+                await _dailyTaskService.CreateDailyTasksFromSlotAsync(slot, task, remainingDates);
+            }
+        }
+
         return slot;
     }
 

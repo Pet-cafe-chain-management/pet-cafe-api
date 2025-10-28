@@ -19,7 +19,7 @@ public class ServiceCreateModel
 
 public class ServiceUpdateModel : ServiceCreateModel
 {
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; set; } = false;
 }
 
 
