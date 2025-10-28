@@ -17,7 +17,8 @@ public class DailyTaskConfiguration : IEntityTypeConfiguration<DailyTask>
         builder.HasOne(x => x.Task)
             .WithMany(x => x.DailyTasks)
             .HasForeignKey(x => x.TaskId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(x => x.Slot)
             .WithMany(x => x.DailyTasks)

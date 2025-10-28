@@ -42,7 +42,7 @@ public class Slot : BaseEntity
     public string DayOfWeek { get; set; } = DayConstant.MONDAY;
 
     [Column("is_active")]
-    public string ServiceStatus { get; set; } = SlotStatusConstant.AVAILABLE;
+    public string ServiceStatus { get; set; } = SlotStatusConstant.UNAVAILABLE;
 
     [Column("special_notes")]
     [MaxLength(500)]

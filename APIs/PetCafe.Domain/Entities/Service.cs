@@ -28,7 +28,7 @@ public class Service : BaseEntity
     public List<string> Thumbnails { get; set; } = [];
 
     [Column("is_active")]
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; set; } = false;
 
     [Column("task_id")]
     public Guid TaskId { get; set; }

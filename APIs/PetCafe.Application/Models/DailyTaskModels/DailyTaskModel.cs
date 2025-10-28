@@ -12,6 +12,9 @@ public class DailyTaskCreateModel
     public DateTime AssignedDate { get; set; }
     public TimeSpan StartTime { get; set; }
     public TimeSpan? EndTime { get; set; }
+    public string Title { get; set; } = default!;
+    public string Priority { get; set; } = TaskPriorityConstant.MEDIUM;
+
 
 }
 

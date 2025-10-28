@@ -111,6 +111,9 @@ public class DailyTaskService(
                 {
                     dailyTasksToAdd.Add(new DailyTask
                     {
+                        Title = slot.Task.Title,
+                        Description = slot.Task.Description,
+                        Priority = slot.Task.Priority,
                         TeamId = slot.TeamId,
                         Status = DailyTaskStatusConstant.SCHEDULED,
                         AssignedDate = currentDate,
