@@ -144,11 +144,12 @@ public class TaskService(
     {
         var task = await _unitOfWork.TaskRepository.GetByIdAsync(id)
             ?? throw new BadRequestException($"Không tìm thấy thông tin!");
-
+        if (task.ServiceId.HasValue)
+        {
+            var service = await _unitOfWork.ServiceRepository.GetByIdAsync(task.ServiceId.Value) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+            _unitOfWork.ServiceRepository.SoftRemove(service);
+        }
         _unitOfWork.TaskRepository.SoftRemove(task);
         return await _unitOfWork.SaveChangesAsync();
     }
-
-
-
 }

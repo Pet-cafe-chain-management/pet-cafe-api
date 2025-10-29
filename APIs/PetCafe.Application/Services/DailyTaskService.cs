@@ -80,7 +80,7 @@ public class DailyTaskService(
 
         // Lấy tất cả slots recurring một lần
         var allSlots = await _unitOfWork.SlotRepository.WhereAsync(
-            x => x.Task.IsRecurring,
+            x => x.Task.IsRecurring && !x.Task.IsDeleted,
             includeFunc: x => x.Include(s => s.Task)
         );
 

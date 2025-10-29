@@ -70,6 +70,9 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
     public async Task<bool> DeleteAsync(Guid id)
     {
         var service = await _unitOfWork.ServiceRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+        var task = await _unitOfWork.TaskRepository.GetByIdAsync(service.TaskId) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+        task.ServiceId = null;
+        _unitOfWork.TaskRepository.Update(task);
         _unitOfWork.ServiceRepository.SoftRemove(service);
         return await _unitOfWork.SaveChangesAsync();
     }
