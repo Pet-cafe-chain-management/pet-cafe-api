@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Domain.Entities;
 
@@ -30,9 +31,18 @@ public class CustomerBooking : BaseEntity
     [Column("end_time")]
     public TimeSpan EndTime { get; set; }
 
+    [Column("notes")]
+    public string? Notes { get; set; }
+
+    [Column("cancel_date")]
+    public DateTime? CancelDate { get; set; }
+
+    [Column("cancel_reason")]
+    public string? CancelReason { get; set; }
+
     [Column("booking_status")]
     [MaxLength(20)]
-    public string BookingStatus { get; set; } = "Pending"; // Pending, Confirmed, InProgress, Completed, Cancelled
+    public string BookingStatus { get; set; } = BookingStatusConstant.PENDING;
 
     [Column("feedback_rating")]
     public int? FeedbackRating { get; set; } // 1-5 stars

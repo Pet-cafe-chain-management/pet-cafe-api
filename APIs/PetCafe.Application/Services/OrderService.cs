@@ -45,7 +45,7 @@ public class OrderService(
 
         if (model.Services != null && model.Services.Count > 0)
         {
-            var service_order = await UpdateServiceOrderDetail(order.Id, model.Services!);
+            var service_order = await CreateServiceOrderDetail(order.Id, model.Services!);
             order.TotalAmount += service_order.FinalAmount;
 
         }
@@ -102,7 +102,7 @@ public class OrderService(
         return product_order;
     }
 
-    private async Task<ServiceOrder> UpdateServiceOrderDetail(Guid orderId, List<ServiceOrderModel> serviceModels)
+    private async Task<ServiceOrder> CreateServiceOrderDetail(Guid orderId, List<ServiceOrderModel> serviceModels)
     {
         var order_details = new List<ServiceOrderDetail>();
 
@@ -116,6 +116,7 @@ public class OrderService(
 
         foreach (var item in serviceModels)
         {
+            var current_day_of_week = DateTime.UtcNow.DayOfWeek.ToString().ToUpper();
             var slot = await _unitOfWork
                 .SlotRepository
                 .FirstOrDefaultAsync(x =>
@@ -124,7 +125,7 @@ public class OrderService(
                     x.Area.IsActive == true && x.Team.IsActive == true &&
                     x.Task.Status == TaskStatusConstant.ACTIVE &&
                     x.Area.IsDeleted == false && x.Team.IsDeleted == false && x.Service!.IsDeleted == false &&
-                    x.DayOfWeek.Equals(DateTime.UtcNow.DayOfWeek.ToString().ToUpper(), StringComparison.CurrentCultureIgnoreCase) &&
+                    x.DayOfWeek.ToUpper() == current_day_of_week &&
                     x.StartTime <= DateTime.UtcNow.TimeOfDay &&
                     x.EndTime >= DateTime.UtcNow.TimeOfDay,
                     includeFunc: x => x.Include(x => x.Service!).Include(x => x.Area).Include(x => x.Team).Include(x => x.Task))
@@ -261,7 +262,9 @@ public class OrderService(
                     StartTime = slot.StartTime,
                     EndTime = slot.EndTime,
                     BookingDate = item.BookingDate!.Value,
-                    TeamId = slot.TeamId
+                    TeamId = slot.TeamId,
+                    Notes = item.Notes,
+                    BookingStatus = BookingStatusConstant.PENDING,
                 }
             );
         }
