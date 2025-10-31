@@ -116,7 +116,7 @@ public class OrderService(
 
         foreach (var item in serviceModels)
         {
-            var current_day_of_week = DateTime.UtcNow.DayOfWeek.ToString().ToUpper();
+            var day_of_week = item.BookingDate.DayOfWeek.ToString().ToUpper();
             var slot = await _unitOfWork
                 .SlotRepository
                 .FirstOrDefaultAsync(x =>
@@ -125,9 +125,9 @@ public class OrderService(
                     x.Area.IsActive == true && x.Team.IsActive == true &&
                     x.Task.Status == TaskStatusConstant.ACTIVE &&
                     x.Area.IsDeleted == false && x.Team.IsDeleted == false && x.Service!.IsDeleted == false &&
-                    x.DayOfWeek.ToUpper() == current_day_of_week &&
-                    x.StartTime <= DateTime.UtcNow.TimeOfDay &&
-                    x.EndTime >= DateTime.UtcNow.TimeOfDay,
+                    x.DayOfWeek.ToUpper() == day_of_week &&
+                    x.StartTime <= item.BookingDate.TimeOfDay &&
+                    x.EndTime >= item.BookingDate.TimeOfDay,
                     includeFunc: x => x.Include(x => x.Service!).Include(x => x.Area).Include(x => x.Team).Include(x => x.Task))
             ?? throw new BadRequestException("Dịch vụ hiện tại không khả dụng!");
 
