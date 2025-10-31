@@ -18,6 +18,15 @@ public class OrderCreateModel
 
 }
 
+public class CartInfoUpdateModel
+{
+    public string? FullName { get; set; }
+    public string? Address { get; set; }
+    public string? Phone { get; set; }
+    public string? Notes { get; set; }
+    public string? PaymentMethod { get; set; }
+}
+
 
 public class ProductOrderModel
 {

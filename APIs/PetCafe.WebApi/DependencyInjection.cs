@@ -30,6 +30,10 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(
                     appSettings.ConnectionStrings.PostgreConnection ?? throw new InvalidOperationException("Connection string 'PostgreConnection' not found.")));
+        
+        // Register MongoDB context
+        services.AddScoped<Infrastructures.MongoDbContext>();
+        
         services.AddAutoMapper(typeof(MapperConfigurationsProfile));
 
         services.AddEndpointsApiExplorer();
