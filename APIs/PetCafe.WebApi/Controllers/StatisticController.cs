@@ -6,7 +6,7 @@ using PetCafe.Domain.Constants;
 
 namespace PetCafe.WebApi.Controllers;
 
-public class StatisticsController(
+public class StatisticController(
     IStatisticsService _statisticsService
 ) : BaseController
 {
