@@ -59,7 +59,7 @@ public class SlotCreateModelValidator : AbstractValidator<SlotCreateModel>
 
         RuleFor(x => x.DayOfWeek)
             .NotEmpty().WithMessage("Ngày trong tuần không được để trống")
-            .Must(day => DayConstant.ALLDAYS.Contains(day)).WithMessage("Ngày trong tuần không hợp lệ: " + string.Join(", ", DayConstant.ALLDAYS))
+            .Must(day => DayConstant.ALLDAYS.Contains(day!)).WithMessage("Ngày trong tuần không hợp lệ: " + string.Join(", ", DayConstant.ALLDAYS))
             .When(x => x.IsRecurring == true);
 
         RuleFor(x => x.SpecialNotes)

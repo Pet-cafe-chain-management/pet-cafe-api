@@ -50,8 +50,6 @@ public class BookingFilterQuery : FilterQuery
     public DateTime? FromDate { get; set; }
     [FromQuery(Name = "to_date")]
     public DateTime? ToDate { get; set; }
-    [FromQuery(Name = "feedback_rating")]
-    public int? FeedbackRating { get; set; }
 
     [FromQuery(Name = "team_id")]
     public Guid? TeamId { get; set; }

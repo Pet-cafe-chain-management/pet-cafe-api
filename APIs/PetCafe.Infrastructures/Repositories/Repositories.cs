@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.Repositories;
 using PetCafe.Application.Services.Commons;
 using PetCafe.Domain.Entities;
@@ -145,4 +146,19 @@ public class TeamWorkTypeRepository(AppDbContext context, ICurrentTime currentTi
 
 public class DailyScheduleRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<DailySchedule>(context, currentTime, claimsService), IDailyScheduleRepository
 {
+}
+
+public class FeedbackRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<ServiceFeedback>(context, currentTime, claimsService), IFeedbackRepository
+{
+    public async Task<List<ServiceFeedback>> GetByServiceIdAsync(Guid serviceId, CancellationToken cancellationToken = default)
+    {
+        return await WhereAsync(
+            x => x.ServiceId == serviceId,
+            includeFunc: x => x
+                .Include(f => f.Customer)
+                .Include(f => f.Service)
+                .Include(f => f.CustomerBooking),
+            cancellationToken: cancellationToken
+        );
+    }
 }

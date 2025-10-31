@@ -38,6 +38,7 @@ public class UnitOfWork(
     IPetGroupRepository petGroupRepository,
     ITeamWorkShiftRepository teamWorkShiftRepository,
     IDailyScheduleRepository dailyScheduleRepository,
+    IFeedbackRepository feedbackRepository,
     INotificationRepository notificationRepository,
     ITransactionRepository transactionRepository,
     ISlotRepository slotRepository,
@@ -107,6 +108,8 @@ public class UnitOfWork(
     public ITeamWorkTypeRepository TeamWorkTypeRepository => teamWorkTypeRepository;
 
     public IDailyScheduleRepository DailyScheduleRepository => dailyScheduleRepository;
+
+    public IFeedbackRepository FeedbackRepository => feedbackRepository;
 
     // Transaction methods
     public async Task<bool> SaveChangesAsync()

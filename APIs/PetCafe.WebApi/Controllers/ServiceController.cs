@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PetCafe.Application.Models.FeedbackModels;
 using PetCafe.Application.Models.ServiceModels;
 using PetCafe.Application.Models.SlotModels;
 using PetCafe.Application.Services;
@@ -9,7 +10,8 @@ namespace PetCafe.WebApi.Controllers;
 
 public class ServiceController(
         IServService _service,
-        ISlotService _slotService
+        ISlotService _slotService,
+        IFeedbackService _feedbackService
     ) : BaseController
 {
 
@@ -54,6 +56,12 @@ public class ServiceController(
     public async Task<IActionResult> GetServiceSlots([FromRoute] Guid id, SlotFilterQuery query)
     {
         return Ok(await _slotService.GetAllPagingByServiceAsync(id, query));
+    }
+
+    [HttpGet("{id:guid}/feedbacks")]
+    public async Task<IActionResult> GetServiceFeedbacks([FromRoute] Guid id, [FromQuery] FeedbackFilterQuery query)
+    {
+        return Ok(await _feedbackService.GetByServiceIdAsync(id, query));
     }
 
 }

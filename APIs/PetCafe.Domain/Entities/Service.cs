@@ -39,5 +39,6 @@ public class Service : BaseEntity
     public virtual ICollection<Slot> Slots { get; set; } = [];
     public virtual ICollection<ServiceOrderDetail> OrderDetails { get; set; } = [];
     public virtual ICollection<CustomerBooking> Bookings { get; set; } = [];
+    public virtual ICollection<ServiceFeedback> Feedbacks { get; set; } = [];
 }
 

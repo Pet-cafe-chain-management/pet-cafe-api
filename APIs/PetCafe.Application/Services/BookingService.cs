@@ -65,10 +65,6 @@ public class BookingService(
         {
             filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.BookingDate <= query.ToDate) : x => x.BookingDate <= query.ToDate;
         }
-        if (query.FeedbackRating.HasValue)
-        {
-            filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.FeedbackRating == query.FeedbackRating) : x => x.FeedbackRating == query.FeedbackRating;
-        }
 
         var (Pagination, Entities) = await _unitOfWork.BookingRepository.ToPagination(
             pageIndex: query.Page ?? 0,
@@ -96,11 +92,6 @@ public class BookingService(
         {
             filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.BookingDate <= query.ToDate) : x => x.BookingDate <= query.ToDate;
         }
-        if (query.FeedbackRating.HasValue)
-        {
-            filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.FeedbackRating == query.FeedbackRating) : x => x.FeedbackRating == query.FeedbackRating;
-        }
-
         var (Pagination, Entities) = await _unitOfWork.BookingRepository.ToPagination(
             pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
@@ -138,12 +129,6 @@ public class BookingService(
             booking.BookingStatus = BookingStatusConstant.COMPLETED;
         }
 
-        if (booking.BookingStatus == BookingStatusConstant.COMPLETED && (!string.IsNullOrEmpty(booking.FeedbackComment) || model.FeedbackRating.HasValue))
-        {
-            booking.FeedbackRating = model.FeedbackRating;
-            booking.FeedbackComment = model.FeedbackComment;
-            booking.FeedbackDate = DateTime.UtcNow;
-        }
 
         _unitOfWork.BookingRepository.Update(booking);
         await _unitOfWork.SaveChangesAsync();

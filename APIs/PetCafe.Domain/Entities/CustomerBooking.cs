@@ -44,16 +44,6 @@ public class CustomerBooking : BaseEntity
     [MaxLength(20)]
     public string BookingStatus { get; set; } = BookingStatusConstant.PENDING;
 
-    [Column("feedback_rating")]
-    public int? FeedbackRating { get; set; } // 1-5 stars
-
-    [Column("feedback_comment")]
-    [MaxLength(1000)]
-    public string? FeedbackComment { get; set; }
-
-    [Column("feedback_date")]
-    public DateTime? FeedbackDate { get; set; }
-
     [Column("team_id")]
     public Guid TeamId { get; set; }
 
@@ -64,5 +54,6 @@ public class CustomerBooking : BaseEntity
     public virtual Service Service { get; set; } = default!;
     public virtual ServiceOrderDetail OrderDetail { get; set; } = default!;
     public virtual Slot Slot { get; set; } = default!;
+    public virtual ServiceFeedback? Feedback { get; set; }
 }
 

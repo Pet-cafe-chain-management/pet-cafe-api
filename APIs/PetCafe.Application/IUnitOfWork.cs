@@ -48,6 +48,7 @@ public interface IUnitOfWork
     ITeamWorkShiftRepository TeamWorkShiftRepository { get; }
     ICustomerBookingRepository BookingRepository { get; }
     IDailyScheduleRepository DailyScheduleRepository { get; }
+    IFeedbackRepository FeedbackRepository { get; }
     // Notification System
     INotificationRepository NotificationRepository { get; }
     IStorageRepository StorageRepository { get; }

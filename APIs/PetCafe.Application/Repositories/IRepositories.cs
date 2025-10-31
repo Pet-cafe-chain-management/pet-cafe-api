@@ -145,3 +145,8 @@ public interface ITeamWorkTypeRepository : IGenericRepository<TeamWorkType>
 public interface IDailyScheduleRepository : IGenericRepository<DailySchedule>
 {
 }
+
+public interface IFeedbackRepository : IGenericRepository<ServiceFeedback>
+{
+    System.Threading.Tasks.Task<List<ServiceFeedback>> GetByServiceIdAsync(Guid serviceId, CancellationToken cancellationToken = default);
+}
