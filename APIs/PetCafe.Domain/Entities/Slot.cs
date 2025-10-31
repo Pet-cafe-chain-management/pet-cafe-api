@@ -38,8 +38,14 @@ public class Slot : BaseEntity
     [Column("price")]
     public double Price { get; set; }
 
+    [Column("is_recurring")]
+    public bool IsRecurring { get; set; } = false;
+
+    [Column("specific_date")]
+    public DateTime? SpecificDate { get; set; }
+
     [Column("day_of_week")]
-    public string DayOfWeek { get; set; } = DayConstant.MONDAY;
+    public string? DayOfWeek { get; set; }
 
     [Column("is_active")]
     public string ServiceStatus { get; set; } = SlotStatusConstant.UNAVAILABLE;

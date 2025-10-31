@@ -31,8 +31,6 @@ public class Task : BaseEntity
     [DefaultValue(false)]
     public bool IsPublic { get; set; } = false;
 
-    [Column("is_recurring")]
-    public bool IsRecurring { get; set; } = false;
 
     [Column("estimated_hours")]
     public int? EstimatedHours { get; set; }

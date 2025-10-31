@@ -22,6 +22,9 @@ public interface IDailyTaskService
     Task AutoChangeStatusAsync();
 
     Task CreateDailyTasksFromSlotAsync(Slot slot, Domain.Entities.Task task, List<DateTime> dates, List<DailyTask>? existingDailyTasks = null);
+
+    Task CreateDailyTasksFromSpecificDateAsync(Slot slot, Domain.Entities.Task task, List<DailyTask>? existingDailyTasks = null);
+
 }
 
 
@@ -80,7 +83,7 @@ public class DailyTaskService(
 
         // Lấy tất cả slots recurring một lần
         var allSlots = await _unitOfWork.SlotRepository.WhereAsync(
-            x => x.Task.IsRecurring && !x.Task.IsDeleted,
+            x => x.IsRecurring && !x.IsDeleted,
             includeFunc: x => x.Include(s => s.Task)
         );
 
@@ -262,4 +265,22 @@ public class DailyTaskService(
             await _unitOfWork.SaveChangesAsync();
         }
     }
+
+    public async Task CreateDailyTasksFromSpecificDateAsync(Slot slot, Domain.Entities.Task task, List<DailyTask>? existingDailyTasks = null)
+    {
+        if (slot.IsRecurring || slot.SpecificDate == null) return;
+        var dailyTask = new DailyTask
+        {
+            Title = task.Title,
+            Description = task.Description,
+            Priority = task.Priority,
+            TeamId = slot.TeamId,
+            Status = DailyTaskStatusConstant.SCHEDULED,
+            AssignedDate = slot.SpecificDate.Value,
+        };
+        await _unitOfWork.DailyTaskRepository.AddAsync(dailyTask);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+
 }

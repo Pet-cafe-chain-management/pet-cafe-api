@@ -11,7 +11,6 @@ public class TaskCreateModel
     public string Priority { get; set; } = TaskPriorityConstant.MEDIUM; // Low, Medium, High, Urgent
     public string Status { get; set; } = TaskStatusConstant.ACTIVE; // Pending, InProgress, Completed, Cancelled
     public int? EstimatedHours { get; set; }
-    public bool IsRecurring { get; set; } = false;
     public bool IsPublic { get; set; } = false;
 
     public Guid WorkTypeId { get; set; }
@@ -37,8 +36,7 @@ public class TaskCreateModelValidator : AbstractValidator<TaskCreateModel>
             .Must(x => TaskStatusConstants.ALL_STATUSES.Contains(x)).WithMessage("Status không hợp lệ");
         RuleFor(x => x.EstimatedHours)
             .GreaterThan(0).WithMessage("EstimatedHours phải lớn hơn 0");
-        RuleFor(x => x.IsRecurring)
-            .NotNull().WithMessage("IsRecurring không được để trống");
+
 
     }
 }
@@ -64,6 +62,4 @@ public class TaskFilterQuery : FilterQuery
 
     [FromQuery(Name = "is_public")]
     public bool? IsPublic { get; set; }
-    [FromQuery(Name = "is_recurring")]
-    public bool? IsRecurring { get; set; }
 }

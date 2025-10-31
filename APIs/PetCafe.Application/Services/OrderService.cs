@@ -125,7 +125,8 @@ public class OrderService(
                     x.Area.IsActive == true && x.Team.IsActive == true &&
                     x.Task.Status == TaskStatusConstant.ACTIVE &&
                     x.Area.IsDeleted == false && x.Team.IsDeleted == false && x.Service!.IsDeleted == false &&
-                    x.DayOfWeek.ToUpper() == day_of_week &&
+                    ((x.IsRecurring && x.DayOfWeek != null && x.DayOfWeek.ToUpper() == day_of_week) ||
+                    (!x.IsRecurring && x.SpecificDate != null && x.SpecificDate == item.BookingDate.Date)) &&
                     x.StartTime <= item.BookingDate.TimeOfDay &&
                     x.EndTime >= item.BookingDate.TimeOfDay,
                     includeFunc: x => x.Include(x => x.Service!).Include(x => x.Area).Include(x => x.Team).Include(x => x.Task))

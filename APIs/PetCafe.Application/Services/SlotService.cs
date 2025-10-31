@@ -1,3 +1,4 @@
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.ShareModels;
@@ -17,24 +18,15 @@ public interface ISlotService
     Task<bool> DeleteAsync(Guid id);
 }
 
-public class SlotService(IUnitOfWork _unitOfWork, IDailyTaskService _dailyTaskService) : ISlotService
+public class SlotService(
+    IUnitOfWork _unitOfWork,
+    IDailyTaskService _dailyTaskService,
+    IBackgroundJobClient _backgroundJobClient) : ISlotService
 {
-    public async Task<Slot> CreateAsync(SlotCreateModel model)
+    [AutomaticRetry(Attempts = 0)]
+    public async Task CreateDailyTasksFromSlotAsync(Slot slot, Domain.Entities.Task task)
     {
-        var task = await _unitOfWork.TaskRepository.GetByIdAsync(model.TaskId) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
-        await ValidateSlot(task, model);
-        var slot = _unitOfWork.Mapper.Map<Slot>(model);
-        await CheckDuplicateSlot(model);
-        if (task.ServiceId != null)
-        {
-            slot.ServiceId = task.ServiceId;
-            slot.ServiceStatus = SlotStatusConstant.UNAVAILABLE;
-        }
-        await _unitOfWork.SlotRepository.AddAsync(slot);
-        await _unitOfWork.SaveChangesAsync();
-
-        // Tạo DailyTasks cho các ngày còn lại trong tuần nếu task là recurring
-        if (task.IsRecurring)
+        if (slot.IsRecurring)
         {
             var today = DateTime.UtcNow.Date;
             var currentDayOfWeek = today.DayOfWeek;
@@ -55,6 +47,28 @@ public class SlotService(IUnitOfWork _unitOfWork, IDailyTaskService _dailyTaskSe
                 await _dailyTaskService.CreateDailyTasksFromSlotAsync(slot, task, remainingDates);
             }
         }
+        else
+        {
+            await _dailyTaskService.CreateDailyTasksFromSpecificDateAsync(slot, task);
+        }
+    }
+
+    public async Task<Slot> CreateAsync(SlotCreateModel model)
+    {
+        var task = await _unitOfWork.TaskRepository.GetByIdAsync(model.TaskId) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
+        await ValidateSlot(task, model);
+        var slot = _unitOfWork.Mapper.Map<Slot>(model);
+        await CheckDuplicateSlot(model);
+        if (task.ServiceId != null)
+        {
+            slot.ServiceId = task.ServiceId;
+            slot.ServiceStatus = SlotStatusConstant.UNAVAILABLE;
+        }
+        await _unitOfWork.SlotRepository.AddAsync(slot);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Tạo DailyTasks cho các ngày còn lại trong tuần nếu task là recurring
+        _backgroundJobClient.Enqueue(() => CreateDailyTasksFromSlotAsync(slot, task));
 
         return slot;
     }
@@ -68,7 +82,55 @@ public class SlotService(IUnitOfWork _unitOfWork, IDailyTaskService _dailyTaskSe
         _unitOfWork.Mapper.Map(model, slot);
         _unitOfWork.SlotRepository.Update(slot);
         await _unitOfWork.SaveChangesAsync();
+        if (model.IsUpdateRelatedData)
+        {
+            _backgroundJobClient.Enqueue(() => UpdateDailyTasksFromSlotAsync(slot));
+        }
         return slot;
+    }
+
+    public async Task UpdateDailyTasksFromSlotAsync(Slot slot)
+    {
+        var dailyTasks = await _unitOfWork.DailyTaskRepository.WhereAsync(x =>
+            x.SlotId == slot.Id &&
+            x.Status == DailyTaskStatusConstant.SCHEDULED
+        );
+        if (dailyTasks.Count == 0) return;
+
+        foreach (var dailyTask in dailyTasks)
+        {
+            if (slot.IsRecurring && slot.DayOfWeek != null &&
+                !slot.DayOfWeek.Equals(dailyTask.AssignedDate.DayOfWeek.ToString(), StringComparison.CurrentCultureIgnoreCase))
+            {
+                // Tính ngày kế tiếp gần nhất với ngày hiện tại khớp với DayOfWeek của slot
+                var today = DateTime.UtcNow.Date;
+                var targetDayOfWeek = Enum.Parse<DayOfWeek>(slot.DayOfWeek, true);
+                var daysUntilTarget = ((int)targetDayOfWeek - (int)today.DayOfWeek + 7) % 7;
+
+                // Nếu cùng ngày, lấy ngày kế tiếp (tuần sau)
+                if (daysUntilTarget == 0)
+                {
+                    daysUntilTarget = 7;
+                }
+
+                dailyTask.AssignedDate = today.AddDays(daysUntilTarget);
+            }
+            else
+            {
+                dailyTask.AssignedDate = slot.SpecificDate!.Value;
+            }
+            dailyTask.StartTime = slot.StartTime;
+            dailyTask.EndTime = slot.EndTime;
+            dailyTask.TaskId = slot.TaskId;
+            dailyTask.SlotId = slot.Id;
+            dailyTask.TeamId = slot.TeamId;
+            dailyTask.Status = DailyTaskStatusConstant.SCHEDULED;
+            dailyTask.Title = slot.Task.Title;
+            dailyTask.Description = slot.Task.Description;
+        }
+
+        _unitOfWork.DailyTaskRepository.UpdateRange(dailyTasks);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task ValidateSlot(Domain.Entities.Task task, SlotCreateModel model)
@@ -97,15 +159,28 @@ public class SlotService(IUnitOfWork _unitOfWork, IDailyTaskService _dailyTaskSe
 
         var validTeamWorkShift = team_work_shifts.FirstOrDefault(x =>
             x.WorkShift.ApplicableDays != null &&
-            x.WorkShift.ApplicableDays.Contains(model.DayOfWeek) &&
             model.StartTime >= x.WorkShift.StartTime &&
             model.EndTime <= x.WorkShift.EndTime)
             ?? throw new BadRequestException("Nhóm không hoạt động trong khoảng thời gian này!");
+
+        if (model.IsRecurring && model.DayOfWeek != null && validTeamWorkShift.WorkShift.ApplicableDays.Contains(model.DayOfWeek))
+        {
+            throw new BadRequestException("Ngày trong tuần không cùng chung ca làm việc!");
+        }
+
+        if (!model.IsRecurring && model.SpecificDate != null && validTeamWorkShift.WorkShift.ApplicableDays.Contains(model.SpecificDate.Value.DayOfWeek.ToString()))
+        {
+            throw new BadRequestException("Ngày trong tuần không cùng chung ca làm việc!");
+        }
+
     }
 
     public async Task<bool> DeleteAsync(Guid id)
     {
+
         var slot = await _unitOfWork.SlotRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+        var dailyTasks = await _unitOfWork.DailyTaskRepository.WhereAsync(x => x.SlotId == id && x.Status == DailyTaskStatusConstant.SCHEDULED);
+        _unitOfWork.DailyTaskRepository.SoftRemoveRange(dailyTasks);
         _unitOfWork.SlotRepository.SoftRemove(slot);
         return await _unitOfWork.SaveChangesAsync();
     }
