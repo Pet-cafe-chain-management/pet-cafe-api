@@ -22,8 +22,6 @@ public class WorkShift : BaseEntity
     [MaxLength(200)]
     public string? Description { get; set; }
 
-    [Column("is_active")]
-    public bool IsActive { get; set; } = true;
 
     [Column("applicable_days")]
     public List<string> ApplicableDays { get; set; } = DayConstant.ALLDAYS;

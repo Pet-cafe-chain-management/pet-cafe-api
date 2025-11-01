@@ -25,7 +25,5 @@ public class WorkShiftConfiguration : IEntityTypeConfiguration<WorkShift>
 
         builder.HasIndex(x => x.Name).IsUnique();
 
-        builder.Property(x => x.IsActive)
-            .HasDefaultValue(true);
     }
 }

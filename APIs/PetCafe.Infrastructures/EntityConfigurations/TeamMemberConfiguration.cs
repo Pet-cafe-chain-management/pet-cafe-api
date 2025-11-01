@@ -20,8 +20,5 @@ public class TeamMemberConfiguration : IEntityTypeConfiguration<TeamMember>
             .HasForeignKey(x => x.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Property(x => x.IsActive)
-            .HasDefaultValue(true);
-
     }
 }

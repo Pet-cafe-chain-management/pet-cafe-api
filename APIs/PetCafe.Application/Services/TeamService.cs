@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.DailyTaskModels;
@@ -7,6 +8,7 @@ using PetCafe.Application.Models.SlotModels;
 using PetCafe.Application.Models.TeamModels;
 using PetCafe.Application.Utilities;
 using PetCafe.Domain.Entities;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Application.Services;
 
@@ -24,13 +26,14 @@ public interface ITeamService
     Task<BasePagingResponseModel<DailyTask>> GetDailyTasksByTeamIdAsync(Guid teamId, DailyTaskFilterQuery query);
     Task<List<TeamMember>> GetMembersByTeamIdAsync(Guid teamId);
     Task<bool> AddMemeberToTeam(List<MemberCreateModel> models, Guid id);
-    Task<bool> UpdateMemberInTeam(List<MemberUpdateModel> models, Guid id);
     Task<bool> RemoveMemberFromTeam(Guid teamMemberId);
 }
 
 
 public class TeamService(
-    IUnitOfWork _unitOfWork
+    IUnitOfWork _unitOfWork,
+    IBackgroundJobClient _backgroundJobClient,
+    IDailyScheduleService _dailyScheduleService
 ) : ITeamService
 {
     public async Task<List<WorkType>> GetWorkTypeNotInTeamAsync(Guid teamId)
@@ -76,7 +79,23 @@ public class TeamService(
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var team = await _unitOfWork.TeamRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+        var team = await _unitOfWork.TeamRepository.GetByIdAsync(
+            id,
+            includeFunc: x => x.Include(t => t.TeamMembers.Where(tm => !tm.IsDeleted))
+        ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+
+        // Xóa DailySchedule của các thành viên liên quan tới team này
+        var teamMemberIds = team.TeamMembers.Select(tm => tm.Id).ToList();
+        if (teamMemberIds.Count > 0)
+        {
+            var dailySchedules = await _unitOfWork.DailyScheduleRepository.WhereAsync(
+                ds => teamMemberIds.Contains(ds.TeamMemberId)
+            );
+
+            if (dailySchedules.Count > 0)
+                _unitOfWork.DailyScheduleRepository.SoftRemoveRange(dailySchedules);
+        }
+
         _unitOfWork.TeamRepository.SoftRemove(team);
         return await _unitOfWork.SaveChangesAsync();
     }
@@ -123,43 +142,65 @@ public class TeamService(
 
     public async Task<bool> AddMemeberToTeam(List<MemberCreateModel> models, Guid id)
     {
-        var team = await _unitOfWork.TeamRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+        var team = await _unitOfWork.TeamRepository.GetByIdAsync(
+            id,
+            includeFunc: x => x.Include(t => t.TeamWorkShifts.Where(tws => !tws.IsDeleted))
+                              .ThenInclude(tws => tws.WorkShift)
+        ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
 
         var teamMembers = models.Select(x => new TeamMember
         {
             TeamId = id,
             EmployeeId = x.EmployeeId,
-            IsActive = true
         }).ToList();
 
         await _unitOfWork.TeamMemberRepository.AddRangeAsync(teamMembers);
-        return await _unitOfWork.SaveChangesAsync();
-    }
+        await _unitOfWork.SaveChangesAsync();
 
-    public async Task<bool> UpdateMemberInTeam(List<MemberUpdateModel> models, Guid id)
-    {
-        var team = await _unitOfWork.TeamRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
-        var memberIds = models.Select(x => x.EmployeeId).ToList();
-        var existingMembers = await _unitOfWork.TeamMemberRepository.WhereAsync(x => x.TeamId == id && memberIds.Contains(x.EmployeeId));
-
-        if (existingMembers.Count == 0) throw new BadRequestException("Không tìm thấy thành viên trong đội!");
-
-        foreach (var member in existingMembers)
+        // Tạo DailySchedule cho các ngày còn lại trong tuần (chạy background)
+        if (team.TeamWorkShifts.Count > 0 && teamMembers.Count > 0)
         {
-            var updateModel = models.FirstOrDefault(x => x.EmployeeId == member.EmployeeId);
-            if (updateModel != null)
+            var today = DateTime.UtcNow.Date;
+
+            // Tính ngày đầu tuần (Thứ 2) và cuối tuần (Chủ nhật)
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
+            if (today.DayOfWeek == DayOfWeek.Sunday)
             {
-                member.IsActive = updateModel.IsActive;
-                _unitOfWork.TeamMemberRepository.Update(member);
+                startOfWeek = startOfWeek.AddDays(7);
             }
+            var endOfWeek = startOfWeek.AddDays(6);
+
+            // Lấy tất cả các work shift IDs của team
+            var workShiftIds = team.TeamWorkShifts.Select(tws => tws.WorkShiftId).ToList();
+            var teamMemberIds = teamMembers.Select(tm => tm.Id).ToList();
+
+            // Enqueue background job để tạo DailySchedule (từ hôm nay đến cuối tuần)
+            _backgroundJobClient.Enqueue(() => _dailyScheduleService.CreateDailySchedulesForMembersBackgroundAsync(
+                teamMemberIds,
+                workShiftIds,
+                today,
+                endOfWeek,
+                true
+            ));
         }
-        return await _unitOfWork.SaveChangesAsync();
+
+        return true;
     }
+
+
 
     public async Task<bool> RemoveMemberFromTeam(Guid teamMemberId)
     {
         var member = await _unitOfWork.TeamMemberRepository.GetByIdAsync(teamMemberId)
             ?? throw new BadRequestException("Không tìm thấy thông tin!");
+
+        // Xóa DailySchedule của member này
+        var dailySchedules = await _unitOfWork.DailyScheduleRepository.WhereAsync(
+            ds => ds.TeamMemberId == teamMemberId
+        );
+
+        if (dailySchedules.Count > 0)
+            _unitOfWork.DailyScheduleRepository.SoftRemoveRange(dailySchedules);
 
         _unitOfWork.TeamMemberRepository.SoftRemove(member);
         return await _unitOfWork.SaveChangesAsync();

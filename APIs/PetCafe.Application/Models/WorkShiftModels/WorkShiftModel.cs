@@ -15,7 +15,6 @@ public class WorkShiftCreateModel
 
 public class WorkShiftUpdateModel : WorkShiftCreateModel
 {
-    public bool IsActive { get; set; } = true;
 
 }
 

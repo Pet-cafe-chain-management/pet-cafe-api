@@ -10,8 +10,7 @@ public class BookingUpdateModel
     public string BookingStatus { get; set; } = BookingStatusConstant.PENDING;
     public string? Notes { get; set; }
     public string? CancelReason { get; set; }
-    public int? FeedbackRating { get; set; }
-    public string? FeedbackComment { get; set; }
+
 }
 
 public class BookingUpdateModelValidator : AbstractValidator<BookingUpdateModel>
@@ -30,14 +29,6 @@ public class BookingUpdateModelValidator : AbstractValidator<BookingUpdateModel>
             .MaximumLength(500).WithMessage("Lý do hủy đặt lịch không được vượt quá 500 ký tự")
             .When(x => !string.IsNullOrEmpty(x.CancelReason));
 
-        RuleFor(x => x.FeedbackRating)
-            .NotEmpty().WithMessage("Đánh giá không được để trống")
-            .GreaterThanOrEqualTo(1).WithMessage("Đánh giá phải lớn hơn hoặc bằng 1")
-            .LessThanOrEqualTo(5).WithMessage("Đánh giá phải nhỏ hơn hoặc bằng 5");
-
-        RuleFor(x => x.FeedbackComment)
-            .MaximumLength(500).WithMessage("Ghi chú đánh giá không được vượt quá 500 ký tự")
-            .When(x => !string.IsNullOrEmpty(x.FeedbackComment));
 
     }
 }

@@ -15,8 +15,6 @@ public class TeamMember : BaseEntity
     public Guid EmployeeId { get; set; }
 
 
-    [Column("is_active")]
-    public bool IsActive { get; set; } = true;
 
     // Navigation properties
     public virtual Team Team { get; set; } = default!;

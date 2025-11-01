@@ -277,6 +277,10 @@ public class DailyTaskService(
             TeamId = slot.TeamId,
             Status = DailyTaskStatusConstant.SCHEDULED,
             AssignedDate = slot.SpecificDate.Value,
+            StartTime = slot.StartTime,
+            EndTime = slot.EndTime,
+            TaskId = task.Id,
+            SlotId = slot.Id,
         };
         await _unitOfWork.DailyTaskRepository.AddAsync(dailyTask);
         await _unitOfWork.SaveChangesAsync();

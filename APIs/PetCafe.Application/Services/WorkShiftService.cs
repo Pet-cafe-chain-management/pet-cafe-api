@@ -68,6 +68,24 @@ public class WorkShiftService(
     public async Task<bool> DeleteAsync(Guid id)
     {
         var workShift = await _unitOfWork.WorkShiftRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+
+        // Xóa DailySchedule liên quan tới work shift này
+        var dailySchedules = await _unitOfWork.DailyScheduleRepository.WhereAsync(
+            ds => ds.WorkShiftId == id
+        );
+        if (dailySchedules.Count > 0)
+        {
+            _unitOfWork.DailyScheduleRepository.SoftRemoveRange(dailySchedules);
+        }
+
+        // Xóa TeamWorkShift liên quan tới work shift này
+        var teamWorkShifts = await _unitOfWork.TeamWorkShiftRepository.WhereAsync(
+            tws => tws.WorkShiftId == id
+        );
+
+        if (teamWorkShifts.Count > 0)
+            _unitOfWork.TeamWorkShiftRepository.SoftRemoveRange(teamWorkShifts);
+
         _unitOfWork.WorkShiftRepository.SoftRemove(workShift);
         return await _unitOfWork.SaveChangesAsync();
     }

@@ -79,54 +79,126 @@ public class SlotService(
         await ValidateSlot(task, model);
         var slot = await _unitOfWork.SlotRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
         await CheckDuplicateSlot(model, slot.Id);
+
+        // Lưu lại giá trị IsRecurring cũ để kiểm tra thay đổi
+        var oldIsRecurring = slot.IsRecurring;
+        var oldSpecificDate = slot.SpecificDate;
+
         _unitOfWork.Mapper.Map(model, slot);
         _unitOfWork.SlotRepository.Update(slot);
         await _unitOfWork.SaveChangesAsync();
+
+        // Xử lý khi chuyển đổi recurring ↔ non-recurring
+        var isRecurringChanged = oldIsRecurring != slot.IsRecurring;
+
+        if (isRecurringChanged)
+        {
+            // Chuyển từ non-recurring → recurring: Tạo DailyTask mới cho các ngày còn lại trong tuần
+            if (!oldIsRecurring && slot.IsRecurring && slot.DayOfWeek != null)
+            {
+                _backgroundJobClient.Enqueue(() => CreateDailyTasksFromSlotAsync(slot, task));
+            }
+            // Chuyển từ recurring → non-recurring: Xóa DailyTask tương lai không phù hợp
+            else if (oldIsRecurring && !slot.IsRecurring && slot.SpecificDate.HasValue)
+            {
+                var today = DateTime.UtcNow.Date;
+                var futureDailyTasks = await _unitOfWork.DailyTaskRepository.WhereAsync(
+                    dt => dt.SlotId == slot.Id
+                        && dt.Status == DailyTaskStatusConstant.SCHEDULED
+                        && dt.AssignedDate >= today
+                        && dt.AssignedDate.Date != slot.SpecificDate.Value.Date
+                );
+
+                if (futureDailyTasks.Count > 0)
+                {
+                    _unitOfWork.DailyTaskRepository.SoftRemoveRange(futureDailyTasks);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+
+                // Tạo DailyTask cho SpecificDate nếu chưa có
+                var existingDailyTaskForDate = await _unitOfWork.DailyTaskRepository.FirstOrDefaultAsync(
+                    dt => dt.SlotId == slot.Id
+                        && dt.AssignedDate.Date == slot.SpecificDate.Value.Date
+                );
+
+                if (existingDailyTaskForDate == null)
+                {
+                    await _dailyTaskService.CreateDailyTasksFromSpecificDateAsync(slot, task);
+                }
+            }
+        }
+
+        // Xử lý update DailyTask hiện có nếu cần
         if (model.IsUpdateRelatedData)
         {
             _backgroundJobClient.Enqueue(() => UpdateDailyTasksFromSlotAsync(slot));
         }
+
         return slot;
     }
 
     public async Task UpdateDailyTasksFromSlotAsync(Slot slot)
     {
+        var today = DateTime.UtcNow.Date;
+
+        // Tính ngày đầu tuần (Thứ 2) và cuối tuần (Chủ nhật)
+        var startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
+        if (today.DayOfWeek == DayOfWeek.Sunday)
+        {
+            startOfWeek = startOfWeek.AddDays(7);
+        }
+        var endOfWeek = startOfWeek.AddDays(6);
+
+        // Chỉ lấy các DailyTask trong tuần hiện tại (từ Thứ 2 đến Chủ nhật)
         var dailyTasks = await _unitOfWork.DailyTaskRepository.WhereAsync(x =>
             x.SlotId == slot.Id &&
-            x.Status == DailyTaskStatusConstant.SCHEDULED
+            x.Status == DailyTaskStatusConstant.SCHEDULED &&
+            x.AssignedDate >= startOfWeek &&
+            x.AssignedDate <= endOfWeek
         );
         if (dailyTasks.Count == 0) return;
 
+        // Load Task để có thông tin cập nhật
+        var task = await _unitOfWork.TaskRepository.GetByIdAsync(slot.TaskId);
+        if (task == null) return;
+
         foreach (var dailyTask in dailyTasks)
         {
-            if (slot.IsRecurring && slot.DayOfWeek != null &&
-                !slot.DayOfWeek.Equals(dailyTask.AssignedDate.DayOfWeek.ToString(), StringComparison.CurrentCultureIgnoreCase))
+            if (slot.IsRecurring && slot.DayOfWeek != null)
             {
-                // Tính ngày kế tiếp gần nhất với ngày hiện tại khớp với DayOfWeek của slot
-                var today = DateTime.UtcNow.Date;
+                // Tính ngày trong tuần hiện tại khớp với DayOfWeek của slot
                 var targetDayOfWeek = Enum.Parse<DayOfWeek>(slot.DayOfWeek, true);
-                var daysUntilTarget = ((int)targetDayOfWeek - (int)today.DayOfWeek + 7) % 7;
+                var daysFromStartOfWeek = ((int)targetDayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+                var newDate = startOfWeek.AddDays(daysFromStartOfWeek);
 
-                // Nếu cùng ngày, lấy ngày kế tiếp (tuần sau)
-                if (daysUntilTarget == 0)
+                // Đảm bảo ngày không trong quá khứ (ít nhất là hôm nay)
+                if (newDate < today)
                 {
-                    daysUntilTarget = 7;
+                    // Nếu ngày đã qua trong tuần, không cập nhật (giữ nguyên hoặc để job AutoAssignTasksAsync xử lý)
+                    continue;
                 }
 
-                dailyTask.AssignedDate = today.AddDays(daysUntilTarget);
+                dailyTask.AssignedDate = newDate;
             }
-            else
+            else if (!slot.IsRecurring && slot.SpecificDate.HasValue)
             {
-                dailyTask.AssignedDate = slot.SpecificDate!.Value;
+                // Nếu SpecificDate nằm trong tuần và không trong quá khứ, cập nhật
+                if (slot.SpecificDate.Value >= startOfWeek &&
+                    slot.SpecificDate.Value <= endOfWeek &&
+                    slot.SpecificDate.Value >= today)
+                {
+                    dailyTask.AssignedDate = slot.SpecificDate.Value;
+                }
             }
+
             dailyTask.StartTime = slot.StartTime;
             dailyTask.EndTime = slot.EndTime;
             dailyTask.TaskId = slot.TaskId;
             dailyTask.SlotId = slot.Id;
             dailyTask.TeamId = slot.TeamId;
             dailyTask.Status = DailyTaskStatusConstant.SCHEDULED;
-            dailyTask.Title = slot.Task.Title;
-            dailyTask.Description = slot.Task.Description;
+            dailyTask.Title = task.Title;
+            dailyTask.Description = task.Description;
         }
 
         _unitOfWork.DailyTaskRepository.UpdateRange(dailyTasks);

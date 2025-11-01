@@ -74,13 +74,13 @@ public class TeamController(ITeamService _teamService, ITeamWorkShiftService _te
         return StatusCode(201);
     }
 
-    [HttpPut("{id:guid}/members")]
-    [Authorize(Roles = RoleConstants.MANAGER)]
-    public async Task<IActionResult> UpdateMembersInTeam(Guid id, [FromBody] List<MemberUpdateModel> models)
-    {
-        await _teamService.UpdateMemberInTeam(models, id);
-        return NoContent();
-    }
+    // [HttpPut("{id:guid}/members")]
+    // [Authorize(Roles = RoleConstants.MANAGER)]
+    // public async Task<IActionResult> UpdateMembersInTeam(Guid id, [FromBody] List<MemberUpdateModel> models)
+    // {
+    //     await _teamService.UpdateMemberInTeam(models, id);
+    //     return NoContent();
+    // }
 
     [HttpGet("{id:guid}/members")]
     [Authorize]
