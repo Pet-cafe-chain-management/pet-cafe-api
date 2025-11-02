@@ -124,10 +124,10 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork) : IDailyScheduleServi
     public async Task<BasePagingResponseModel<DailySchedule>> GetDailySchedulesAsync(DailyScheduleFilterQuery query)
     {
         // Lấy tất cả các team members của team
-        Expression<Func<DailySchedule, bool>> filter = x => true;
+        Expression<Func<DailySchedule, bool>> filter = null!;
         if (query.TeamId.HasValue)
         {
-            filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.TeamMemberId == query.TeamId.Value) : x => x.TeamMemberId == query.TeamId.Value;
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.TeamMember.TeamId == query.TeamId.Value) : x => x.TeamMember.TeamId == query.TeamId.Value;
         }
 
         if (query.FromDate.HasValue)

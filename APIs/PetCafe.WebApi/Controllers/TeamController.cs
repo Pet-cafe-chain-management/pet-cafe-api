@@ -99,13 +99,13 @@ public class TeamController(ITeamService _teamService, ITeamWorkShiftService _te
         return StatusCode(201);
     }
 
-    [HttpDelete("{id:guid}/work-shifts")]
-    [Authorize(Roles = RoleConstants.MANAGER)]
-    public async Task<IActionResult> RemoveWorkShift(Guid id)
-    {
-        await _teamWorkShiftService.RemoveWorkShift(id);
-        return NoContent();
-    }
+    // [HttpDelete("{id:guid}/work-shifts")]
+    // [Authorize(Roles = RoleConstants.MANAGER)]
+    // public async Task<IActionResult> RemoveWorkShift(Guid id)
+    // {
+    //     await _teamWorkShiftService.RemoveWorkShift(id);
+    //     return NoContent();
+    // }
 
     [HttpGet("{id:guid}/work-shifts")]
     [Authorize]

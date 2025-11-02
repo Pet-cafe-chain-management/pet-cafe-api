@@ -11,7 +11,7 @@ namespace PetCafe.Application.Services;
 public interface ITeamWorkShiftService
 {
     Task<bool> AssignWorkShift(Guid teamId, TeamWorkShiftCreateModel model);
-    Task<BasePagingResponseModel<WorkShift>> GetTeamWorkShift(Guid teamId, FilterQuery query);
+    Task<BasePagingResponseModel<TeamWorkShift>> GetTeamWorkShift(Guid teamId, FilterQuery query);
 
     Task<bool> RemoveWorkShift(Guid teamWorkShiftId);
 }
@@ -262,21 +262,22 @@ public class TeamWorkShiftService(
 
     #endregion
 
-    public async Task<BasePagingResponseModel<WorkShift>> GetTeamWorkShift(Guid teamId, FilterQuery query)
+    public async Task<BasePagingResponseModel<TeamWorkShift>> GetTeamWorkShift(Guid teamId, FilterQuery query)
     {
 
-        var (Pagination, Entities) = await _unitOfWork.WorkShiftRepository.ToPagination(
+        var (Pagination, Entities) = await _unitOfWork.TeamWorkShiftRepository.ToPagination(
             pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
-            filter: x => x.TeamWorkShifts.Any(x => x.TeamId == teamId && !x.IsDeleted),
+            filter: x => x.TeamId == teamId,
             searchTerm: query.Q,
             searchFields: ["Name", "Description"],
             sortOrders: query.OrderBy?.ToDictionary(
                     k => k.OrderColumn ?? "CreatedAt",
                     v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
                 ) ?? new Dictionary<string, bool> { { "CreatedAt", false } }
-            );
-        return BasePagingResponseModel<WorkShift>.CreateInstance(Entities, Pagination);
+            , includeFunc: x => x.Include(x => x.WorkShift)
+        );
+        return BasePagingResponseModel<TeamWorkShift>.CreateInstance(Entities, Pagination);
     }
 
     public async Task<bool> RemoveWorkShift(Guid teamWorkShiftId)
