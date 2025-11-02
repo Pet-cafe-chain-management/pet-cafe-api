@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Domain.Entities;
 
@@ -46,6 +47,13 @@ public class Pet : BaseEntity
     [Column("image_url")]
     [MaxLength(255)]
     public string? ImageUrl { get; set; }
+
+    [Column("health_status")]
+    [MaxLength(20)]
+    public string HealthStatus { get; set; } = HealthStatusConstant.HEALTHY;
+
+    [Column("is_active")]
+    public bool IsActive { get; set; } = true;
 
     [Column("arrival_date")]
     public DateTime ArrivalDate { get; set; }

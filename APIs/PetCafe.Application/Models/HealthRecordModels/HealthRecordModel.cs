@@ -1,4 +1,5 @@
 using FluentValidation;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Application.Models.HealthRecordModels;
 
@@ -8,7 +9,7 @@ public class HealthRecordCreateModel
     public DateTime CheckDate { get; set; } = DateTime.UtcNow;
     public double? Weight { get; set; } = 0;
     public double? Temperature { get; set; }
-    public string HealthStatus { get; set; } = default!; // Healthy, Sick, Recovering
+    public string HealthStatus { get; set; } = HealthStatusConstant.HEALTHY;
     public string? Symptoms { get; set; }
     public string? Treatment { get; set; }
     public string? Veterinarian { get; set; }
@@ -41,8 +42,7 @@ public class HealthRecordCreateModelValidator : AbstractValidator<HealthRecordCr
 
         RuleFor(x => x.HealthStatus)
             .NotEmpty().WithMessage("Tình trạng sức khỏe không được để trống")
-            .Must(status => status == "Healthy" || status == "Sick" || status == "Recovering")
-            .WithMessage("Tình trạng sức khỏe phải là một trong các giá trị: Healthy, Sick, Recovering");
+            .Must(status => HealthStatusConstant.ALL_STATUSES.Contains(status!)).WithMessage("Tình trạng sức khỏe không hợp lệ: " + string.Join(", ", HealthStatusConstant.ALL_STATUSES));
 
         RuleFor(x => x.Symptoms)
             .MaximumLength(500).WithMessage("Triệu chứng không được vượt quá 500 ký tự")

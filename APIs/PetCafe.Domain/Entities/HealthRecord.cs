@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Domain.Entities;
 
@@ -22,7 +23,7 @@ public class HealthRecord : BaseEntity
     [Column("health_status")]
     [Required]
     [MaxLength(20)]
-    public string HealthStatus { get; set; } = default!; // Healthy, Sick, Recovering
+    public string HealthStatus { get; set; } = HealthStatusConstant.HEALTHY;
 
     [Column("symptoms")]
     [MaxLength(500)]

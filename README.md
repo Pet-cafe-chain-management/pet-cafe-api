@@ -304,3 +304,251 @@ Các tác vụ được thực hiện trong background:
 3. **Phòng chống trùng lịch**: Tự động kiểm tra và ngăn chặn trùng lịch giữa các team và nhân viên
 4. **Quản lý capacity**: Kiểm tra và giới hạn số lượng booking cho mỗi slot
 5. **Background processing**: Xử lý các tác vụ nặng trong background để tối ưu performance
+
+---
+
+## 📈 Statistics APIs
+
+Hệ thống cung cấp các API thống kê toàn diện để quản lý và phân tích hiệu suất hoạt động của Pet Cafe. Tất cả các API statistics yêu cầu quyền **MANAGER**.
+
+### 1. Thống kê Doanh thu và Bán hàng
+
+#### `GET /statistics/revenue`
+
+- **Mục đích**: Phân tích doanh thu theo nhiều tiêu chí và so sánh với kỳ trước
+- **Query Parameters**: `start_date`, `end_date`, `period` (day/week/month/year)
+- **Ý nghĩa**:
+  - Cung cấp tổng doanh thu, tỷ lệ tăng trưởng so với kỳ trước
+  - Phân tích doanh thu theo phương thức thanh toán, trạng thái đơn hàng, loại đơn hàng
+  - Phân tích doanh thu theo chu kỳ thời gian (ngày/tuần/tháng/năm)
+  - Tính toán giá trị đơn hàng trung bình
+  - Hỗ trợ ra quyết định về chiến lược giá và marketing
+
+#### `GET /statistics/orders`
+
+- **Mục đích**: Thống kê đơn hàng và khách hàng tiềm năng
+- **Query Parameters**: `start_date`, `end_date`, `period` (day/week/month/year)
+- **Ý nghĩa**:
+  - Theo dõi số lượng đơn hàng và tỷ lệ tăng trưởng
+  - Phân tích đơn hàng theo trạng thái (pending, confirmed, completed, cancelled)
+  - Xác định top khách hàng theo số lượng đơn và doanh thu
+  - Phân tích xu hướng đơn hàng theo thời gian
+  - Đánh giá hiệu quả xử lý đơn hàng
+
+#### `GET /statistics/products`
+
+- **Mục đích**: Quản lý tồn kho và phân tích hiệu suất sản phẩm
+- **Query Parameters**: `start_date`, `end_date`, `period` (day/week/month/year)
+- **Ý nghĩa**:
+  - Xác định top sản phẩm bán chạy theo số lượng và doanh thu
+  - Cảnh báo sản phẩm sắp hết hàng (low stock)
+  - Phát hiện sản phẩm không bán được (no sales)
+  - Tính toán giá trị tồn kho tổng
+  - Tối ưu hóa quản lý hàng tồn kho và chiến lược mua hàng
+
+---
+
+### 2. Thống kê Dịch vụ
+
+#### `GET /statistics/services`
+
+- **Mục đích**: Đánh giá hiệu suất dịch vụ và booking
+- **Query Parameters**: `start_date`, `end_date`, `period` (day/week/month/year)
+- **Ý nghĩa**:
+  - Theo dõi tổng số booking và tỷ lệ hoàn thành/hủy
+  - Phân tích booking theo trạng thái
+  - Xác định dịch vụ phổ biến nhất (top services)
+  - Tính toán doanh thu theo từng dịch vụ
+  - Phân tích xu hướng booking theo thời gian
+  - Hỗ trợ tối ưu hóa menu dịch vụ
+
+#### `GET /statistics/slots`
+
+- **Mục đích**: Tối ưu hóa sử dụng khung giờ dịch vụ
+- **Query Parameters**: `start_date`, `end_date`
+- **Ý nghĩa**:
+  - Tính toán tỷ lệ sử dụng slots (utilization rate)
+  - Phân tích slots theo khu vực (area)
+  - Theo dõi tình trạng available/occupied của slots theo ngày
+  - Xác định thời điểm peak và off-peak
+  - Hỗ trợ điều chỉnh lịch trình và capacity
+
+#### `GET /statistics/feedbacks`
+
+- **Mục đích**: Đánh giá chất lượng dịch vụ thông qua phản hồi khách hàng
+- **Query Parameters**: Không có
+- **Ý nghĩa**:
+  - Tính toán điểm đánh giá trung bình tổng thể
+  - Phân tích phân bố điểm đánh giá (1-5 sao)
+  - Xác định dịch vụ được đánh giá cao nhất (top rated)
+  - Theo dõi số lượng feedback và mức độ hài lòng
+  - Hỗ trợ cải thiện chất lượng dịch vụ
+
+---
+
+### 3. Thống kê Thú cưng
+
+#### `GET /statistics/pets`
+
+- **Mục đích**: Phân tích đặc điểm và xu hướng thú cưng
+- **Query Parameters**: Không có
+- **Ý nghĩa**:
+  - Thống kê tổng số thú cưng
+  - Phân tích theo loài (species) và giống (breed)
+  - Phân tích theo giới tính và nhóm tuổi
+  - Theo dõi xu hướng nhận nuôi theo tháng
+  - Hỗ trợ lập kế hoạch dịch vụ và chuẩn bị nguồn lực
+
+#### `GET /statistics/pets/health`
+
+- **Mục đích**: Quản lý sức khỏe và tiêm chủng cho thú cưng
+- **Query Parameters**: Không có
+- **Ý nghĩa**:
+  - Theo dõi số lượng thú cưng có hồ sơ sức khỏe
+  - Cảnh báo lịch tiêm chủng sắp tới (30 ngày)
+  - Phân tích tỷ lệ tiêm chủng (vaccinated vs not vaccinated)
+  - Theo dõi lịch sử kiểm tra sức khỏe theo tháng
+  - Đảm bảo tuân thủ lịch tiêm chủng và chăm sóc sức khỏe
+
+#### `GET /statistics/pets/groups`
+
+- **Mục đích**: Quản lý và phân bổ nhóm thú cưng
+- **Query Parameters**: Không có
+- **Ý nghĩa**:
+  - Thống kê tổng số nhóm thú cưng
+  - Theo dõi số lượng thú cưng trong từng nhóm
+  - Hỗ trợ quản lý không gian và tài nguyên theo nhóm
+  - Tối ưu hóa phân bổ thú cưng vào các khu vực
+
+---
+
+### 4. Thống kê Nhân sự
+
+#### `GET /statistics/employees`
+
+- **Mục đích**: Quản lý thông tin và chi phí nhân sự
+- **Query Parameters**: Không có
+- **Ý nghĩa**:
+  - Thống kê tổng số nhân viên (active/inactive)
+  - Phân tích nhân viên theo sub-role (chức vụ)
+  - Theo dõi xu hướng tuyển dụng theo tháng
+  - Tính toán tổng chi phí lương
+  - Hỗ trợ lập kế hoạch nhân sự và ngân sách
+
+#### `GET /statistics/teams`
+
+- **Mục đích**: Đánh giá cấu trúc và hiệu quả làm việc của teams
+- **Query Parameters**: Không có
+- **Ý nghĩa**:
+  - Thống kê tổng số teams (active/inactive)
+  - Phân tích teams theo trạng thái
+  - Tính toán số thành viên trung bình mỗi team
+  - Đánh giá cấu trúc tổ chức và phân bổ nhân lực
+  - Hỗ trợ tối ưu hóa tổ chức teams
+
+#### `GET /statistics/employees/performance`
+
+- **Mục đích**: Đánh giá hiệu suất làm việc của nhân viên
+- **Query Parameters**: `start_date`, `end_date`, `period` (day/week/month/year)
+- **Ý nghĩa**:
+  - Xác định nhân viên có hiệu suất cao nhất (top performers)
+  - Theo dõi số lượng booking hoàn thành của từng nhân viên
+  - Đánh giá thời gian hoàn thành task trung bình
+  - Hỗ trợ đánh giá KPI và thưởng nhân viên
+  - Cải thiện quy trình phân công công việc
+
+---
+
+### 5. Thống kê Task & Công việc
+
+#### `GET /statistics/tasks`
+
+- **Mục đích**: Quản lý và phân tích nhiệm vụ hệ thống
+- **Query Parameters**: Không có
+- **Ý nghĩa**:
+  - Thống kê tổng số tasks và tỷ lệ hoàn thành
+  - Phân tích tasks theo trạng thái (active/inactive)
+  - Phân tích tasks theo mức độ ưu tiên (priority)
+  - Phân tích tasks theo loại công việc (work type)
+  - Phân biệt tasks công khai và riêng tư
+  - Hỗ trợ tối ưu hóa quy trình công việc
+
+#### `GET /statistics/tasks/daily`
+
+- **Mục đích**: Theo dõi và quản lý nhiệm vụ hàng ngày
+- **Query Parameters**: `start_date`, `end_date`, `period` (day/week/month/year)
+- **Ý nghĩa**:
+  - Phân tích daily tasks theo trạng thái (scheduled, in_progress, completed, etc.)
+  - Phân tích theo team thực hiện
+  - Cảnh báo tasks quá hạn (overdue tasks)
+  - Theo dõi xu hướng hoàn thành tasks theo thời gian
+  - Hỗ trợ quản lý deadline và tăng năng suất
+
+#### `GET /statistics/work-shifts`
+
+- **Mục đích**: Đánh giá hiệu quả sử dụng ca làm việc
+- **Query Parameters**: Không có
+- **Ý nghĩa**:
+  - Thống kê tổng số work shifts
+  - Theo dõi số lượng nhân viên được gán cho từng work shift
+  - Tính toán tỷ lệ sử dụng work shifts
+  - Hỗ trợ tối ưu hóa lịch làm việc và phân bổ nhân lực
+
+---
+
+### 6. Thống kê Khách hàng
+
+#### `GET /statistics/customers`
+
+- **Mục đích**: Phân tích hành vi và giá trị khách hàng
+- **Query Parameters**: `start_date`, `end_date`, `period` (day/week/month/year)
+- **Ý nghĩa**:
+  - Thống kê tổng số khách hàng (active/inactive)
+  - Theo dõi xu hướng khách hàng mới theo thời gian
+  - Xác định top khách hàng theo số lượng đơn và doanh thu
+  - Tính toán tổng điểm tích lũy (loyalty points)
+  - Hỗ trợ chiến lược marketing và chương trình khách hàng thân thiết
+
+---
+
+### 7. Thống kê Kho & Vật tư
+
+#### `GET /statistics/inventory`
+
+- **Mục đích**: Quản lý tồn kho và tối ưu hóa dự trữ
+- **Query Parameters**: Không có
+- **Ý nghĩa**:
+  - Thống kê tổng số sản phẩm trong kho
+  - Tính toán giá trị tồn kho tổng
+  - Cảnh báo sản phẩm sắp hết hàng (low stock)
+  - Phát hiện sản phẩm tồn kho lâu không bán được (long stock)
+  - Hỗ trợ quản lý chuỗi cung ứng và dự báo nhu cầu
+
+---
+
+### 8. Thống kê Tổng quan (Dashboard)
+
+#### `GET /statistics/dashboard/overview`
+
+- **Mục đích**: Cung cấp cái nhìn tổng quan về toàn bộ hoạt động hệ thống
+- **Query Parameters**: Không có
+- **Ý nghĩa**:
+  - **Revenue**: Doanh thu hôm nay, tuần này, tháng này, năm này
+  - **Orders**: Số lượng đơn hàng và tỷ lệ thành công
+  - **Bookings**: Số lượng booking và trạng thái (pending/completed)
+  - **Payment**: Tỷ lệ thanh toán thành công
+  - **Customers**: Xu hướng khách hàng mới
+  - **Tasks**: Trạng thái và tỷ lệ hoàn thành nhiệm vụ
+  - **Employees**: Thông tin nhân viên đang làm việc
+  - Hỗ trợ ra quyết định nhanh chóng và hiệu quả cho quản lý
+
+---
+
+### 📌 Ghi chú về Statistics APIs
+
+- **Quyền truy cập**: Tất cả các API statistics yêu cầu role `MANAGER`
+- **Time Period Filter**: Các API hỗ trợ filter theo `start_date`, `end_date` và `period` (day/week/month/year)
+- **Date Range Filter**: Một số API chỉ hỗ trợ `start_date` và `end_date`
+- **Mặc định**: Nếu không cung cấp date range, hệ thống sẽ lấy dữ liệu 30 ngày gần nhất hoặc toàn bộ dữ liệu (tùy API)
+- **Performance**: Các API được tối ưu hóa để xử lý lượng dữ liệu lớn hiệu quả
+- **Real-time**: Dữ liệu thống kê được tính toán real-time từ database, không có cache

@@ -21,7 +21,10 @@ public class HealthRecordService(
 {
     public async Task<HealthRecord> CreateAsync(HealthRecordCreateModel model)
     {
+        var pet = await _unitOfWork.PetRepository.GetByIdAsync(model.PetId) ?? throw new BadRequestException("Thú cưng không tồn tại!");
         var healthRecord = _unitOfWork.Mapper.Map<HealthRecord>(model);
+        pet.HealthStatus = model.HealthStatus;
+        _unitOfWork.PetRepository.Update(pet);
         await _unitOfWork.HealthRecordRepository.AddAsync(healthRecord);
         await _unitOfWork.SaveChangesAsync();
         return healthRecord;
@@ -29,8 +32,11 @@ public class HealthRecordService(
 
     public async Task<HealthRecord> UpdateAsync(Guid id, HealthRecordUpdateModel model)
     {
+        var pet = await _unitOfWork.PetRepository.GetByIdAsync(model.PetId) ?? throw new BadRequestException("Thú cưng không tồn tại!");
         var healthRecord = await _unitOfWork.HealthRecordRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
         _unitOfWork.Mapper.Map(model, healthRecord);
+        pet.HealthStatus = model.HealthStatus;
+        _unitOfWork.PetRepository.Update(pet);
         _unitOfWork.HealthRecordRepository.Update(healthRecord);
         await _unitOfWork.SaveChangesAsync();
         return healthRecord;

@@ -1,4 +1,5 @@
 using FluentValidation;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Application.Models.PetModels;
 
@@ -15,6 +16,7 @@ public class PetCreateModel
     public string? ImageUrl { get; set; }
     public DateTime ArrivalDate { get; set; }
     public string Gender { get; set; } = null!;
+    public string HealthStatus { get; set; } = HealthStatusConstant.HEALTHY;
 
 }
 
@@ -68,6 +70,10 @@ public class PetCreateModelValidator : AbstractValidator<PetCreateModel>
             .NotEmpty().WithMessage("Giới tính không được để trống")
             .Must(gender => gender == "Male" || gender == "Female")
             .WithMessage("Giới tính phải là 'Male' hoặc 'Female'");
+
+        RuleFor(x => x.HealthStatus)
+            .NotEmpty().WithMessage("Tình trạng sức khỏe không được để trống")
+            .Must(status => HealthStatusConstant.ALL_STATUSES.Contains(status!)).WithMessage("Tình trạng sức khỏe không hợp lệ: " + string.Join(", ", HealthStatusConstant.ALL_STATUSES));
     }
 }
 
