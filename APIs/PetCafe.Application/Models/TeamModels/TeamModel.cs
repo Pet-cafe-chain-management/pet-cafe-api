@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.ShareModels;
+using PetCafe.Domain.Constants;
 
 namespace PetCafe.Application.Models.TeamModels;
 
@@ -15,6 +16,7 @@ public class TeamCreateModel
 public class TeamUpdateModel : TeamCreateModel
 {
     public bool IsActive { get; set; } = true;
+    public string? Status { get; set; } = TeamStatusConstant.ACTIVE;
 }
 
 

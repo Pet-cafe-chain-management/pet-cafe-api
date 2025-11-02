@@ -25,7 +25,7 @@ public class Team : BaseEntity
 
     [Column("status")]
     [MaxLength(20)]
-    public string Status { get; set; } = TeamStatusConstant.INACTIVE;
+    public string Status { get; set; } = TeamStatusConstant.ACTIVE;
     // Navigation properties
     public virtual Employee Leader { get; set; } = default!;
     public virtual ICollection<TeamMember> TeamMembers { get; set; } = [];
