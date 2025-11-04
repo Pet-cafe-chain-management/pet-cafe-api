@@ -17,5 +17,6 @@ public static class DailyScheduleStatusConstant
     // Trạng thái đã điểm danh - đi muộn
     public const string LATE = "LATE";
 
+    public static readonly List<string> ALL_STATUSES = [PENDING, PRESENT, ABSENT, EXCUSED, LATE];
 
 }

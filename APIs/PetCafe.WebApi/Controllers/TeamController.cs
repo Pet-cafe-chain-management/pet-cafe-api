@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PetCafe.Application.Models.DailyScheduleModels;
 using PetCafe.Application.Models.DailyTaskModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Models.SlotModels;
@@ -10,7 +11,11 @@ using PetCafe.Domain.Constants;
 
 namespace PetCafe.WebApi.Controllers;
 
-public class TeamController(ITeamService _teamService, ITeamWorkShiftService _teamWorkShiftService) : BaseController
+public class TeamController(
+    ITeamService _teamService,
+    ITeamWorkShiftService _teamWorkShiftService,
+    IDailyScheduleService _dailyScheduleService
+) : BaseController
 {
 
     [HttpGet]
@@ -130,5 +135,12 @@ public class TeamController(ITeamService _teamService, ITeamWorkShiftService _te
     {
         var dailyTasks = await _teamService.GetDailyTasksByTeamIdAsync(id, query);
         return Ok(dailyTasks);
+    }
+
+    [HttpPut("{id:guid}/daily-schedules")]
+    [Authorize(Roles = $"{RoleConstants.MANAGER},{RoleConstants.EMPLOYEE}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] List<DailyScheduleUpdateModel> models)
+    {
+        return Ok(await _dailyScheduleService.UpdateAsync(id, models));
     }
 }

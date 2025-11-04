@@ -7,6 +7,8 @@ using PetCafe.Domain.Constants;
 using PetCafe.Domain.Entities;
 using Hangfire;
 using Task = System.Threading.Tasks.Task;
+using PetCafe.Application.Services.Commons;
+using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 
 namespace PetCafe.Application.Services;
 
@@ -16,12 +18,39 @@ public interface IDailyScheduleService
     Task<BasePagingResponseModel<DailySchedule>> GetDailySchedulesAsync(DailyScheduleFilterQuery query);
     Task<List<DailySchedule>> CreateDailySchedulesForMembersAsync(List<TeamMember> teamMembers, List<WorkShift> workShifts, DateTime startDate, DateTime endDate, bool checkTimeOverlap = false);
     Task CreateDailySchedulesForMembersBackgroundAsync(List<Guid> teamMemberIds, List<Guid> workShiftIds, DateTime startDate, DateTime endDate, bool checkTimeOverlap);
+    Task<List<DailySchedule>> UpdateAsync(Guid teamId, List<DailyScheduleUpdateModel> models);
     // Task AutoChangeStatusAsync();
+
 }
 
 
-public class DailyScheduleService(IUnitOfWork _unitOfWork) : IDailyScheduleService
+public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claimsService) : IDailyScheduleService
 {
+
+    public async Task<List<DailySchedule>> UpdateAsync(Guid teamId, List<DailyScheduleUpdateModel> models)
+    {
+
+        var team = await _unitOfWork.TeamRepository.GetByIdAsync(teamId) ?? throw new BadRequestException("Team không tồn tại");
+        if (team.LeaderId != _claimsService.GetCurrentUser && _claimsService.GetCurrentUserRole != RoleConstants.MANAGER)
+        {
+            throw new BadRequestException("Bạn không có quyền cập nhật lịch làm việc của nhóm này!");
+        }
+        var dailySchedules = await _unitOfWork.DailyScheduleRepository.WhereAsync(
+            ds => models.Select(m => m.Id).Contains(ds.Id)
+        );
+        foreach (var model in models)
+        {
+            var dailySchedule = dailySchedules.FirstOrDefault(ds => ds.Id == model.Id);
+            if (dailySchedule != null)
+            {
+                _unitOfWork.Mapper.Map(model, dailySchedule);
+                _unitOfWork.DailyScheduleRepository.Update(dailySchedule);
+            }
+        }
+        await _unitOfWork.SaveChangesAsync();
+        return [.. dailySchedules];
+    }
+
     public async Task AutoAssignSchedulesAsync()
     {
         // Lấy ngày bắt đầu của tháng kế tiếp
