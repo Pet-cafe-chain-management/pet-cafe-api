@@ -1,3 +1,6 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using PetCafe.Application;
 
@@ -8,13 +11,26 @@ public class MongoDbContext
     private readonly IMongoDatabase _database;
     private readonly IMongoClient _client;
 
+    // Static constructor to ensure Guid serializer is registered once
+    static MongoDbContext()
+    {
+        // Set Guid representation to Standard (recommended for new projects)
+        // This fixes the "GuidSerializer cannot serialize a Guid when GuidRepresentation is Unspecified" error
+        // RegisterSerializer will replace any existing serializer, so it's safe to call multiple times
+        var guidSerializer = new GuidSerializer(GuidRepresentation.Standard);
+        BsonSerializer.RegisterSerializer(guidSerializer);
+    }
+
     public MongoDbContext(AppSettings appSettings)
     {
-        var connectionString = appSettings.ConnectionStrings.MongoDbConnection 
+        var connectionString = appSettings.ConnectionStrings.MongoDbConnection
             ?? throw new InvalidOperationException("MongoDB connection string not found.");
-        
-        _client = new MongoClient(connectionString);
-        
+
+        // Configure MongoDB client settings
+        var settings = MongoClientSettings.FromConnectionString(connectionString);
+
+        _client = new MongoClient(settings);
+
         // Extract database name from connection string or use default
         var databaseName = ExtractDatabaseName(connectionString) ?? "pet_cafe_db";
         _database = _client.GetDatabase(databaseName);
