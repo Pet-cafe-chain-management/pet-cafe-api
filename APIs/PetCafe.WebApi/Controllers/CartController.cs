@@ -20,12 +20,7 @@ public class CartController(
     {
         var customerId = _claimsService.GetCurrentUser;
         var cart = await _cartService.GetCartAsync(customerId);
-        
-        if (cart == null)
-        {
-            return NotFound(new { message = "Cart not found" });
-        }
-        
+
         return Ok(cart);
     }
 

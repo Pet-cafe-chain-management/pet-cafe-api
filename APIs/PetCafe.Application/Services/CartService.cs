@@ -1,3 +1,4 @@
+using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.OrderModels;
 using PetCafe.Application.Repositories;
 using PetCafe.Domain.Entities;
@@ -44,7 +45,7 @@ public class CartService(ICartRepository _cartRepository) : ICartService
 {
     public async Task<Cart?> GetCartAsync(Guid customerId)
     {
-        return await _cartRepository.GetByCustomerIdAsync(customerId);
+        return await _cartRepository.GetByCustomerIdAsync(customerId) ?? throw new BadRequestException("Không tìm thấy giỏ hàng!");
     }
 
     public async Task<Cart> AddOrUpdateCartAsync(Guid customerId, OrderCreateModel model)
