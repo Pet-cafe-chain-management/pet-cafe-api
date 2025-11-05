@@ -35,6 +35,7 @@ jobs:
           (Get-Content $appsettings) -replace '"ApiKey":\s*""', '"ApiKey": "${{ secrets.APIKEYPAYOS }}"' | Set-Content $appsettings
           (Get-Content $appsettings) -replace '"ChecksumKey":\s*""', '"ChecksumKey": "${{ secrets.CHECKSUMKEY }}"' | Set-Content $appsettings
           (Get-Content $appsettings) -replace '"GoongAPIKey":\s*""', '"GoongAPIKey": "${{ secrets.GOONGAPIKEY }}"' | Set-Content $appsettings
+          (Get-Content $appsettings) -replace '"MongoDbConnection":\s*""', '"MongoDbConnection": "${{ secrets.MONGODBCONNECTION }}"' | Set-Content $appsettings
         shell: pwsh
 
       # 2️⃣ Setup .NET SDK
