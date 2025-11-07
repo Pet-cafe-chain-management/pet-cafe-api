@@ -53,9 +53,9 @@ public class ServiceController(
     }
 
     [HttpGet("{id:guid}/slots")]
-    public async Task<IActionResult> GetServiceSlots([FromRoute] Guid id, SlotFilterQuery query)
+    public async Task<IActionResult> GetServiceSlots([FromRoute] Guid id, SlotFilterQuery query, [FromQuery(Name = "booking_date_to")] DateOnly? bookingDateTo, [FromQuery(Name = "booking_date_from")] DateOnly? bookingDateFrom)
     {
-        return Ok(await _slotService.GetAllPagingByServiceAsync(id, query));
+        return Ok(await _slotService.GetAllPagingByServiceAsync(id, query, bookingDateTo, bookingDateFrom));
     }
 
     [HttpGet("{id:guid}/feedbacks")]

@@ -74,4 +74,5 @@ public class Slot : BaseEntity
     public virtual ICollection<CustomerBooking> CustomerBookings { get; set; } = [];
     public virtual ICollection<ServiceOrderDetail> OrderDetails { get; set; } = [];
     public virtual ICollection<DailyTask> DailyTasks { get; set; } = [];
+    public virtual ICollection<SlotAvailability> SlotAvailabilities { get; set; } = [];
 }

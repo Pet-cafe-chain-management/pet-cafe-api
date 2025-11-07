@@ -107,6 +107,58 @@ public class SlotRepository(AppDbContext context, ICurrentTime currentTime, ICla
 {
 }
 
+public class SlotAvailabilityRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<SlotAvailability>(context, currentTime, claimsService), ISlotAvailabilityRepository
+{
+    public async System.Threading.Tasks.Task<SlotAvailability?> GetBySlotIdAndDateAsync(Guid slotId, DateOnly bookingDate, CancellationToken cancellationToken = default)
+    {
+        return await FirstOrDefaultAsync(
+            x => x.SlotId == slotId && x.BookingDate == bookingDate && !x.IsDeleted,
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public async System.Threading.Tasks.Task IncrementBookedCountAsync(Guid slotId, DateOnly bookingDate, CancellationToken cancellationToken = default)
+    {
+        var availability = await GetBySlotIdAndDateAsync(slotId, bookingDate, cancellationToken);
+
+        if (availability == null)
+        {
+            // Get slot to get max capacity
+            var slot = await context.Set<Slot>().FirstOrDefaultAsync(s => s.Id == slotId && !s.IsDeleted, cancellationToken);
+            if (slot == null)
+                throw new Exception($"Slot with id {slotId} not found");
+
+            availability = new SlotAvailability
+            {
+                SlotId = slotId,
+                BookingDate = bookingDate,
+                BookedCount = 1,
+                MaxCapacity = slot.MaxCapacity
+            };
+            await AddAsync(availability, cancellationToken);
+        }
+        else
+        {
+            if (availability.BookedCount >= availability.MaxCapacity)
+                throw new Exception($"Slot {slotId} on {bookingDate} is already at full capacity");
+
+            availability.BookedCount++;
+            Update(availability);
+        }
+    }
+
+    public async System.Threading.Tasks.Task DecrementBookedCountAsync(Guid slotId, DateOnly bookingDate, CancellationToken cancellationToken = default)
+    {
+        var availability = await GetBySlotIdAndDateAsync(slotId, bookingDate, cancellationToken);
+
+        if (availability != null && availability.BookedCount > 0)
+        {
+            availability.BookedCount--;
+            Update(availability);
+        }
+    }
+}
+
 // Area & Service Management
 public class AreaRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<Area>(context, currentTime, claimsService), IAreaRepository
 {

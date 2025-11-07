@@ -56,6 +56,17 @@ RecurringJob.AddOrUpdate<IDailyTaskService>(
     }
 );
 
+// Cấu hình cronjob để cleanup expired orders (mỗi 5 phút)
+RecurringJob.AddOrUpdate<IOrderService>(
+    "cleanup-expired-orders",
+    service => service.CleanupExpiredOrdersAsync(),
+    "*/5 * * * *", // Chạy mỗi 5 phút
+    new RecurringJobOptions
+    {
+        TimeZone = TimeZoneInfo.Utc
+    }
+);
+
 app.UseMiddleware<GlobalErrorHandlingMiddleware>();
 app.UseMiddleware<PerformanceMiddleware>();
 

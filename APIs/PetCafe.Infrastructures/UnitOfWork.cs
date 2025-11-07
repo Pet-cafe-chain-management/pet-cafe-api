@@ -42,6 +42,7 @@ public class UnitOfWork(
     INotificationRepository notificationRepository,
     ITransactionRepository transactionRepository,
     ISlotRepository slotRepository,
+    ISlotAvailabilityRepository slotAvailabilityRepository,
     IStorageRepository storageRepository,
     IMapper mapper
 ) : IUnitOfWork
@@ -84,6 +85,7 @@ public class UnitOfWork(
 
 
     public ISlotRepository SlotRepository => slotRepository;
+    public ISlotAvailabilityRepository SlotAvailabilityRepository => slotAvailabilityRepository;
 
     public IMapper Mapper => mapper;
 

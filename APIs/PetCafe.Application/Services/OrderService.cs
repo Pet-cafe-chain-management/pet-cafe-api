@@ -21,6 +21,7 @@ public interface IOrderService
     Task<Order> GetByOrderCodeAsync(double orderCode);
     Task<bool> ConfirmOrderAsync(Guid id);
     Task<BasePagingResponseModel<Order>> GetAllPagingAsync(OrderFilterQuery query, Guid? customerId);
+    Task CleanupExpiredOrdersAsync();
 }
 
 public class OrderService(
@@ -113,53 +114,73 @@ public class OrderService(
             OrderDate = _currentTime.GetCurrentTime
         };
 
+        // Begin transaction to ensure atomicity of slot reservation
+        await _unitOfWork.BeginTransactionAsync();
 
-        foreach (var item in serviceModels)
+        try
         {
-            var day_of_week = item.BookingDate.DayOfWeek.ToString().ToUpper();
-            var slot = await _unitOfWork
-                .SlotRepository
-                .FirstOrDefaultAsync(x =>
-                    x.Id == item.SlotId &&
-                    x.ServiceStatus == SlotStatusConstant.AVAILABLE &&
-                    x.Area.IsActive == true && x.Team.IsActive == true &&
-                    x.Task.Status == TaskStatusConstant.ACTIVE &&
-                    x.Area.IsDeleted == false && x.Team.IsDeleted == false && x.Service!.IsDeleted == false &&
-                    ((x.IsRecurring && x.DayOfWeek != null && x.DayOfWeek.ToUpper() == day_of_week) ||
-                    (!x.IsRecurring && x.SpecificDate != null && x.SpecificDate == item.BookingDate.Date)) &&
-                    x.StartTime <= item.BookingDate.TimeOfDay &&
-                    x.EndTime >= item.BookingDate.TimeOfDay,
-                    includeFunc: x => x.Include(x => x.Service!).Include(x => x.Area).Include(x => x.Team).Include(x => x.Task))
-            ?? throw new BadRequestException("Dịch vụ hiện tại không khả dụng!");
-
-
-            var customer_bookings = await _unitOfWork.BookingRepository.WhereAsync(x => x.SlotId == item.SlotId && x.BookingDate.Date == item.BookingDate.Date);
-
-            if (slot.MaxCapacity == customer_bookings.Count || slot.MaxCapacity <= 0) throw new BadRequestException($"Khung giờ hiện tại không còn chỗ trống!");
-
-
-            var detail = new ServiceOrderDetail
+            foreach (var item in serviceModels)
             {
-                ServiceOrderId = service_order.Id,
-                ServiceId = slot.ServiceId,
-                SlotId = slot.Id,
-                UnitPrice = slot.Price,
-                Notes = item.Notes,
-                Quantity = 1,
-                TotalPrice = slot.Price,
-                BookingDate = item.BookingDate
-            };
-            order_details.Add(detail);
+                var day_of_week = item.BookingDate.DayOfWeek.ToString().ToUpper();
+                var slot = await _unitOfWork
+                    .SlotRepository
+                    .FirstOrDefaultAsync(x =>
+                        x.Id == item.SlotId &&
+                        x.ServiceStatus == SlotStatusConstant.AVAILABLE &&
+                        x.Area.IsActive == true && x.Team.IsActive == true &&
+                        x.Task.Status == TaskStatusConstant.ACTIVE &&
+                        x.Area.IsDeleted == false && x.Team.IsDeleted == false && x.Service!.IsDeleted == false &&
+                        ((x.IsRecurring && x.DayOfWeek != null && x.DayOfWeek.ToUpper() == day_of_week) ||
+                        (!x.IsRecurring && x.SpecificDate != null && x.SpecificDate == item.BookingDate.Date)) &&
+                        x.StartTime <= item.BookingDate.TimeOfDay &&
+                        x.EndTime >= item.BookingDate.TimeOfDay,
+                        includeFunc: x => x.Include(x => x.Service!).Include(x => x.Area).Include(x => x.Team).Include(x => x.Task))
+                    ?? throw new BadRequestException("Dịch vụ hiện tại không khả dụng!");
 
+                var bookingDate = DateOnly.FromDateTime(item.BookingDate.Date);
+
+                // Reserve slot immediately when creating order to prevent race conditions
+                // This ensures slot availability is checked and reserved atomically
+                try
+                {
+                    await _unitOfWork.SlotAvailabilityRepository.IncrementBookedCountAsync(
+                        item.SlotId,
+                        bookingDate
+                    );
+                }
+                catch (Exception ex)
+                {
+                    throw new BadRequestException($"Khung giờ hiện tại không còn chỗ trống! {ex.Message}");
+                }
+
+                var detail = new ServiceOrderDetail
+                {
+                    ServiceOrderId = service_order.Id,
+                    ServiceId = slot.ServiceId,
+                    SlotId = slot.Id,
+                    UnitPrice = slot.Price,
+                    Notes = item.Notes,
+                    Quantity = 1,
+                    TotalPrice = slot.Price,
+                    BookingDate = item.BookingDate
+                };
+                order_details.Add(detail);
+            }
+
+            service_order.TotalAmount = order_details.Sum(x => x.TotalPrice);
+            service_order.FinalAmount = service_order.TotalAmount - service_order.DiscountAmount;
+
+            await _unitOfWork.ServiceOrderRepository.AddAsync(service_order);
+            await _unitOfWork.ServiceOrderDetailRepository.AddRangeAsync(order_details);
+
+            await _unitOfWork.CommitTransactionAsync();
+            return service_order;
         }
-
-        service_order.TotalAmount = order_details.Sum(x => x.TotalPrice);
-        service_order.FinalAmount = service_order.TotalAmount - service_order.DiscountAmount;
-
-        await _unitOfWork.ServiceOrderRepository.AddAsync(service_order);
-        await _unitOfWork.ServiceOrderDetailRepository.AddRangeAsync(order_details);
-
-        return service_order;
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
     }
 
     #endregion
@@ -254,6 +275,8 @@ public class OrderService(
                                   .Include(x => x.Area)
                                   .Include(x => x.Team)) ?? throw new BadRequestException("Thanh toán thất bại!");
 
+            // Slot was already reserved when order was created, so we don't need to increment again
+            // Just create the CustomerBooking record
             await _unitOfWork.BookingRepository.AddAsync(
                 new CustomerBooking
                 {
@@ -380,6 +403,61 @@ public class OrderService(
     {
         Expression<Func<Order, bool>> filter = x => x.OrderDate >= startDate && x.OrderDate <= endDate;
         return filter;
+    }
+
+    #endregion
+
+    #region Cleanup Expired Orders
+
+    public async Task CleanupExpiredOrdersAsync()
+    {
+        // Payment link expires after 15 minutes, so cleanup orders older than 15 minutes
+        var expiredTime = _currentTime.GetCurrentTime.AddMinutes(-15);
+
+        var expiredOrders = await _unitOfWork.OrderRepository
+            .WhereAsync(x =>
+                x.Status == OrderStatusConstant.PENDING &&
+                x.PaymentStatus == PaymentStatusConstant.PENDING &&
+                x.CreatedAt < expiredTime &&
+                x.ServiceOrder != null);
+
+        foreach (var order in expiredOrders)
+        {
+            try
+            {
+                // Release slot reservations for expired orders
+                if (order.ServiceOrder != null)
+                {
+                    var serviceOrder = await _unitOfWork.ServiceOrderRepository
+                        .FirstOrDefaultAsync(x => x.OrderId == order.Id,
+                            includeFunc: x => x.Include(x => x.OrderDetails.Where(x => !x.IsDeleted)));
+
+                    if (serviceOrder != null)
+                    {
+                        foreach (var detail in serviceOrder.OrderDetails.Where(x => x.SlotId.HasValue && x.BookingDate.HasValue))
+                        {
+                            var bookingDate = DateOnly.FromDateTime(detail.BookingDate!.Value.Date);
+                            await _unitOfWork.SlotAvailabilityRepository
+                                .DecrementBookedCountAsync(detail.SlotId!.Value, bookingDate);
+                        }
+                    }
+                }
+
+                // Mark order as expired
+                order.Status = OrderStatusConstant.EXPIRED;
+                _unitOfWork.OrderRepository.Update(order);
+            }
+            catch (Exception ex)
+            {
+                // Log error but continue processing other orders
+                Console.WriteLine($"Error cleaning up order {order.Id}: {ex.Message}");
+            }
+        }
+
+        if (expiredOrders.Count > 0)
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 
     #endregion

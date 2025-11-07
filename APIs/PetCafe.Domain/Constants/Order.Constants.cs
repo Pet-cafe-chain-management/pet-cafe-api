@@ -12,6 +12,8 @@ public static class OrderStatusConstant
 
     public const string PENDING = "PENDING";
 
+    public const string EXPIRED = "EXPIRED";
+
     public const string PAID = "PAID";
 
     public const string PROCESSING = "PROCESSING";

@@ -39,6 +39,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ServiceOrder> ServiceOrders { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<Slot> Slots { get; set; }
+    public DbSet<SlotAvailability> SlotAvailabilities { get; set; }
 
     // Area & Service Management
     public DbSet<Area> Areas { get; set; }

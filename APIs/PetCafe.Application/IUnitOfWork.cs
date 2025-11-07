@@ -37,6 +37,7 @@ public interface IUnitOfWork
     IProductOrderRepository ProductOrderRepository { get; }
     ITransactionRepository TransactionRepository { get; }
     ISlotRepository SlotRepository { get; }
+    ISlotAvailabilityRepository SlotAvailabilityRepository { get; }
 
     // Area & Service Management
     IAreaRepository AreaRepository { get; }

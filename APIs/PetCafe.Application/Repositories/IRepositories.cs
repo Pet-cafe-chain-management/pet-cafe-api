@@ -102,6 +102,13 @@ public interface ISlotRepository : IGenericRepository<Slot>
 {
 }
 
+public interface ISlotAvailabilityRepository : IGenericRepository<SlotAvailability>
+{
+    System.Threading.Tasks.Task<SlotAvailability?> GetBySlotIdAndDateAsync(Guid slotId, DateOnly bookingDate, CancellationToken cancellationToken = default);
+    System.Threading.Tasks.Task IncrementBookedCountAsync(Guid slotId, DateOnly bookingDate, CancellationToken cancellationToken = default);
+    System.Threading.Tasks.Task DecrementBookedCountAsync(Guid slotId, DateOnly bookingDate, CancellationToken cancellationToken = default);
+}
+
 // Area & Service Management
 public interface IAreaRepository : IGenericRepository<Area>
 {

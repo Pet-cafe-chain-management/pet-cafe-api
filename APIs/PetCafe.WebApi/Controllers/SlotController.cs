@@ -11,10 +11,10 @@ public class SlotController(ISlotService _slotService) : BaseController
 {
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, [FromQuery] DateOnly? bookingDate)
     {
-        var product = await _slotService.GetByIdAsync(id);
-        return Ok(product);
+        var slot = await _slotService.GetByIdAsync(id, bookingDate);
+        return Ok(slot);
     }
 
     [HttpPut("{id:guid}")]
