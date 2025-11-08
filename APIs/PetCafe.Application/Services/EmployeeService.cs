@@ -64,6 +64,8 @@ public class EmployeeService(
     public async Task DeleteAsync(Guid id)
     {
         var employee = await _unitOfWork.EmployeeRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy nhân viên");
+        var account = await _unitOfWork.AccountRepository.GetByIdAsync(employee.AccountId) ?? throw new BadRequestException("Không tìm thấy tài khoản nhân viên");
+        _unitOfWork.AccountRepository.SoftRemove(account);
         _unitOfWork.EmployeeRepository.SoftRemove(employee);
         await _unitOfWork.SaveChangesAsync();
     }
