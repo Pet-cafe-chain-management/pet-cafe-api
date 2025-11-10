@@ -136,4 +136,6 @@ $RECYCLE.BIN/
 _NCrunch*
 /set-key.txt
 
-APIs/PetCafe.WebApi/appsettings.json
+# Application settings (contains sensitive data)
+**/appsettings.json
+appsettings.json
