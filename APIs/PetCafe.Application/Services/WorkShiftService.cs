@@ -30,8 +30,9 @@ public class WorkShiftService(
 
     public async Task<WorkShift> UpdateAsync(Guid id, WorkShiftUpdateModel model)
     {
-        await CheckDuplicateWorkShift(model.StartTime, model.EndTime, model.ApplicableDays);
+        await CheckDuplicateWorkShift(model.StartTime, model.EndTime, model.ApplicableDays, id);
         var workShift = await _unitOfWork.WorkShiftRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+
         _unitOfWork.Mapper.Map(model, workShift);
         _unitOfWork.WorkShiftRepository.Update(workShift);
         await _unitOfWork.SaveChangesAsync();
