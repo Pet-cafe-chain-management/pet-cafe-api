@@ -101,5 +101,8 @@ public class MapperConfigurationsProfile : Profile
         // Feedback
         CreateMap<Models.FeedbackModels.FeedbackCreateModel, Domain.Entities.ServiceFeedback>().ReverseMap();
         CreateMap<Models.FeedbackModels.FeedbackUpdateModel, Domain.Entities.ServiceFeedback>().ReverseMap();
+
+        // DailySchedule
+        CreateMap<Models.DailyScheduleModels.DailyScheduleUpdateModel, Domain.Entities.DailySchedule>().ReverseMap();
     }
 }
