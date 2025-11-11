@@ -1,8 +1,10 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.EmployeeModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services.Commons;
+using PetCafe.Application.Utilities;
 using PetCafe.Domain.Entities;
 using Task = System.Threading.Tasks.Task;
 
@@ -14,7 +16,7 @@ public interface IEmployeeService
     Task<Employee> UpdateAsync(Guid id, EmployeeUpdateModel model);
     Task DeleteAsync(Guid id);
     Task<Employee> GetByIdAsync(Guid id);
-    Task<BasePagingResponseModel<Employee>> GetAllPagingAsync(FilterQuery query);
+    Task<BasePagingResponseModel<Employee>> GetAllPagingAsync(EmployeeFilterQuery query);
 
 }
 
@@ -54,8 +56,10 @@ public class EmployeeService(
         if (!_hashService.VerifyPassword(model.Password ?? "", account.PasswordHash))
         {
             account.PasswordHash = _hashService.HashPassword(model.Password ?? _hashService.GenerateRandomPassword());
-            _unitOfWork.AccountRepository.Update(account);
         }
+        account.IsActive = model.IsActive;
+
+        _unitOfWork.AccountRepository.Update(account);
         _unitOfWork.EmployeeRepository.Update(employee);
         await _unitOfWork.SaveChangesAsync();
         return employee;
@@ -75,8 +79,14 @@ public class EmployeeService(
         return await _unitOfWork.EmployeeRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy nhân viên");
     }
 
-    public async Task<BasePagingResponseModel<Employee>> GetAllPagingAsync(FilterQuery query)
+    public async Task<BasePagingResponseModel<Employee>> GetAllPagingAsync(EmployeeFilterQuery query)
     {
+        Expression<Func<Employee, bool>> filter = null!;
+        if (query.IsActive.HasValue)
+        {
+            Expression<Func<Employee, bool>> filter_is_active = x => x.IsActive == query.IsActive;
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, filter_is_active) : filter_is_active;
+        }
         var (Pagination, Entities) = await _unitOfWork.EmployeeRepository.ToPagination(
             pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,

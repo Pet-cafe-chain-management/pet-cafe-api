@@ -153,7 +153,13 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
     public async Task<BasePagingResponseModel<DailySchedule>> GetDailySchedulesAsync(DailyScheduleFilterQuery query)
     {
         // Lấy tất cả các team members của team
-        Expression<Func<DailySchedule, bool>> filter = null!;
+        Expression<Func<DailySchedule, bool>> filter = x => x.Employee.IsActive;
+
+        filter = FilterCustoms.CombineFilters(filter, x =>
+            x.WorkShift != null &&
+            x.WorkShift.ApplicableDays.Contains(x.Date.DayOfWeek.ToString().ToUpper())
+        );
+
         if (query.TeamId.HasValue)
         {
             filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.TeamMember.TeamId == query.TeamId.Value) : x => x.TeamMember.TeamId == query.TeamId.Value;
@@ -171,6 +177,7 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
         {
             filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.Status == query.Status) : x => x.Status == query.Status;
         }
+
         var (Pagination, Entities) = await _unitOfWork.DailyScheduleRepository.ToPagination(
             pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
@@ -179,9 +186,9 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
                               .Include(ds => ds.Employee)
                               .Include(ds => ds.TeamMember)
         );
+
         return BasePagingResponseModel<DailySchedule>.CreateInstance(Entities, Pagination);
     }
-
     public async Task<List<DailySchedule>> CreateDailySchedulesForMembersAsync(
         List<TeamMember> teamMembers,
         List<WorkShift> workShifts,
@@ -190,7 +197,7 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
         bool checkTimeOverlap = false)
     {
         if (teamMembers.Count == 0 || workShifts.Count == 0)
-            return new List<DailySchedule>();
+            return [];
 
         var dailySchedules = new List<DailySchedule>();
 

@@ -23,8 +23,8 @@ public static class OrderStatusConstant
 
 public static class PaymentMethodConstant
 {
-    public const string CASH = "CASH";
-    public const string QR_CODE = "QR_CODE";
+    public const string AT_COUNTER = "AT_COUNTER";
+    public const string ONLINE = "ONLINE ";
 }
 
 public static class PaymentStatusConstant

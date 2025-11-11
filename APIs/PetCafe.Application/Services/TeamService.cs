@@ -144,9 +144,23 @@ public class TeamService(
     {
         var team = await _unitOfWork.TeamRepository.GetByIdAsync(
             id,
-            includeFunc: x => x.Include(t => t.TeamWorkShifts.Where(tws => !tws.IsDeleted))
+            includeFunc: x => x
+                .Include(t => t.TeamWorkShifts.Where(tws => !tws.IsDeleted))
                               .ThenInclude(tws => tws.WorkShift)
         ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+
+        foreach (var model in models)
+        {
+            var employee = await _unitOfWork.EmployeeRepository.GetByIdAsync(model.EmployeeId) ?? throw new BadRequestException("Không tìm thấy nhân viên!");
+            if (!employee.IsActive)
+            {
+                throw new BadRequestException($"Nhân viên {employee.FullName} hiện không đang hoạt động!");
+            }
+            if (team.TeamMembers.Any(x => x.EmployeeId == model.EmployeeId))
+            {
+                throw new BadRequestException($"Nhân viên {employee.FullName} đã tồn tại trong team!");
+            }
+        }
 
         var teamMembers = models.Select(x => new TeamMember
         {

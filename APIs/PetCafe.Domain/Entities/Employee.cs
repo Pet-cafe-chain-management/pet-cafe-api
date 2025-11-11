@@ -42,6 +42,9 @@ public class Employee : BaseEntity
     [Column("sub_role")]
     public string SubRole { get; set; } = SubRoleConstants.WORKING_STAFF;
 
+    [Column("is_active")]
+    public bool IsActive { get; set; } = true;
+
     // Navigation properties
     public virtual Account Account { get; set; } = default!;
     public virtual ICollection<TeamMember> TeamMembers { get; set; } = [];

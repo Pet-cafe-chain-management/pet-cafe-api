@@ -54,10 +54,14 @@ public class OrderService(
         order.OrderNumber = ((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds().ToString();
         order.FinalAmount = order.TotalAmount - order.DiscountAmount;
 
-        if (order.PaymentMethod == PaymentMethodConstant.QR_CODE)
+        if (order.PaymentMethod == PaymentMethodConstant.ONLINE)
         {
             var payment = await _payOsService.CreatePaymentAsync(order.FinalAmount, Double.Parse(order.OrderNumber));
             order.PaymentDataJson = JsonConvert.SerializeObject(payment.Data);
+        }
+        else
+        {
+            order.EmployeeId = _claimsService.GetCurrentUser;
         }
         await _unitOfWork.OrderRepository.AddAsync(order);
 

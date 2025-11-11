@@ -13,7 +13,7 @@ public class OrderCreateModel
     public string? Notes { get; set; }
     public List<ProductOrderModel>? Products { get; set; } = [];
     public List<ServiceOrderModel>? Services { get; set; } = [];
-    public string PaymentMethod { get; set; } = PaymentMethodConstant.QR_CODE;
+    public string PaymentMethod { get; set; } = PaymentMethodConstant.ONLINE;
 
 
 }
@@ -112,8 +112,8 @@ public class OrderCreateModelValidator : AbstractValidator<OrderCreateModel>
 
         RuleFor(x => x.PaymentMethod)
             .NotEmpty().WithMessage("Phương thức thanh toán không được để trống")
-            .Must(method => method == PaymentMethodConstant.QR_CODE ||
-                           method == PaymentMethodConstant.CASH)
+            .Must(method => method == PaymentMethodConstant.ONLINE ||
+                           method == PaymentMethodConstant.AT_COUNTER)
             .WithMessage("Phương thức thanh toán không hợp lệ");
 
         RuleFor(x => x)

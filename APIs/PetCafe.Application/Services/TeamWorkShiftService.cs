@@ -30,12 +30,21 @@ public class TeamWorkShiftService(
             teamId,
             includeFunc: q => q.Include(t => t.TeamMembers.Where(tm => !tm.IsDeleted))
                               .ThenInclude(tm => tm.Employee)
-        ) ?? throw new NotFoundException($"Team với ID {teamId} không tồn tại");
+        ) ?? throw new NotFoundException($"Nhóm với ID {teamId} không tồn tại");
 
         // 1.1. Kiểm tra team có đang active không
         if (!team.IsActive)
         {
-            throw new BadRequestException($"Team {team.Name} không đang hoạt động");
+            throw new BadRequestException($"Nhóm {team.Name} hiện không đang hoạt động");
+        }
+
+        var activeMembers = team.TeamMembers
+            .Where(tm => !tm.IsDeleted && tm.Employee != null && tm.Employee.IsActive)
+            .ToList();
+
+        if (activeMembers.Count == 0)
+        {
+            throw new BadRequestException("Nhóm hiện không có thành viên nào đang hoạt động");
         }
 
         // 2. Kiểm tra xem các work shifts có tồn tại không

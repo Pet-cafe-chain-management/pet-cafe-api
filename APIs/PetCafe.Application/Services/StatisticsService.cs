@@ -73,7 +73,7 @@ public class StatisticsService(IUnitOfWork _unitOfWork) : IStatisticsService
             GrowthRate = growthRate,
             AverageOrderValue = orders.Any() ? totalRevenue / orders.Count : 0,
             RevenueByPaymentMethod = orders
-                .GroupBy(x => x.PaymentMethod ?? PaymentMethodConstant.QR_CODE)
+                .GroupBy(x => x.PaymentMethod ?? PaymentMethodConstant.ONLINE)
                 .Select(g => new RevenueByPaymentMethodItem
                 {
                     PaymentMethod = g.Key,

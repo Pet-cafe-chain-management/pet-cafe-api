@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using PetCafe.Application.Models.ShareModels;
 using PetCafe.Domain.Constants;
 
 namespace PetCafe.Application.Models.EmployeeModels;
@@ -19,6 +21,7 @@ public class EmployeeCreateModel
 
 public class EmployeeUpdateModel : EmployeeCreateModel
 {
+    public bool IsActive { get; set; } = true;
 }
 
 public class EmployeeCreateModelValidator : AbstractValidator<EmployeeCreateModel>
@@ -76,4 +79,10 @@ public class EmployeeUpdateModelValidator : AbstractValidator<EmployeeUpdateMode
     {
         Include(new EmployeeCreateModelValidator());
     }
+}
+
+public class EmployeeFilterQuery : FilterQuery
+{
+    [FromQuery(Name = "is_active")]
+    public bool? IsActive { get; set; }
 }

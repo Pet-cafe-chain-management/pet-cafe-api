@@ -52,7 +52,7 @@ public class Order : BaseEntity
 
     [Column("payment_method")]
     [MaxLength(20)]
-    public string? PaymentMethod { get; set; } = PaymentMethodConstant.QR_CODE;
+    public string? PaymentMethod { get; set; } = PaymentMethodConstant.ONLINE;
 
     [Column("status")]
     [MaxLength(20)]
