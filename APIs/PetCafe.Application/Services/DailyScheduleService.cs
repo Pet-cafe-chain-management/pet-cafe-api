@@ -5,6 +5,7 @@ using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Utilities;
 using PetCafe.Domain.Constants;
 using PetCafe.Domain.Entities;
+using PetCafe.Domain.Models;
 using Hangfire;
 using Task = System.Threading.Tasks.Task;
 using PetCafe.Application.Services.Commons;
@@ -155,10 +156,8 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
         // Lấy tất cả các team members của team
         Expression<Func<DailySchedule, bool>> filter = x => x.Employee.IsActive;
 
-        filter = FilterCustoms.CombineFilters(filter, x =>
-            x.WorkShift != null &&
-            x.WorkShift.ApplicableDays.Contains(x.Date.DayOfWeek.ToString().ToUpper())
-        );
+        // Note: Không thể filter ApplicableDays trong EF Core expression vì Contains với DayOfWeek.ToString() không được translate
+        // Sẽ filter sau khi load dữ liệu
 
         if (query.TeamId.HasValue)
         {
@@ -178,16 +177,37 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
             filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.Status == query.Status) : x => x.Status == query.Status;
         }
 
-        var (Pagination, Entities) = await _unitOfWork.DailyScheduleRepository.ToPagination(
-            pageIndex: query.Page ?? 0,
-            pageSize: query.Limit ?? 10,
-            filter: filter,
+        // Load tất cả records matching các filter (không có ApplicableDays filter)
+        var allEntities = await _unitOfWork.DailyScheduleRepository.WhereAsync(
+            filter,
             includeFunc: q => q.Include(ds => ds.WorkShift)
                               .Include(ds => ds.Employee)
                               .Include(ds => ds.TeamMember)
         );
 
-        return BasePagingResponseModel<DailySchedule>.CreateInstance(Entities, Pagination);
+        // Filter theo ApplicableDays trong memory
+        var filteredEntities = allEntities
+            .Where(ds => ds.WorkShift != null &&
+                        ds.WorkShift.ApplicableDays.Contains(ds.Date.DayOfWeek.ToString().ToUpper()))
+            .ToList();
+
+        // Apply pagination thủ công
+        var pageIndex = query.Page ?? 0;
+        var pageSize = query.Limit ?? 10;
+        var totalCount = filteredEntities.Count;
+        var paginatedEntities = filteredEntities
+            .Skip(pageIndex * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var pagination = new Pagination
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize,
+            TotalItemsCount = totalCount
+        };
+
+        return BasePagingResponseModel<DailySchedule>.CreateInstance(paginatedEntities, pagination);
     }
     public async Task<List<DailySchedule>> CreateDailySchedulesForMembersAsync(
         List<TeamMember> teamMembers,
