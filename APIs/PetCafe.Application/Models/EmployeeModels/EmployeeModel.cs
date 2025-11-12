@@ -12,10 +12,9 @@ public class EmployeeCreateModel
     public string? Address { get; set; }
     public double Salary { get; set; } = 0;
     public List<string> Skills { get; set; } = [];
-    public Guid? AreaId { get; set; }
     public required string Email { get; set; } = default!;
     public required string AvatarUrl { get; set; } = default!;
-    public required string Password { get; set; }
+    public string? Password { get; set; }
     public string SubRole { get; set; } = SubRoleConstants.WORKING_STAFF;
 }
 
