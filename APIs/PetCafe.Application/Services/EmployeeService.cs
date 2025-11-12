@@ -5,6 +5,7 @@ using PetCafe.Application.Models.EmployeeModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services.Commons;
 using PetCafe.Application.Utilities;
+using PetCafe.Domain.Constants;
 using PetCafe.Domain.Entities;
 using Task = System.Threading.Tasks.Task;
 
@@ -23,7 +24,8 @@ public interface IEmployeeService
 
 public class EmployeeService(
     IUnitOfWork _unitOfWork,
-    IHashService _hashService
+    IHashService _hashService,
+    IClaimsService _claimService
 ) : IEmployeeService
 {
     private readonly IUnitOfWork _unitOfWork = _unitOfWork;
@@ -53,7 +55,7 @@ public class EmployeeService(
         var account = await _unitOfWork.AccountRepository.GetByIdAsync(employee.AccountId) ?? throw new BadRequestException("Không tìm thấy tài khoản nhân viên");
         _unitOfWork.Mapper.Map(model, employee);
 
-        if (!_hashService.VerifyPassword(model.Password, account.PasswordHash)) throw new BadRequestException("Mật khẩu hiện tại không đúng");
+        if (!_hashService.VerifyPassword(model.Password, account.PasswordHash) && _claimService.GetCurrentUserRole == RoleConstants.EMPLOYEE) throw new BadRequestException("Mật khẩu hiện tại không đúng");
 
         if (!string.IsNullOrEmpty(model.NewPassword))
         {
