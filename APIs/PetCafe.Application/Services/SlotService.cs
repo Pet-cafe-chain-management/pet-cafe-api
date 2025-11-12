@@ -237,12 +237,12 @@ public class SlotService(
             model.EndTime <= x.WorkShift.EndTime)
             ?? throw new BadRequestException("Nhóm không hoạt động trong khoảng thời gian này!");
 
-        if (model.IsRecurring && model.DayOfWeek != null && validTeamWorkShift.WorkShift.ApplicableDays.Contains(model.DayOfWeek))
+        if (!(model.IsRecurring && model.DayOfWeek != null && validTeamWorkShift.WorkShift.ApplicableDays.Contains(model.DayOfWeek)))
         {
             throw new BadRequestException("Ngày trong tuần không cùng chung ca làm việc!");
         }
 
-        if (!model.IsRecurring && model.SpecificDate != null && validTeamWorkShift.WorkShift.ApplicableDays.Contains(model.SpecificDate.Value.DayOfWeek.ToString()))
+        if (!(!model.IsRecurring && model.SpecificDate != null && validTeamWorkShift.WorkShift.ApplicableDays.Contains(model.SpecificDate.Value.DayOfWeek.ToString())))
         {
             throw new BadRequestException("Ngày trong tuần không cùng chung ca làm việc!");
         }
