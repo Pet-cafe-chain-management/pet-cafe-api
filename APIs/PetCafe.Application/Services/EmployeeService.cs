@@ -53,10 +53,13 @@ public class EmployeeService(
         var account = await _unitOfWork.AccountRepository.GetByIdAsync(employee.AccountId) ?? throw new BadRequestException("Không tìm thấy tài khoản nhân viên");
         _unitOfWork.Mapper.Map(model, employee);
 
-        if (!_hashService.VerifyPassword(model.Password ?? "", account.PasswordHash))
+        if (!_hashService.VerifyPassword(model.Password, account.PasswordHash)) throw new BadRequestException("Mật khẩu hiện tại không đúng");
+
+        if (!string.IsNullOrEmpty(model.NewPassword))
         {
-            account.PasswordHash = _hashService.HashPassword(model.Password ?? _hashService.GenerateRandomPassword());
+            account.PasswordHash = _hashService.HashPassword(model.NewPassword);
         }
+
         account.IsActive = model.IsActive;
 
         _unitOfWork.AccountRepository.Update(account);

@@ -21,6 +21,7 @@ public class EmployeeCreateModel
 
 public class EmployeeUpdateModel : EmployeeCreateModel
 {
+    public string? NewPassword { get; set; }
     public bool IsActive { get; set; } = true;
 }
 
