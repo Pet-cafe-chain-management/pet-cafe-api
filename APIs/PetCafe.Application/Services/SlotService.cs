@@ -231,22 +231,28 @@ public class SlotService(
                 includeFunc: x => x.Include(x => x.WorkShift)
             );
 
+        // Xác định ngày trong tuần cần kiểm tra
+        string? dayToCheck = null;
+        if (model.IsRecurring && model.DayOfWeek != null)
+        {
+            dayToCheck = model.DayOfWeek.ToUpper();
+        }
+        else if (!model.IsRecurring && model.SpecificDate != null)
+        {
+            dayToCheck = model.SpecificDate.Value.DayOfWeek.ToString().ToUpper();
+        }
+
+        if (dayToCheck == null)
+        {
+            throw new BadRequestException("Thông tin ngày trong tuần không hợp lệ!");
+        }
+
+        // Tìm ca làm việc hợp lệ: phải có ngày trong ApplicableDays VÀ khoảng thời gian chứa slot
         var validTeamWorkShift = team_work_shifts.FirstOrDefault(x =>
             x.WorkShift.ApplicableDays != null &&
+            x.WorkShift.ApplicableDays.Contains(dayToCheck) &&
             model.StartTime >= x.WorkShift.StartTime &&
-            model.EndTime <= x.WorkShift.EndTime)
-            ?? throw new BadRequestException("Nhóm không hoạt động trong khoảng thời gian này!");
-
-        if (!(model.IsRecurring && model.DayOfWeek != null && validTeamWorkShift.WorkShift.ApplicableDays.Contains(model.DayOfWeek)))
-        {
-            throw new BadRequestException("Ngày trong tuần không cùng chung ca làm việc!");
-        }
-
-        if (!(!model.IsRecurring && model.SpecificDate != null && validTeamWorkShift.WorkShift.ApplicableDays.Contains(model.SpecificDate.Value.DayOfWeek.ToString())))
-        {
-            throw new BadRequestException("Ngày trong tuần không cùng chung ca làm việc!");
-        }
-
+            model.EndTime <= x.WorkShift.EndTime) ?? throw new BadRequestException("Nhóm không hoạt động trong khoảng thời gian và ngày này!");
     }
 
     public async Task<bool> DeleteAsync(Guid id)
