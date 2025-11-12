@@ -53,6 +53,12 @@ public class EmployeeService(
     {
         var employee = await _unitOfWork.EmployeeRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy nhân viên");
         var account = await _unitOfWork.AccountRepository.GetByIdAsync(employee.AccountId) ?? throw new BadRequestException("Không tìm thấy tài khoản nhân viên");
+
+        if (_claimService.GetCurrentUserRole != RoleConstants.MANAGER && model.IsActive != employee.IsActive)
+        {
+            throw new BadRequestException("Bạn không có quyền cập nhật trạng thái hoạt động của nhân viên này!");
+        }
+
         _unitOfWork.Mapper.Map(model, employee);
 
         if (_claimService.GetCurrentUserRole == RoleConstants.EMPLOYEE && (
@@ -64,7 +70,6 @@ public class EmployeeService(
             account.PasswordHash = _hashService.HashPassword(model.NewPassword);
         }
 
-        account.IsActive = model.IsActive;
 
         _unitOfWork.AccountRepository.Update(account);
         _unitOfWork.EmployeeRepository.Update(employee);
