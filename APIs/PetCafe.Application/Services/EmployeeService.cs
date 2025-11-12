@@ -55,7 +55,9 @@ public class EmployeeService(
         var account = await _unitOfWork.AccountRepository.GetByIdAsync(employee.AccountId) ?? throw new BadRequestException("Không tìm thấy tài khoản nhân viên");
         _unitOfWork.Mapper.Map(model, employee);
 
-        if (!_hashService.VerifyPassword(model.Password, account.PasswordHash) && _claimService.GetCurrentUserRole == RoleConstants.EMPLOYEE) throw new BadRequestException("Mật khẩu hiện tại không đúng");
+        if (_claimService.GetCurrentUserRole == RoleConstants.EMPLOYEE &&
+            !_hashService.VerifyPassword(model.Password, account.PasswordHash)
+        ) throw new BadRequestException("Mật khẩu hiện tại không đúng");
 
         if (!string.IsNullOrEmpty(model.NewPassword))
         {
