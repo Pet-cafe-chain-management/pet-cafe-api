@@ -1,7 +1,9 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Models.VaccineTypeModels;
+using PetCafe.Application.Utilities;
 using PetCafe.Domain.Entities;
 
 namespace PetCafe.Application.Services;
@@ -9,7 +11,7 @@ namespace PetCafe.Application.Services;
 public interface IVaccineTypeService
 {
     Task<VaccineType> GetByIdAsync(Guid id);
-    Task<BasePagingResponseModel<VaccineType>> GetAllPagingAsync(FilterQuery query);
+    Task<BasePagingResponseModel<VaccineType>> GetAllPagingAsync(VaccineTypeFilterQuery query);
     Task<VaccineType> CreateAsync(VaccineTypeCreateModel model);
     Task<VaccineType> UpdateAsync(Guid id, VaccineTypeUpdateModel model);
     Task<bool> DeleteAsync(Guid id);
@@ -48,12 +50,35 @@ public class VaccineTypeService(
         return await _unitOfWork.VaccineTypeRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
     }
 
-    public async Task<BasePagingResponseModel<VaccineType>> GetAllPagingAsync(FilterQuery query)
+    public async Task<BasePagingResponseModel<VaccineType>> GetAllPagingAsync(VaccineTypeFilterQuery query)
     {
+        Expression<Func<VaccineType, bool>>? filter = null;
+
+
+        if (query.SpeciesId.HasValue)
+        {
+            Expression<Func<VaccineType, bool>> tmp_filter = x => x.SpeciesId == query.SpeciesId.Value;
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
+
+        }
+
+        if (string.IsNullOrEmpty(query.Name) == false)
+        {
+            Expression<Func<VaccineType, bool>> tmp_filter = x => x.Name.Contains(query.Name);
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
+        }
+
+        if (query.IsRequired.HasValue)
+        {
+            Expression<Func<VaccineType, bool>> tmp_filter = x => x.IsRequired == query.IsRequired.Value;
+            filter = filter != null ? FilterCustoms.CombineFilters(filter, tmp_filter) : tmp_filter;
+        }
+
 
         var (Pagination, Entities) = await _unitOfWork.VaccineTypeRepository.ToPagination(
             pageIndex: query.Page ?? 0,
            pageSize: query.Limit ?? 10,
+            filter: filter,
            searchTerm: query.Q,
            searchFields: ["Name", "Description"],
            sortOrders: query.OrderBy?.ToDictionary(

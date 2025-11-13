@@ -20,7 +20,7 @@ public class VaccineTypeController(IVaccineTypeService _vaccineTypeService) : Co
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllPaging([FromQuery] FilterQuery query)
+    public async Task<IActionResult> GetAllPaging([FromQuery] VaccineTypeFilterQuery query)
     {
         var result = await _vaccineTypeService.GetAllPagingAsync(query);
         return Ok(result);
