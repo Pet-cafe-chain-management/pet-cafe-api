@@ -46,11 +46,17 @@ public class DailyTask : BaseEntity
     [ForeignKey("Slot")]
     public Guid? SlotId { get; set; }
 
+    [Column("vaccination_schedule_id")]
+    [ForeignKey("VaccinationSchedule")]
+    public Guid? VaccinationScheduleId { get; set; }
+
     [Column("notes")]
     [MaxLength(500)]
     public string? Notes { get; set; }
 
     // Navigation properties
+
+    public virtual VaccinationSchedule? VaccinationSchedule { get; set; } = null!;
     public virtual Task? Task { get; set; } = null!;
     public virtual Slot? Slot { get; set; } = null!;
     public virtual Team Team { get; set; } = null!;

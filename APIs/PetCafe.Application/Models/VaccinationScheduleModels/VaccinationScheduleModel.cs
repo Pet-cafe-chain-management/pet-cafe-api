@@ -8,6 +8,7 @@ public class VaccinationScheduleCreateModel
     public Guid VaccineTypeId { get; set; }
     public DateTime ScheduledDate { get; set; }
     public string? Notes { get; set; }
+    public Guid TeamId { get; set; }
 }
 
 public class VaccinationScheduleUpdateModel : VaccinationScheduleCreateModel

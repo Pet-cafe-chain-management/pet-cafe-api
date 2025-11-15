@@ -5,6 +5,8 @@ using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Models.VaccinationScheduleModels;
 using PetCafe.Application.Utilities;
 using PetCafe.Domain.Entities;
+using PetCafe.Domain.Constants;
+using Task = System.Threading.Tasks.Task;
 
 namespace PetCafe.Application.Services;
 
@@ -27,21 +29,64 @@ public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationS
         var schedule = _unitOfWork.Mapper.Map<VaccinationSchedule>(model);
         await _unitOfWork.VaccinationScheduleRepository.AddAsync(schedule);
         await _unitOfWork.SaveChangesAsync();
+
+        // Load Pet and VaccineType for DailyTask creation
+        schedule = await _unitOfWork.VaccinationScheduleRepository.GetByIdAsync(
+            schedule.Id,
+            includeFunc: x => x
+                .Include(x => x.Pet)
+                .Include(x => x.VaccineType)
+        ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+
+        // Create DailyTask for the vaccination schedule
+        await CreateOrUpdateDailyTaskAsync(schedule, model.TeamId);
+
         return schedule;
     }
 
     public async Task<VaccinationSchedule> UpdateAsync(Guid id, VaccinationScheduleUpdateModel model)
     {
-        var schedule = await _unitOfWork.VaccinationScheduleRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+        var schedule = await _unitOfWork.VaccinationScheduleRepository.GetByIdAsync(
+            id,
+            includeFunc: x => x
+                .Include(x => x.Pet)
+                .Include(x => x.VaccineType)
+        ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+
         _unitOfWork.Mapper.Map(model, schedule);
         _unitOfWork.VaccinationScheduleRepository.Update(schedule);
         await _unitOfWork.SaveChangesAsync();
+
+        // Update or create DailyTask for the vaccination schedule
+        await CreateOrUpdateDailyTaskAsync(schedule, model.TeamId);
+
         return schedule;
     }
 
     public async Task<bool> DeleteAsync(Guid id)
     {
         var schedule = await _unitOfWork.VaccinationScheduleRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+
+        // Find and cancel/delete related DailyTask
+        var dailyTask = await _unitOfWork.DailyTaskRepository.FirstOrDefaultAsync(
+            x => x.VaccinationScheduleId == id && !x.IsDeleted
+        );
+
+        if (dailyTask != null)
+        {
+            // Cancel the DailyTask if it's not completed
+            if (dailyTask.Status != DailyTaskStatusConstant.COMPLETED)
+            {
+                dailyTask.Status = DailyTaskStatusConstant.CANCELLED;
+                _unitOfWork.DailyTaskRepository.Update(dailyTask);
+            }
+            else
+            {
+                // Soft delete if already completed
+                _unitOfWork.DailyTaskRepository.SoftRemove(dailyTask);
+            }
+        }
+
         _unitOfWork.VaccinationScheduleRepository.SoftRemove(schedule);
         return await _unitOfWork.SaveChangesAsync();
     }
@@ -111,5 +156,81 @@ public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationS
                 );
 
         return BasePagingResponseModel<VaccinationSchedule>.CreateInstance(Entities, Pagination); ;
+    }
+
+    private async Task CreateOrUpdateDailyTaskAsync(VaccinationSchedule schedule, Guid teamId)
+    {
+        var existingDailyTask = await _unitOfWork.DailyTaskRepository.FirstOrDefaultAsync(
+            x => x.VaccinationScheduleId == schedule.Id && !x.IsDeleted
+        );
+
+        var team = await _unitOfWork.TeamRepository.GetByIdAsync(teamId) ?? throw new BadRequestException("Không tìm thấy team!");
+
+        var title = $"Tiêm vaccine {schedule.VaccineType.Name} cho {schedule.Pet.Name}";
+        var description = $"Lịch tiêm vaccine {schedule.VaccineType.Name} cho thú cưng {schedule.Pet.Name}";
+
+        var scheduledTime = schedule.ScheduledDate.TimeOfDay;
+        if (scheduledTime == TimeSpan.Zero)
+        {
+            scheduledTime = new TimeSpan(9, 0, 0);
+        }
+
+        var endTime = scheduledTime.Add(new TimeSpan(1, 0, 0));
+
+        if (existingDailyTask != null)
+        {
+            existingDailyTask.Title = title;
+            existingDailyTask.Description = description;
+            existingDailyTask.AssignedDate = schedule.ScheduledDate.Date;
+            existingDailyTask.StartTime = scheduledTime;
+            existingDailyTask.EndTime = endTime;
+            existingDailyTask.Priority = TaskPriorityConstant.HIGH;
+            existingDailyTask.Notes = schedule.Notes;
+
+            if (schedule.Status == VaccinationScheduleStatus.COMPLETED)
+            {
+                existingDailyTask.Status = DailyTaskStatusConstant.COMPLETED;
+                existingDailyTask.CompletionDate = schedule.CompletedDate ?? DateTime.UtcNow;
+            }
+            else if (schedule.Status == VaccinationScheduleStatus.CANCELLED)
+            {
+                existingDailyTask.Status = DailyTaskStatusConstant.CANCELLED;
+            }
+            else if (schedule.Status == VaccinationScheduleStatus.IN_PROGRESS)
+            {
+                existingDailyTask.Status = DailyTaskStatusConstant.IN_PROGRESS;
+            }
+            else
+            {
+                existingDailyTask.Status = DailyTaskStatusConstant.SCHEDULED;
+            }
+
+            _unitOfWork.DailyTaskRepository.Update(existingDailyTask);
+        }
+        else
+        {
+            var dailyTask = new DailyTask
+            {
+                TeamId = team.Id,
+                Title = title,
+                Description = description,
+                Priority = TaskPriorityConstant.HIGH,
+                Status = schedule.Status == VaccinationScheduleStatus.COMPLETED
+                    ? DailyTaskStatusConstant.COMPLETED
+                    : DailyTaskStatusConstant.SCHEDULED,
+                AssignedDate = schedule.ScheduledDate.Date,
+                StartTime = scheduledTime,
+                EndTime = endTime,
+                VaccinationScheduleId = schedule.Id,
+                Notes = schedule.Notes,
+                CompletionDate = schedule.Status == VaccinationScheduleStatus.COMPLETED
+                    ? (schedule.CompletedDate ?? DateTime.UtcNow)
+                    : null
+            };
+
+            await _unitOfWork.DailyTaskRepository.AddAsync(dailyTask);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 }
