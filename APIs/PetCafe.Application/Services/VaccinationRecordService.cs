@@ -5,6 +5,7 @@ using PetCafe.Application.Models.VaccinationRecordModels;
 using PetCafe.Application.Services.Commons;
 using PetCafe.Domain.Constants;
 using PetCafe.Domain.Entities;
+using Task = System.Threading.Tasks.Task;
 
 namespace PetCafe.Application.Services;
 
@@ -18,7 +19,7 @@ public interface IVaccinationRecordService
 }
 
 
-public class VaccinationRecordService(IUnitOfWork _unitOfWork, ICurrentTime _currentTime) : IVaccinationRecordService
+public class VaccinationRecordService(IUnitOfWork _unitOfWork, ICurrentTime _currentTime, IVaccinationScheduleService _vaccinationScheduleService) : IVaccinationRecordService
 {
     public async Task<VaccinationRecord> CreateAsync(VaccinationRecordCreateModel model)
     {
@@ -28,12 +29,41 @@ public class VaccinationRecordService(IUnitOfWork _unitOfWork, ICurrentTime _cur
 
         if (recent_records.Count > 0 && recent_records.Count >= vaccine_type.RequiredDoses) throw new BadRequestException("Đã vượt quá số lần tiêm cho loại vaccine này!");
 
-        var schedule = await _unitOfWork.VaccinationScheduleRepository.GetByIdAsync(model.ScheduleId) ?? throw new BadRequestException("Không tìm thấy lịch tiêm chủng!");
+        var schedule = await _unitOfWork.VaccinationScheduleRepository.GetByIdAsync(
+            model.ScheduleId,
+            includeFunc: x => x
+                .Include(x => x.Pet)
+                .Include(x => x.VaccineType)
+        ) ?? throw new BadRequestException("Không tìm thấy lịch tiêm chủng!");
+
         var vaccinationRecord = _unitOfWork.Mapper.Map<VaccinationRecord>(model);
 
         schedule.Status = VaccinationScheduleStatus.COMPLETED;
         schedule.CompletedDate = _currentTime.GetCurrentTime;
         schedule.RecordId = vaccinationRecord.Id;
+
+        // Get TeamId from existing DailyTask of the current schedule, or get first active team
+        var existingDailyTask = await _unitOfWork.DailyTaskRepository.FirstOrDefaultAsync(
+            x => x.VaccinationScheduleId == schedule.Id && !x.IsDeleted
+        );
+
+        Guid teamId;
+        if (existingDailyTask != null)
+        {
+            teamId = existingDailyTask.TeamId;
+            // Update existing DailyTask to COMPLETED
+            existingDailyTask.Status = DailyTaskStatusConstant.COMPLETED;
+            existingDailyTask.CompletionDate = _currentTime.GetCurrentTime;
+            _unitOfWork.DailyTaskRepository.Update(existingDailyTask);
+        }
+        else
+        {
+            // Get first active team as fallback
+            var team = await _unitOfWork.TeamRepository.FirstOrDefaultAsync(
+                x => x.IsActive && !x.IsDeleted
+            ) ?? throw new BadRequestException("Không tìm thấy team đang hoạt động để gán nhiệm vụ!");
+            teamId = team.Id;
+        }
 
         var newSchedule = new VaccinationSchedule
         {
@@ -49,15 +79,51 @@ public class VaccinationRecordService(IUnitOfWork _unitOfWork, ICurrentTime _cur
         await _unitOfWork.VaccinationScheduleRepository.AddAsync(newSchedule);
         await _unitOfWork.SaveChangesAsync();
 
+        // Load Pet and VaccineType for new schedule to create DailyTask
+        newSchedule = await _unitOfWork.VaccinationScheduleRepository.GetByIdAsync(
+            newSchedule.Id,
+            includeFunc: x => x
+                .Include(x => x.Pet)
+                .Include(x => x.VaccineType)
+        ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+
+        // Create DailyTask for the new schedule
+        await _vaccinationScheduleService.CreateOrUpdateDailyTaskAsync(newSchedule, teamId);
+
         return vaccinationRecord;
     }
 
     public async Task<VaccinationRecord> UpdateAsync(Guid id, VaccinationRecordUpdateModel model)
     {
-        var vaccinationRecord = await _unitOfWork.VaccinationRecordRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+        var vaccinationRecord = await _unitOfWork.VaccinationRecordRepository.GetByIdAsync(
+            id,
+            includeFunc: x => x
+                .Include(x => x.Schedule!)
+                    .ThenInclude(s => s.Pet)
+                .Include(x => x.Schedule!)
+                    .ThenInclude(s => s.VaccineType)
+        ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+
         _unitOfWork.Mapper.Map(model, vaccinationRecord);
         _unitOfWork.VaccinationRecordRepository.Update(vaccinationRecord);
         await _unitOfWork.SaveChangesAsync();
+
+        // Update related DailyTask if schedule exists and is completed
+        if (vaccinationRecord.Schedule != null && vaccinationRecord.Schedule.Status == VaccinationScheduleStatus.COMPLETED)
+        {
+            var dailyTask = await _unitOfWork.DailyTaskRepository.FirstOrDefaultAsync(
+                x => x.VaccinationScheduleId == vaccinationRecord.Schedule.Id && !x.IsDeleted
+            );
+
+            if (dailyTask != null)
+            {
+                dailyTask.Status = DailyTaskStatusConstant.COMPLETED;
+                dailyTask.CompletionDate = vaccinationRecord.Schedule.CompletedDate ?? _currentTime.GetCurrentTime;
+                _unitOfWork.DailyTaskRepository.Update(dailyTask);
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+
         return vaccinationRecord;
     }
 

@@ -19,6 +19,7 @@ public interface IVaccinationScheduleService
     Task<VaccinationSchedule> GetByIdAsync(Guid id);
 
     Task<BasePagingResponseModel<VaccinationSchedule>> GetAllAsync(VaccinationScheduleScheduleFilterQuery query);
+    Task CreateOrUpdateDailyTaskAsync(VaccinationSchedule schedule, Guid teamId);
 }
 
 
@@ -158,7 +159,7 @@ public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationS
         return BasePagingResponseModel<VaccinationSchedule>.CreateInstance(Entities, Pagination); ;
     }
 
-    private async Task CreateOrUpdateDailyTaskAsync(VaccinationSchedule schedule, Guid teamId)
+    public async Task CreateOrUpdateDailyTaskAsync(VaccinationSchedule schedule, Guid teamId)
     {
         var existingDailyTask = await _unitOfWork.DailyTaskRepository.FirstOrDefaultAsync(
             x => x.VaccinationScheduleId == schedule.Id && !x.IsDeleted
