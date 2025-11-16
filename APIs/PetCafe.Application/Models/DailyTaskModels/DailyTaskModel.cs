@@ -6,8 +6,8 @@ namespace PetCafe.Application.Models.DailyTaskModels;
 public class DailyTaskCreateModel
 {
     public Guid TeamId { get; set; }
-    public Guid TaskId { get; set; }
-    public Guid SlotId { get; set; }
+    public Guid? TaskId { get; set; }
+    public Guid? SlotId { get; set; }
     public string Status { get; set; } = DailyTaskStatusConstant.SCHEDULED;
     public DateTime AssignedDate { get; set; }
     public TimeSpan StartTime { get; set; }

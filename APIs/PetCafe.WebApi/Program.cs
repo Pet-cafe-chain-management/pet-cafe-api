@@ -1,6 +1,7 @@
 using Hangfire;
 using PetCafe.Application;
 using PetCafe.Application.GlobalExceptionHandling;
+using PetCafe.Application.Hubs;
 using PetCafe.Application.Services;
 using PetCafe.WebApi;
 using PetCafe.WebApi.Middlewares;
@@ -67,6 +68,18 @@ RecurringJob.AddOrUpdate<IOrderService>(
     }
 );
 
+// Cấu hình cronjob để check và gửi booking notifications
+// Chạy mỗi giờ để check booking trong ngày và ngày mai
+RecurringJob.AddOrUpdate<IBookingNotificationService>(
+    "check-booking-notifications",
+    service => service.CheckAndSendBookingNotificationsAsync(),
+    "0 * * * *", // Chạy mỗi giờ
+    new RecurringJobOptions
+    {
+        TimeZone = TimeZoneInfo.Utc
+    }
+);
+
 app.UseMiddleware<GlobalErrorHandlingMiddleware>();
 app.UseMiddleware<PerformanceMiddleware>();
 
@@ -76,6 +89,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<NotificationHub>("/notification-hub");
 
 
 app.Run();

@@ -28,7 +28,8 @@ public class OrderService(
     IUnitOfWork _unitOfWork,
     IClaimsService _claimsService,
     ICurrentTime _currentTime,
-    IPayOsService _payOsService
+    IPayOsService _payOsService,
+    INotificationService _notificationService
 ) : IOrderService
 {
 
@@ -222,7 +223,8 @@ public class OrderService(
             .OrderRepository
             .FirstOrDefaultAsync(x =>
                 x.OrderNumber == model.Data!.OrderCode.ToString() ||
-                model.Data!.Description!.Contains(x.OrderNumber)
+                model.Data!.Description!.Contains(x.OrderNumber),
+                includeFunc: x => x.Include(x => x.Customer!).ThenInclude(x => x.Account)
             ) ?? throw new Exception("Thanh toán thất bại!");
 
         order.Status = OrderStatusConstant.PAID;
@@ -236,7 +238,23 @@ public class OrderService(
         await _unitOfWork.TransactionRepository.AddAsync(transaction);
         _unitOfWork.OrderRepository.Update(order);
 
-        return await _unitOfWork.SaveChangesAsync();
+        var saved = await _unitOfWork.SaveChangesAsync();
+
+        // Gửi notification khi order thành công
+        if (saved && order.CustomerId.HasValue && order.Customer?.AccountId != null)
+        {
+            await _notificationService.SendNotificationAsync(
+                accountId: order.Customer.AccountId,
+                title: "Đặt hàng thành công",
+                message: $"Đơn hàng #{order.OrderNumber} của bạn đã được thanh toán thành công. Tổng tiền: {order.FinalAmount:N0} VNĐ",
+                notificationType: "Booking",
+                priority: "Normal",
+                referenceId: order.Id,
+                referenceType: "Order"
+            );
+        }
+
+        return saved;
     }
 
 
@@ -307,7 +325,9 @@ public class OrderService(
     {
         var order = await _unitOfWork
            .OrderRepository
-           .GetByIdAsync(id) ?? throw new BadRequestException("Xác nhận thất bại!");
+           .GetByIdAsync(id,
+               includeFunc: x => x.Include(x => x.Customer!).ThenInclude(x => x.Account)
+           ) ?? throw new BadRequestException("Xác nhận thất bại!");
 
         if (order.Type != OrderTypeConstant.EMPLOYEE) throw new BadRequestException("Không có quyền xác nhận đơn hàng này!");
         order.Status = OrderStatusConstant.PAID;
@@ -318,7 +338,23 @@ public class OrderService(
 
         _unitOfWork.OrderRepository.Update(order);
 
-        return await _unitOfWork.SaveChangesAsync();
+        var saved = await _unitOfWork.SaveChangesAsync();
+
+        // Gửi notification khi order được xác nhận thành công
+        if (saved && order.CustomerId.HasValue && order.Customer?.AccountId != null)
+        {
+            await _notificationService.SendNotificationAsync(
+                accountId: order.Customer.AccountId,
+                title: "Đặt hàng thành công",
+                message: $"Đơn hàng #{order.OrderNumber} của bạn đã được xác nhận thành công. Tổng tiền: {order.FinalAmount:N0} VNĐ",
+                notificationType: "Booking",
+                priority: "Normal",
+                referenceId: order.Id,
+                referenceType: "Order"
+            );
+        }
+
+        return saved;
     }
 
     #region GetAllPagingAsync
