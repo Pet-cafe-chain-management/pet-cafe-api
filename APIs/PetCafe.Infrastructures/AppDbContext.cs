@@ -52,6 +52,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<CustomerBooking> ServiceBookings { get; set; }
     public DbSet<DailySchedule> DailySchedules { get; set; }
     public DbSet<ServiceFeedback> ServiceFeedbacks { get; set; }
+    
+    // Leave Request Management
+    public DbSet<LeaveRequest> LeaveRequests { get; set; }
+    public DbSet<EmployeeOptionalWorkShift> EmployeeOptionalWorkShifts { get; set; }
+    
     // Notification System
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Storage> Storages { get; set; }

@@ -44,6 +44,8 @@ public class UnitOfWork(
     ISlotRepository slotRepository,
     ISlotAvailabilityRepository slotAvailabilityRepository,
     IStorageRepository storageRepository,
+    ILeaveRequestRepository leaveRequestRepository,
+    IEmployeeOptionalWorkShiftRepository employeeOptionalWorkShiftRepository,
     IMapper mapper
 ) : IUnitOfWork
 {
@@ -112,6 +114,10 @@ public class UnitOfWork(
     public IDailyScheduleRepository DailyScheduleRepository => dailyScheduleRepository;
 
     public IFeedbackRepository FeedbackRepository => feedbackRepository;
+
+    // Leave Request Management
+    public ILeaveRequestRepository LeaveRequestRepository => leaveRequestRepository;
+    public IEmployeeOptionalWorkShiftRepository EmployeeOptionalWorkShiftRepository => employeeOptionalWorkShiftRepository;
 
     // Transaction methods
     public async Task<bool> SaveChangesAsync()

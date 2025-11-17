@@ -54,6 +54,10 @@ public interface IUnitOfWork
     INotificationRepository NotificationRepository { get; }
     IStorageRepository StorageRepository { get; }
 
+    // Leave Request Management
+    ILeaveRequestRepository LeaveRequestRepository { get; }
+    IEmployeeOptionalWorkShiftRepository EmployeeOptionalWorkShiftRepository { get; }
+
     // Transaction methods
     Task<bool> SaveChangesAsync();
     Task BeginTransactionAsync();

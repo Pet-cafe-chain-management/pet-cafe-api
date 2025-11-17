@@ -107,9 +107,11 @@ public class SlotRepository(AppDbContext context, ICurrentTime currentTime, ICla
 {
 }
 
-public class SlotAvailabilityRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<SlotAvailability>(context, currentTime, claimsService), ISlotAvailabilityRepository
+#pragma warning disable CS9107 // Parameter is captured into the state of the enclosing type and its value is also passed to the base constructor. The value might be captured by the base class as well.
+public class SlotAvailabilityRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<SlotAvailability>(context: context!, currentTime, claimsService), ISlotAvailabilityRepository
+#pragma warning restore CS9107 // Parameter is captured into the state of the enclosing type and its value is also passed to the base constructor. The value might be captured by the base class as well.
 {
-    public async System.Threading.Tasks.Task<SlotAvailability?> GetBySlotIdAndDateAsync(Guid slotId, DateOnly bookingDate, CancellationToken cancellationToken = default)
+    public async Task<SlotAvailability?> GetBySlotIdAndDateAsync(Guid slotId, DateOnly bookingDate, CancellationToken cancellationToken = default)
     {
         return await FirstOrDefaultAsync(
             x => x.SlotId == slotId && x.BookingDate == bookingDate && !x.IsDeleted,
@@ -213,4 +215,13 @@ public class FeedbackRepository(AppDbContext context, ICurrentTime currentTime, 
             cancellationToken: cancellationToken
         );
     }
+}
+
+// Leave Request Management
+public class LeaveRequestRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<LeaveRequest>(context, currentTime, claimsService), ILeaveRequestRepository
+{
+}
+
+public class EmployeeOptionalWorkShiftRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<EmployeeOptionalWorkShift>(context, currentTime, claimsService), IEmployeeOptionalWorkShiftRepository
+{
 }

@@ -50,4 +50,5 @@ public class Employee : BaseEntity
     public virtual ICollection<TeamMember> TeamMembers { get; set; } = [];
     public virtual ICollection<Order> Orders { get; set; } = [];
     public virtual ICollection<DailySchedule> DailySchedules { get; set; } = [];
+    public virtual ICollection<EmployeeOptionalWorkShift> OptionalWorkShifts { get; set; } = [];
 }

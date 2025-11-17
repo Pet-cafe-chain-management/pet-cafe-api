@@ -1,0 +1,30 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PetCafe.Domain.Entities;
+
+namespace PetCafe.Infrastructures.EntityConfigurations;
+
+public class LeaveRequestConfiguration : IEntityTypeConfiguration<LeaveRequest>
+{
+    public void Configure(EntityTypeBuilder<LeaveRequest> builder)
+    {
+        builder.HasIndex(x => new { x.EmployeeId, x.LeaveDate });
+        builder.HasIndex(x => new { x.Status, x.ReviewedBy });
+
+        builder.HasOne(x => x.Employee)
+            .WithMany()
+            .HasForeignKey(x => x.EmployeeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.ReplacementEmployee)
+            .WithMany()
+            .HasForeignKey(x => x.ReplacementEmployeeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.Reviewer)
+            .WithMany()
+            .HasForeignKey(x => x.ReviewedBy)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+

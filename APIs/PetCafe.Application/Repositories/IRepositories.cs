@@ -157,3 +157,12 @@ public interface IFeedbackRepository : IGenericRepository<ServiceFeedback>
 {
     System.Threading.Tasks.Task<List<ServiceFeedback>> GetByServiceIdAsync(Guid serviceId, CancellationToken cancellationToken = default);
 }
+
+// Leave Request Management
+public interface ILeaveRequestRepository : IGenericRepository<LeaveRequest>
+{
+}
+
+public interface IEmployeeOptionalWorkShiftRepository : IGenericRepository<EmployeeOptionalWorkShift>
+{
+}

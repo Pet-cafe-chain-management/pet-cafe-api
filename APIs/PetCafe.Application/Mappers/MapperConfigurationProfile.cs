@@ -104,5 +104,13 @@ public class MapperConfigurationsProfile : Profile
 
         // DailySchedule
         CreateMap<Models.DailyScheduleModels.DailyScheduleUpdateModel, Domain.Entities.DailySchedule>().ReverseMap();
+
+        // LeaveRequest
+        CreateMap<Models.LeaveRequestModels.LeaveRequestCreateModel, Domain.Entities.LeaveRequest>().ReverseMap();
+        CreateMap<Models.LeaveRequestModels.LeaveRequestUpdateModel, Domain.Entities.LeaveRequest>().ReverseMap();
+
+        // EmployeeOptionalWorkShift
+        CreateMap<Models.EmployeeOptionalWorkShiftModels.EmployeeOptionalWorkShiftCreateModel, Domain.Entities.EmployeeOptionalWorkShift>().ReverseMap();
+        CreateMap<Models.EmployeeOptionalWorkShiftModels.EmployeeOptionalWorkShiftUpdateModel, Domain.Entities.EmployeeOptionalWorkShift>().ReverseMap();
     }
 }
