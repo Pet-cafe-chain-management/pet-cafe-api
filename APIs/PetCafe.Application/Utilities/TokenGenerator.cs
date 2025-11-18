@@ -15,7 +15,7 @@ namespace PetCafe.Application.Utilities
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSettings.JWTOptions.SecretKey);
 
-            var target_id = account.Role == RoleConstants.CUSTOMER ? account.Customer!.Id : account.Employee!.AccountId;
+            var target_id = account.Role == RoleConstants.CUSTOMER ? account.Customer!.Id : account.Employee!.Id;
             var claimsList = new List<Claim>()
             {
                 new(ClaimTypes.Email, account.Email!),
