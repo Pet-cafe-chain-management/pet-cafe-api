@@ -7,6 +7,7 @@ using PetCafe.Application.Utilities;
 using PetCafe.Domain.Entities;
 using PetCafe.Domain.Constants;
 using Task = System.Threading.Tasks.Task;
+using Hangfire;
 
 namespace PetCafe.Application.Services;
 
@@ -23,7 +24,9 @@ public interface IVaccinationScheduleService
 }
 
 
-public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationScheduleService
+public class VaccinationScheduleService(
+    IUnitOfWork _unitOfWork,
+    IBackgroundJobClient _backgroundJobClient) : IVaccinationScheduleService
 {
     public async Task<VaccinationSchedule> CreateAsync(VaccinationScheduleCreateModel model)
     {
@@ -39,8 +42,7 @@ public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationS
                 .Include(x => x.VaccineType)
         ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
 
-        // Create DailyTask for the vaccination schedule
-        await CreateOrUpdateDailyTaskAsync(schedule, model.TeamId);
+        _backgroundJobClient.Enqueue(() => CreateOrUpdateDailyTaskAsync(schedule, model.TeamId));
 
         return schedule;
     }
@@ -59,7 +61,7 @@ public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationS
         await _unitOfWork.SaveChangesAsync();
 
         // Update or create DailyTask for the vaccination schedule
-        await CreateOrUpdateDailyTaskAsync(schedule, model.TeamId);
+        _backgroundJobClient.Enqueue(() => CreateOrUpdateDailyTaskAsync(schedule, model.TeamId));
 
         return schedule;
     }
