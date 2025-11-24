@@ -31,6 +31,8 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
     {
 
         var task = await _unitOfWork.TaskRepository.FirstOrDefaultAsync(x => x.Id == model.TaskId && x.IsPublic) ?? throw new BadRequestException("Không tìm thấy thông tin công việc!");
+        var serviceExist = await _unitOfWork.ServiceRepository.FirstOrDefaultAsync(x => x.TaskId == model.TaskId);
+        if (serviceExist != null) throw new BadRequestException("Dịch vụ cho công việc này đã tồn tại!");
         var service = _unitOfWork.Mapper.Map<Service>(model);
         task.ServiceId = service.Id;
         _unitOfWork.TaskRepository.Update(task);
