@@ -20,7 +20,7 @@ public interface IVaccinationScheduleService
     Task<VaccinationSchedule> GetByIdAsync(Guid id);
 
     Task<BasePagingResponseModel<VaccinationSchedule>> GetAllAsync(VaccinationScheduleScheduleFilterQuery query);
-    Task CreateOrUpdateDailyTaskAsync(VaccinationSchedule schedule, Guid teamId);
+    Task CreateOrUpdateDailyTaskAsync(Guid scheduleId, Guid teamId);
 }
 
 
@@ -42,7 +42,7 @@ public class VaccinationScheduleService(
                 .Include(x => x.VaccineType)
         ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
 
-        _backgroundJobClient.Enqueue(() => CreateOrUpdateDailyTaskAsync(schedule, model.TeamId));
+        _backgroundJobClient.Enqueue(() => CreateOrUpdateDailyTaskAsync(schedule.Id, model.TeamId));
 
         return schedule;
     }
@@ -61,7 +61,7 @@ public class VaccinationScheduleService(
         await _unitOfWork.SaveChangesAsync();
 
         // Update or create DailyTask for the vaccination schedule
-        _backgroundJobClient.Enqueue(() => CreateOrUpdateDailyTaskAsync(schedule, model.TeamId));
+        _backgroundJobClient.Enqueue(() => CreateOrUpdateDailyTaskAsync(schedule.Id, model.TeamId));
 
         return schedule;
     }
@@ -163,8 +163,16 @@ public class VaccinationScheduleService(
         return BasePagingResponseModel<VaccinationSchedule>.CreateInstance(Entities, Pagination); ;
     }
 
-    public async Task CreateOrUpdateDailyTaskAsync(VaccinationSchedule schedule, Guid teamId)
+    public async Task CreateOrUpdateDailyTaskAsync(Guid scheduleId, Guid teamId)
     {
+        // Reload schedule with necessary includes for background job
+        var schedule = await _unitOfWork.VaccinationScheduleRepository.GetByIdAsync(
+            scheduleId,
+            includeFunc: x => x
+                .Include(x => x.Pet)
+                .Include(x => x.VaccineType)
+        ) ?? throw new BadRequestException("Không tìm thấy thông tin lịch tiêm!");
+
         var existingDailyTask = await _unitOfWork.DailyTaskRepository.FirstOrDefaultAsync(
             x => x.VaccinationScheduleId == schedule.Id && !x.IsDeleted
         );

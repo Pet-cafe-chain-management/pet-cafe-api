@@ -88,7 +88,7 @@ public class VaccinationRecordService(IUnitOfWork _unitOfWork, ICurrentTime _cur
         ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
 
         // Create DailyTask for the new schedule
-        await _vaccinationScheduleService.CreateOrUpdateDailyTaskAsync(newSchedule, teamId);
+        await _vaccinationScheduleService.CreateOrUpdateDailyTaskAsync(newSchedule.Id, teamId);
 
         return vaccinationRecord;
     }
