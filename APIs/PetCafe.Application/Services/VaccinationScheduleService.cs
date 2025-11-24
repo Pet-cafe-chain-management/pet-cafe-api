@@ -102,6 +102,7 @@ public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationS
                     .Include(x => x.Pet)
                     .Include(x => x.VaccineType)
                     .Include(x => x.Record!)
+                    .Include(x => x.DailyTask!).ThenInclude(x => x.Team)
                 ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
     }
 
@@ -154,6 +155,7 @@ public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationS
                         .Include(x => x.Pet)
                         .Include(x => x.VaccineType)
                         .Include(x => x.Record!)
+                        .Include(x => x.DailyTask!).ThenInclude(x => x.Team)
                 );
 
         return BasePagingResponseModel<VaccinationSchedule>.CreateInstance(Entities, Pagination); ;
@@ -207,6 +209,7 @@ public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationS
             }
 
             _unitOfWork.DailyTaskRepository.Update(existingDailyTask);
+            schedule.DailyTaskId = existingDailyTask.Id;
         }
         else
         {
@@ -230,8 +233,11 @@ public class VaccinationScheduleService(IUnitOfWork _unitOfWork) : IVaccinationS
             };
 
             await _unitOfWork.DailyTaskRepository.AddAsync(dailyTask);
+            await _unitOfWork.SaveChangesAsync();
+            schedule.DailyTaskId = dailyTask.Id;
         }
 
+        _unitOfWork.VaccinationScheduleRepository.Update(schedule);
         await _unitOfWork.SaveChangesAsync();
     }
 }

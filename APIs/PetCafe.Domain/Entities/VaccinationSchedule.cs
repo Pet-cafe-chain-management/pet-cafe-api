@@ -30,7 +30,12 @@ public class VaccinationSchedule : BaseEntity
 
     [Column("record_id")]
     public Guid? RecordId { get; set; }
+
+    [Column("daily_task_id")]
+    public Guid? DailyTaskId { get; set; }
+
     // Navigation properties
+    public virtual DailyTask? DailyTask { get; set; } = null!;
     public virtual VaccinationRecord? Record { get; set; }
     public virtual Pet Pet { get; set; } = default!;
     public virtual VaccineType VaccineType { get; set; } = default!;

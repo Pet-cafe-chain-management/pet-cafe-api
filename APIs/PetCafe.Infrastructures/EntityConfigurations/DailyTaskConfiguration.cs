@@ -26,5 +26,10 @@ public class DailyTaskConfiguration : IEntityTypeConfiguration<DailyTask>
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.HasOne(x => x.VaccinationSchedule)
+            .WithOne(x => x.DailyTask)
+            .HasForeignKey<VaccinationSchedule>(x => x.DailyTaskId)
+            .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

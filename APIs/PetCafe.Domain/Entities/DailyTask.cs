@@ -47,7 +47,6 @@ public class DailyTask : BaseEntity
     public Guid? SlotId { get; set; }
 
     [Column("vaccination_schedule_id")]
-    [ForeignKey("VaccinationSchedule")]
     public Guid? VaccinationScheduleId { get; set; }
 
     [Column("notes")]

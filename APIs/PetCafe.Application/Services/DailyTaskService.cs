@@ -182,6 +182,7 @@ public class DailyTaskService(
         await _unitOfWork.SaveChangesAsync();
         return dailyTask;
     }
+    
     public async Task<bool> DeleteAsync(Guid id)
     {
         var dailyTask = await _unitOfWork.DailyTaskRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");

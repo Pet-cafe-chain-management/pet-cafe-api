@@ -9,7 +9,7 @@ public class SlotCreateModel
 {
     public Guid TaskId { get; set; }
     public Guid AreaId { get; set; }
-    public Guid PetGroupId { get; set; }
+    public Guid? PetGroupId { get; set; }
     public Guid TeamId { get; set; }
     public Guid? PetId { get; set; }
     public TimeSpan StartTime { get; set; }
