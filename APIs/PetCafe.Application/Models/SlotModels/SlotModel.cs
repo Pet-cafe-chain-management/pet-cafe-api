@@ -37,9 +37,6 @@ public class SlotCreateModelValidator : AbstractValidator<SlotCreateModel>
         RuleFor(x => x.AreaId)
             .NotEmpty().WithMessage("ID khu vực không được để trống");
 
-        RuleFor(x => x.PetGroupId)
-            .NotEmpty().WithMessage("ID nhóm thú cưng không được để trống");
-
         RuleFor(x => x.StartTime)
             .NotEmpty().WithMessage("Thời gian bắt đầu không được để trống");
 
