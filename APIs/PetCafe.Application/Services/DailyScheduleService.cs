@@ -16,7 +16,7 @@ namespace PetCafe.Application.Services;
 public interface IDailyScheduleService
 {
     Task AutoAssignSchedulesAsync();
-    Task<BasePagingResponseModel<DailySchedule>> GetDailySchedulesAsync(DailyScheduleFilterQuery query);
+    Task<BasePagingResponseModel<DailySchedule>> GetDailySchedulesAsync(Guid teamId, DailyScheduleFilterQuery query);
     Task<List<DailySchedule>> CreateDailySchedulesForMembersAsync(List<TeamMember> teamMembers, List<WorkShift> workShifts, DateTime startDate, DateTime endDate, bool checkTimeOverlap = false);
     Task CreateDailySchedulesForMembersBackgroundAsync(List<Guid> teamMemberIds, List<Guid> workShiftIds, DateTime startDate, DateTime endDate, bool checkTimeOverlap);
     Task<List<DailySchedule>> UpdateAsync(Guid teamId, List<DailyScheduleUpdateModel> models);
@@ -151,18 +151,11 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
         }
     }
 
-    public async Task<BasePagingResponseModel<DailySchedule>> GetDailySchedulesAsync(DailyScheduleFilterQuery query)
+    public async Task<BasePagingResponseModel<DailySchedule>> GetDailySchedulesAsync(Guid teamId, DailyScheduleFilterQuery query)
     {
         // Lấy tất cả các team members của team
-        Expression<Func<DailySchedule, bool>> filter = x => x.Employee.IsActive;
+        Expression<Func<DailySchedule, bool>> filter = x => x.Employee.IsActive && x.TeamMember.TeamId == teamId;
 
-        // Note: Không thể filter ApplicableDays trong EF Core expression vì Contains với DayOfWeek.ToString() không được translate
-        // Sẽ filter sau khi load dữ liệu
-
-        if (query.TeamId.HasValue)
-        {
-            filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.TeamMember.TeamId == query.TeamId.Value) : x => x.TeamMember.TeamId == query.TeamId.Value;
-        }
 
         if (query.FromDate.HasValue)
         {

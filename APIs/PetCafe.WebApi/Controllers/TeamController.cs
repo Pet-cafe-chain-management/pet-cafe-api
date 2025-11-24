@@ -143,4 +143,13 @@ public class TeamController(
     {
         return Ok(await _dailyScheduleService.UpdateAsync(id, models));
     }
+
+
+    [HttpGet("{id:guid}/daily-schedules")]
+    [Authorize(Roles = $"{RoleConstants.MANAGER},{RoleConstants.EMPLOYEE}")]
+    public async Task<IActionResult> GetAllPaging([FromRoute] Guid id, [FromQuery] DailyScheduleFilterQuery query)
+    {
+        return Ok(await _dailyScheduleService.GetDailySchedulesAsync(id, query));
+    }
+
 }
