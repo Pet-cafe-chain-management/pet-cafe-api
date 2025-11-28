@@ -32,7 +32,8 @@ public class VaccinationRecordCreateModelValidator : AbstractValidator<Vaccinati
 
         RuleFor(x => x.VaccinationDate)
             .NotEmpty().WithMessage("Ngày tiêm chủng không được để trống")
-            .LessThanOrEqualTo(DateTime.Now).WithMessage("Ngày tiêm chủng không được lớn hơn ngày hiện tại");
+            .Must(date => date.Date <= DateTime.UtcNow.Date)
+            .WithMessage("Ngày tiêm chủng không được lớn hơn ngày hiện tại");
 
         RuleFor(x => x.NextDueDate)
             .GreaterThan(x => x.VaccinationDate).WithMessage("Ngày tiêm chủng tiếp theo phải sau ngày tiêm chủng hiện tại")

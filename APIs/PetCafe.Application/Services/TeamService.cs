@@ -43,7 +43,29 @@ public class TeamService(
 
     public async Task<Team> CreateAsync(TeamCreateModel model)
     {
+        // Validate LeaderId nếu có
+        if (model.LeaderId.HasValue)
+        {
+            var leader = await _unitOfWork.EmployeeRepository.GetByIdAsync(model.LeaderId.Value)
+                ?? throw new BadRequestException("Không tìm thấy thông tin leader!");
+            if (!leader.IsActive)
+            {
+                throw new BadRequestException($"Nhân viên {leader.FullName} hiện không đang hoạt động!");
+            }
+        }
+
         var team = _unitOfWork.Mapper.Map<Team>(model);
+
+        // Tạo TeamMember cho Leader nếu LeaderId không null
+        if (model.LeaderId.HasValue)
+        {
+            await _unitOfWork.TeamMemberRepository.AddAsync(new TeamMember
+            {
+                TeamId = team.Id,
+                EmployeeId = model.LeaderId.Value
+            });
+        }
+
         foreach (var workTypeId in model.WorkTypeIds ?? [])
         {
             await _unitOfWork.TeamWorkTypeRepository.AddAsync(new TeamWorkType
@@ -59,8 +81,38 @@ public class TeamService(
 
     public async Task<Team> UpdateAsync(Guid id, TeamUpdateModel model)
     {
-        var team = await _unitOfWork.TeamRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+        var team = await _unitOfWork.TeamRepository.GetByIdAsync(
+            id,
+            includeFunc: x => x.Include(t => t.TeamMembers.Where(tm => !tm.IsDeleted))
+        ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
+
+        var oldLeaderId = team.LeaderId;
         _unitOfWork.Mapper.Map(model, team);
+
+        // Kiểm tra nếu LeaderId bị thay đổi
+        if (model.LeaderId.HasValue && model.LeaderId.Value != oldLeaderId)
+        {
+            // Validate LeaderId mới
+            var newLeader = await _unitOfWork.EmployeeRepository.GetByIdAsync(model.LeaderId.Value)
+                ?? throw new BadRequestException("Không tìm thấy thông tin leader!");
+            if (!newLeader.IsActive)
+            {
+                throw new BadRequestException($"Nhân viên {newLeader.FullName} hiện không đang hoạt động!");
+            }
+
+            // Kiểm tra xem LeaderId mới đã có trong TeamMembers chưa
+            var existingMember = team.TeamMembers.FirstOrDefault(tm => tm.EmployeeId == model.LeaderId.Value);
+            if (existingMember == null)
+            {
+                // Nếu chưa có thì thêm vào TeamMembers
+                await _unitOfWork.TeamMemberRepository.AddAsync(new TeamMember
+                {
+                    TeamId = team.Id,
+                    EmployeeId = model.LeaderId.Value
+                });
+            }
+        }
+
         foreach (var workTypeId in model.WorkTypeIds ?? [])
         {
             var existingWorkType = await _unitOfWork.TeamWorkTypeRepository.FirstOrDefaultAsync(x => x.WorkTypeId == workTypeId && x.TeamId == team.Id);
