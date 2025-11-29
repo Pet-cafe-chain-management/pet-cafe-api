@@ -1,3 +1,4 @@
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
 using PetCafe.Application.Models.ShareModels;
@@ -19,7 +20,11 @@ public interface IVaccinationRecordService
 }
 
 
-public class VaccinationRecordService(IUnitOfWork _unitOfWork, ICurrentTime _currentTime, IVaccinationScheduleService _vaccinationScheduleService) : IVaccinationRecordService
+public class VaccinationRecordService(
+    IUnitOfWork _unitOfWork,
+    ICurrentTime _currentTime,
+    IVaccinationScheduleService _vaccinationScheduleService,
+    IBackgroundJobClient _backgroundJobClient) : IVaccinationRecordService
 {
     public async Task<VaccinationRecord> CreateAsync(VaccinationRecordCreateModel model)
     {
@@ -79,16 +84,9 @@ public class VaccinationRecordService(IUnitOfWork _unitOfWork, ICurrentTime _cur
         await _unitOfWork.VaccinationScheduleRepository.AddAsync(newSchedule);
         await _unitOfWork.SaveChangesAsync();
 
-        // Load Pet and VaccineType for new schedule to create DailyTask
-        newSchedule = await _unitOfWork.VaccinationScheduleRepository.GetByIdAsync(
-            newSchedule.Id,
-            includeFunc: x => x
-                .Include(x => x.Pet)
-                .Include(x => x.VaccineType)
-        ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
 
         // Create DailyTask for the new schedule
-        await _vaccinationScheduleService.CreateOrUpdateDailyTaskAsync(newSchedule.Id, teamId);
+        _backgroundJobClient.Enqueue(() => _vaccinationScheduleService.CreateOrUpdateDailyTaskAsync(newSchedule.Id, teamId));
 
         return vaccinationRecord;
     }
