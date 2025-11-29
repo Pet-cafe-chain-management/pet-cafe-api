@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.ShareModels;
 
@@ -10,10 +11,30 @@ public class VaccineTypeCreateModel
     public Guid? SpeciesId { get; set; }
     public int IntervalMonths { get; set; }
     public bool IsRequired { get; set; } = true;
+    public int RequiredDoses { get; set; } = 1;
+
 }
 
 public class VaccineTypeUpdateModel : VaccineTypeCreateModel
 {
+}
+
+public class VaccineTypeCreateModelValidator : AbstractValidator<VaccineTypeCreateModel>
+{
+    public VaccineTypeCreateModelValidator()
+    {
+        RuleFor(x => x.RequiredDoses)
+            .GreaterThanOrEqualTo(1)
+            .WithMessage("Số liều vaccine yêu cầu phải lớn hơn hoặc bằng 1");
+    }
+}
+
+public class VaccineTypeUpdateModelValidator : AbstractValidator<VaccineTypeUpdateModel>
+{
+    public VaccineTypeUpdateModelValidator()
+    {
+        Include(new VaccineTypeCreateModelValidator());
+    }
 }
 
 public class VaccineTypeFilterQuery : FilterQuery
