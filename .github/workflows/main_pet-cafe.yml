@@ -1,25 +1,22 @@
-name: Build and Deploy PetCafe Web API to Azure
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy ASP.Net Core app to Azure Web App - its-gamify
 
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
 
-env:
-  AZURE_WEBAPP_NAME: PetCafes
-  CONFIGURATION: Release
-  DOTNET_CORE_VERSION: 9.0.x
-  WORKING_DIRECTORY: APIs/PetCafe.WebApi
-  PUBLISH_DIR: "${{ github.workspace }}/publish"
-
 jobs:
-  build-and-deploy:
+  build:
     runs-on: windows-latest
+    permissions:
+      contents: read #This is required for actions/checkout
+
     steps:
-      # 1️⃣ Checkout code
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Update appsettings.json with CON_STRING
         run: |
@@ -38,25 +35,38 @@ jobs:
           (Get-Content $appsettings) -replace '"MongoDbConnection":\s*""', '"MongoDbConnection": "${{ secrets.MONGODBCONNECTION }}"' | Set-Content $appsettings
         shell: pwsh
 
-      # 2️⃣ Setup .NET SDK
-      - name: Setup .NET SDK
+      - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+          dotnet-version: "v9.0"
 
-      # 3️⃣ Publish trực tiếp (bao gồm build + restore)
-      - name: Publish
-        run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --output "${{ env.PUBLISH_DIR }}"
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
 
-      # 4️⃣ Login Azure bằng Service Principal
-      - name: Login to Azure
-        uses: azure/login@v1
+      - name: dotnet publish
+        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
 
-      # 5️⃣ Deploy lên Azure Web App
+  deploy:
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+
       - name: Deploy to Azure Web App
+        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: ${{ env.PUBLISH_DIR }}
+          app-name: "PetCafes"
+          slot-name: "Production"
+          package: .
+          publish-profile: ${{ secrets.AZURE_CREDENTIALS }}
