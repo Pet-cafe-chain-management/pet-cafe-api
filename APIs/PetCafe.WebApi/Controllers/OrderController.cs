@@ -6,7 +6,7 @@ using PetCafe.Application.Services;
 namespace PetCafe.WebApi.Controllers;
 
 
-public class OrderController(IOrderService _orderService) : BaseController
+public class OrderController(IOrderService _orderService, IPayOsService payOsService) : BaseController
 {
 
     [HttpGet("{id:guid}")]
@@ -48,5 +48,12 @@ public class OrderController(IOrderService _orderService) : BaseController
         return Ok(new { success = true });
     }
 
+    [HttpGet("payos")]
+    public async Task<IActionResult> CreatePayOsPayment()
+    {
+        var num = ((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds().ToString();
 
+        var paymentResponse = await payOsService.CreatePaymentAsync(200000, Double.Parse(num));
+        return Ok(paymentResponse);
+    }
 }
