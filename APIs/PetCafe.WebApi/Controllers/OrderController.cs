@@ -51,6 +51,7 @@ public class OrderController(IOrderService _orderService, IPayOsService payOsSer
     [HttpGet("payos")]
     public async Task<IActionResult> CreatePayOsPayment()
     {
+
         var num = ((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds().ToString();
 
         var paymentResponse = await payOsService.CreatePaymentAsync(200000, Double.Parse(num));
