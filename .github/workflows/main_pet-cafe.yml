@@ -18,22 +18,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update appsettings.json with CON_STRING
-        run: |
-          $appsettings = "APIs\PetCafe.WebApi\appsettings.json"
-          (Get-Content $appsettings) -replace '"PostgreConnection":\s*""', '"PostgreConnection": "${{ secrets.POSTGRECONNECTION }}"' | Set-Content $appsettings
-          (Get-Content $appsettings) -replace '"SecretKey":\s*""', '"SecretKey": "${{ secrets.SECRETKEY }}"' | Set-Content $appsettings
-          (Get-Content $appsettings) -replace '"SenderId":\s*""', '"SenderId": "${{ secrets.SENDERID }}"' | Set-Content $appsettings
-          (Get-Content $appsettings) -replace '"ApiKeY":\s*""', '"ApiKeY": "${{ secrets.APIKEY }}"' | Set-Content $appsettings
-          (Get-Content $appsettings) -replace '"Bucket":\s*""', '"Bucket": "${{ secrets.BUCKET }}"' | Set-Content $appsettings
-          (Get-Content $appsettings) -replace '"AuthEmail":\s*""', '"AuthEmail": "${{ secrets.AUTHEMAIL }}"' | Set-Content $appsettings
-          (Get-Content $appsettings) -replace '"AuthPassword":\s*""', '"AuthPassword": "${{ secrets.AUTHPASSWORD }}"' | Set-Content $appsettings
-          (Get-Content $appsettings) -replace '"ClientId":\s*""', '"ClientId": "${{ secrets.CLIENTID }}"' | Set-Content $appsettings
-          (Get-Content $appsettings) -replace '"ApiKey":\s*""', '"ApiKey": "${{ secrets.APIKEYPAYOS }}"' | Set-Content $appsettings
-          (Get-Content $appsettings) -replace '"ChecksumKey":\s*""', '"ChecksumKey": "${{ secrets.CHECKSUMKEY }}"' | Set-Content $appsettings
-          (Get-Content $appsettings) -replace '"GoongAPIKey":\s*""', '"GoongAPIKey": "${{ secrets.GOONGAPIKEY }}"' | Set-Content $appsettings
-          (Get-Content $appsettings) -replace '"MongoDbConnection":\s*""', '"MongoDbConnection": "${{ secrets.MONGODBCONNECTION }}"' | Set-Content $appsettings
-        shell: pwsh
+      # - name: Update appsettings.json with CON_STRING
+      #   run: |
+      #     $appsettings = "APIs\PetCafe.WebApi\appsettings.json"
+      #     (Get-Content $appsettings) -replace '"PostgreConnection":\s*""', '"PostgreConnection": "${{ secrets.POSTGRECONNECTION }}"' | Set-Content $appsettings
+      #     (Get-Content $appsettings) -replace '"SecretKey":\s*""', '"SecretKey": "${{ secrets.SECRETKEY }}"' | Set-Content $appsettings
+      #     (Get-Content $appsettings) -replace '"SenderId":\s*""', '"SenderId": "${{ secrets.SENDERID }}"' | Set-Content $appsettings
+      #     (Get-Content $appsettings) -replace '"ApiKeY":\s*""', '"ApiKeY": "${{ secrets.APIKEY }}"' | Set-Content $appsettings
+      #     (Get-Content $appsettings) -replace '"Bucket":\s*""', '"Bucket": "${{ secrets.BUCKET }}"' | Set-Content $appsettings
+      #     (Get-Content $appsettings) -replace '"AuthEmail":\s*""', '"AuthEmail": "${{ secrets.AUTHEMAIL }}"' | Set-Content $appsettings
+      #     (Get-Content $appsettings) -replace '"AuthPassword":\s*""', '"AuthPassword": "${{ secrets.AUTHPASSWORD }}"' | Set-Content $appsettings
+      #     (Get-Content $appsettings) -replace '"ClientId":\s*""', '"ClientId": "${{ secrets.CLIENTID }}"' | Set-Content $appsettings
+      #     (Get-Content $appsettings) -replace '"ApiKey":\s*""', '"ApiKey": "${{ secrets.APIKEYPAYOS }}"' | Set-Content $appsettings
+      #     (Get-Content $appsettings) -replace '"ChecksumKey":\s*""', '"ChecksumKey": "${{ secrets.CHECKSUMKEY }}"' | Set-Content $appsettings
+      #     (Get-Content $appsettings) -replace '"GoongAPIKey":\s*""', '"GoongAPIKey": "${{ secrets.GOONGAPIKEY }}"' | Set-Content $appsettings
+      #     (Get-Content $appsettings) -replace '"MongoDbConnection":\s*""', '"MongoDbConnection": "${{ secrets.MONGODBCONNECTION }}"' | Set-Content $appsettings
+      #   shell: pwsh
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
