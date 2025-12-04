@@ -79,6 +79,7 @@ public class SlotUpdateModelValidator : AbstractValidator<SlotUpdateModel>
             .Must(status => string.IsNullOrEmpty(status) ||
                            status == SlotStatusConstant.AVAILABLE ||
                            status == SlotStatusConstant.CANCELLED ||
+                           status == SlotStatusConstant.UNAVAILABLE ||
                            status == SlotStatusConstant.MAINTENANCE)
             .WithMessage("Trạng thái không hợp lệ")
             .When(x => x.ServiceStatus != null);
