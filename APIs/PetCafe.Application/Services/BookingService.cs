@@ -39,7 +39,7 @@ public class BookingService(
     public async Task<BasePagingResponseModel<CustomerBooking>> GetAllPagingAsync(BookingFilterQuery query)
     {
 
-        Expression<Func<CustomerBooking, bool>> filter = x => true;
+        Expression<Func<CustomerBooking, bool>>? filter = null;
         if (query.CustomerId.HasValue)
         {
             filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.CustomerId == query.CustomerId) : x => x.CustomerId == query.CustomerId;
@@ -66,11 +66,25 @@ public class BookingService(
             filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.BookingDate <= query.ToDate) : x => x.BookingDate <= query.ToDate;
         }
 
+        Expression<Func<CustomerBooking, bool>> navigationFilter = x =>
+            (x.CustomerId == null || !x.Customer!.IsDeleted) &&
+            !x.Service.IsDeleted &&
+            !x.Slot.IsDeleted &&
+            !x.Team.IsDeleted;
+
+        filter = filter != null ? FilterCustoms.CombineFilters(filter, navigationFilter) : navigationFilter;
+
         var (Pagination, Entities) = await _unitOfWork.BookingRepository.ToPagination(
             pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
             filter: filter,
-            includeFunc: x => x.Include(x => x.Customer).Include(x => x.Service).Include(x => x.Slot).Include(x => x.Team)
+            searchTerm: query.Q,
+            searchFields: ["Name", "Description"],
+            sortOrders: query.OrderBy?.ToDictionary(
+                    k => k.OrderColumn ?? "CreatedAt",
+                    v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
+                ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
+            includeFunc: x => x.Include(x => x.Customer!).Include(x => x.Service!).Include(x => x.Slot!).Include(x => x.Team!)
         );
 
         return BasePagingResponseModel<CustomerBooking>.CreateInstance(Entities, Pagination);

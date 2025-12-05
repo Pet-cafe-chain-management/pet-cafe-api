@@ -92,7 +92,7 @@ public class ProductService(
         }
 
         var (Pagination, Entities) = await _unitOfWork.ProductRepository.ToPagination(
-             pageIndex: query.Page ?? 0,
+            pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
             filter: filter,
             searchTerm: query.Q,
