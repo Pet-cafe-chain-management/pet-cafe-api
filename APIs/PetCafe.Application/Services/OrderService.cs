@@ -59,6 +59,7 @@ public class OrderService(
         {
             var payment = await _payOsService.CreatePaymentAsync(order.FinalAmount, Double.Parse(order.OrderNumber));
             order.PaymentDataJson = JsonConvert.SerializeObject(payment.Data);
+            order.CustomerId = _claimsService.GetCurrentUser;
         }
         else
         {
@@ -233,7 +234,7 @@ public class OrderService(
         var transaction = _unitOfWork.Mapper.Map<Transaction>(model.Data);
         transaction.OrderId = order.Id;
 
-        await UpdateServiceOrder(order.Id);
+        await UpdateServiceOrder(order);
 
         await _unitOfWork.TransactionRepository.AddAsync(transaction);
         _unitOfWork.OrderRepository.Update(order);
@@ -281,10 +282,10 @@ public class OrderService(
         _unitOfWork.ProductOrderRepository.Update(product_order);
 
     }
-    private async Task UpdateServiceOrder(Guid orderId)
+    private async Task UpdateServiceOrder(Order order)
     {
         var serivce_order = await _unitOfWork.ServiceOrderRepository
-            .FirstOrDefaultAsync(x => x.OrderId == orderId,
+            .FirstOrDefaultAsync(x => x.OrderId == order.Id,
                 includeFunc: x => x.Include(x => x.OrderDetails.Where(x => !x.IsDeleted)));
 
         if (serivce_order == null) return;
@@ -302,6 +303,7 @@ public class OrderService(
             await _unitOfWork.BookingRepository.AddAsync(
                 new CustomerBooking
                 {
+                    CustomerId = order.CustomerId,
                     SlotId = slot.Id,
                     OrderDetailId = item.Id,
                     ServiceId = slot.ServiceId!.Value,
@@ -334,7 +336,7 @@ public class OrderService(
         order.PaymentStatus = PaymentStatusConstant.PAID;
 
         await UpdateProductOrder(order.Id);
-        await UpdateServiceOrder(order.Id);
+        await UpdateServiceOrder(order);
 
         _unitOfWork.OrderRepository.Update(order);
 
