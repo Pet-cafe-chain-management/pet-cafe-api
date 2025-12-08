@@ -50,10 +50,6 @@ public class MapperConfigurationsProfile : Profile
         CreateMap<Models.WorkShiftModels.WorkShiftCreateModel, Domain.Entities.WorkShift>().ReverseMap();
         CreateMap<Models.WorkShiftModels.WorkShiftUpdateModel, Domain.Entities.WorkShift>().ReverseMap();
 
-        // VaccineType
-        CreateMap<Models.VaccineTypeModels.VaccineTypeCreateModel, Domain.Entities.VaccineType>().ReverseMap();
-        CreateMap<Models.VaccineTypeModels.VaccineTypeUpdateModel, Domain.Entities.VaccineType>().ReverseMap();
-
         // PetGroup
         CreateMap<Models.PetGroupModels.PetGroupCreateModel, Domain.Entities.PetGroup>().ReverseMap();
         CreateMap<Models.PetGroupModels.PetGroupUpdateModel, Domain.Entities.PetGroup>().ReverseMap();

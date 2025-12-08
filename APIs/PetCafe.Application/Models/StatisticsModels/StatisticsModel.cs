@@ -262,19 +262,10 @@ public class PetArrivalByMonthItem
 public class PetHealthStatisticsResponse
 {
     public int PetsWithHealthRecords { get; set; }
-    public List<UpcomingVaccinationItem> UpcomingVaccinations { get; set; } = [];
     public VaccinationStatusItem VaccinationStatus { get; set; } = new();
     public List<HealthCheckByMonthItem> HealthChecksByMonth { get; set; } = [];
 }
 
-public class UpcomingVaccinationItem
-{
-    public Guid PetId { get; set; }
-    public string PetName { get; set; } = default!;
-    public Guid VaccineTypeId { get; set; }
-    public string VaccineTypeName { get; set; } = default!;
-    public DateTime ScheduledDate { get; set; }
-}
 
 public class VaccinationStatusItem
 {

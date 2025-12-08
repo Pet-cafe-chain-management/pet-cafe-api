@@ -21,5 +21,4 @@ public class PetSpecies : BaseEntity
     // Navigation properties
     public virtual ICollection<PetBreed> PetBreeds { get; set; } = [];
     public virtual ICollection<Pet> Pets { get; set; } = [];
-    public virtual ICollection<VaccineType> VaccineTypes { get; set; } = [];
 }

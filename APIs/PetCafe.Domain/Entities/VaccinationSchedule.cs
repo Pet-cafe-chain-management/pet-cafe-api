@@ -11,10 +11,6 @@ public class VaccinationSchedule : BaseEntity
     [ForeignKey("Pet")]
     public Guid PetId { get; set; }
 
-    [Column("vaccine_type_id")]
-    [ForeignKey("VaccineType")]
-    public Guid VaccineTypeId { get; set; }
-
     [Column("scheduled_date")]
     public DateTime ScheduledDate { get; set; }
 
@@ -38,5 +34,4 @@ public class VaccinationSchedule : BaseEntity
     public virtual DailyTask? DailyTask { get; set; } = null!;
     public virtual VaccinationRecord? Record { get; set; }
     public virtual Pet Pet { get; set; } = default!;
-    public virtual VaccineType VaccineType { get; set; } = default!;
 }

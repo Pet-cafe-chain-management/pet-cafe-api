@@ -34,9 +34,6 @@ public interface IHealthRecordRepository : IGenericRepository<HealthRecord>
 {
 }
 
-public interface IVaccineTypeRepository : IGenericRepository<VaccineType>
-{
-}
 
 public interface IVaccinationRecordRepository : IGenericRepository<VaccinationRecord>
 {

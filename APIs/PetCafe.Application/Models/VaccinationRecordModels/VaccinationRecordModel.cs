@@ -5,9 +5,9 @@ namespace PetCafe.Application.Models.VaccinationRecordModels;
 public class VaccinationRecordCreateModel
 {
     public Guid PetId { get; set; }
-    public Guid VaccineTypeId { get; set; }
     public DateTime VaccinationDate { get; set; }
     public DateTime? NextDueDate { get; set; }
+    public string Name { get; set; } = default!;
     public string? Veterinarian { get; set; }
     public string? ClinicName { get; set; }
     public string? BatchNumber { get; set; }
@@ -27,9 +27,6 @@ public class VaccinationRecordCreateModelValidator : AbstractValidator<Vaccinati
         RuleFor(x => x.PetId)
             .NotEmpty().WithMessage("ID thú cưng không được để trống");
 
-        RuleFor(x => x.VaccineTypeId)
-            .NotEmpty().WithMessage("ID loại vaccine không được để trống");
-
         RuleFor(x => x.VaccinationDate)
             .NotEmpty().WithMessage("Ngày tiêm chủng không được để trống")
             .Must(date => date.Date <= DateTime.UtcNow.Date)
@@ -46,6 +43,11 @@ public class VaccinationRecordCreateModelValidator : AbstractValidator<Vaccinati
         RuleFor(x => x.ClinicName)
             .MaximumLength(200).WithMessage("Tên phòng khám không được vượt quá 200 ký tự")
             .When(x => !string.IsNullOrEmpty(x.ClinicName));
+
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Tên vaccine không được để trống")
+            .MaximumLength(100).WithMessage("Tên vaccine không được vượt quá 100 ký tự")
+            .When(x => !string.IsNullOrEmpty(x.Name));
 
         RuleFor(x => x.BatchNumber)
             .MaximumLength(50).WithMessage("Số lô không được vượt quá 50 ký tự")

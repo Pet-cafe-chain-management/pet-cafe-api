@@ -16,7 +16,6 @@ public interface IUnitOfWork
     IPetRepository PetRepository { get; }
     IPetGroupRepository PetGroupRepository { get; }
     IHealthRecordRepository HealthRecordRepository { get; }
-    IVaccineTypeRepository VaccineTypeRepository { get; }
     IVaccinationRecordRepository VaccinationRecordRepository { get; }
     IVaccinationScheduleRepository VaccinationScheduleRepository { get; }
     IPetSpeciesRepository PetSpeciesRepository { get; }

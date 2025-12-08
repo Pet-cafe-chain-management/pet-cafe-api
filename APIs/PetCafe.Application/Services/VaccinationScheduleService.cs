@@ -39,7 +39,6 @@ public class VaccinationScheduleService(
             schedule.Id,
             includeFunc: x => x
                 .Include(x => x.Pet)
-                .Include(x => x.VaccineType)
         ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
 
         _backgroundJobClient.Enqueue(() => CreateOrUpdateDailyTaskAsync(schedule.Id, model.TeamId));
@@ -53,7 +52,6 @@ public class VaccinationScheduleService(
             id,
             includeFunc: x => x
                 .Include(x => x.Pet)
-                .Include(x => x.VaccineType)
         ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
 
         _unitOfWork.Mapper.Map(model, schedule);
@@ -102,7 +100,6 @@ public class VaccinationScheduleService(
                 id,
                 includeFunc: x => x
                     .Include(x => x.Pet)
-                    .Include(x => x.VaccineType)
                     .Include(x => x.Record!)
                     .Include(x => x.DailyTask!).ThenInclude(x => x.Team)
                 ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
@@ -141,7 +138,7 @@ public class VaccinationScheduleService(
         }
         if (!string.IsNullOrEmpty(query.VaccineType))
         {
-            Expression<Func<VaccinationSchedule, bool>> addtional_filter = x => x.VaccineType.Name.Contains(query.VaccineType);
+            Expression<Func<VaccinationSchedule, bool>> addtional_filter = x => x.Record!.Name.Contains(query.VaccineType);
             filter = filter != null ? FilterCustoms.CombineFilters(filter, addtional_filter) : addtional_filter;
         }
 
@@ -155,7 +152,6 @@ public class VaccinationScheduleService(
                         ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
                     includeFunc: x => x
                         .Include(x => x.Pet)
-                        .Include(x => x.VaccineType)
                         .Include(x => x.Record!)
                         .Include(x => x.DailyTask!).ThenInclude(x => x.Team)
                 );
@@ -170,7 +166,6 @@ public class VaccinationScheduleService(
             scheduleId,
             includeFunc: x => x
                 .Include(x => x.Pet)
-                .Include(x => x.VaccineType)
         ) ?? throw new BadRequestException("Không tìm thấy thông tin lịch tiêm!");
 
         var existingDailyTask = await _unitOfWork.DailyTaskRepository.FirstOrDefaultAsync(
@@ -179,8 +174,8 @@ public class VaccinationScheduleService(
 
         var team = await _unitOfWork.TeamRepository.GetByIdAsync(teamId) ?? throw new BadRequestException("Không tìm thấy team!");
 
-        var title = $"Tiêm vaccine {schedule.VaccineType.Name} cho {schedule.Pet.Name}";
-        var description = $"Lịch tiêm vaccine {schedule.VaccineType.Name} cho thú cưng {schedule.Pet.Name}";
+        var title = $"Tiêm vaccine cho {schedule.Pet.Name}";
+        var description = $"Lịch tiêm vaccine cho thú cưng {schedule.Pet.Name}";
 
         var scheduledTime = schedule.ScheduledDate.TimeOfDay;
         if (scheduledTime == TimeSpan.Zero)

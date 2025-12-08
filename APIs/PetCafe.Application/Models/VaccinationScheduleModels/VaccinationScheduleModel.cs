@@ -5,7 +5,6 @@ namespace PetCafe.Application.Models.VaccinationScheduleModels;
 public class VaccinationScheduleCreateModel
 {
     public Guid PetId { get; set; }
-    public Guid VaccineTypeId { get; set; }
     public DateTime ScheduledDate { get; set; }
     public string? Notes { get; set; }
     public Guid TeamId { get; set; }

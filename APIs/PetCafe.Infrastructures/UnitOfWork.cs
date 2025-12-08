@@ -13,7 +13,6 @@ public class UnitOfWork(
     IPetBreedRepository petBreedRepository,
     IPetRepository petRepository,
     IHealthRecordRepository healthRecordRepository,
-    IVaccineTypeRepository vaccineTypeRepository,
     IVaccinationRecordRepository vaccinationRecordRepository,
     IVaccinationScheduleRepository vaccinationScheduleRepository,
     IPetSpeciesRepository petSpecificRepository,
@@ -61,7 +60,6 @@ public class UnitOfWork(
     public ICustomerBookingRepository BookingRepository => customerBookingRepository;
     public IPetRepository PetRepository => petRepository;
     public IHealthRecordRepository HealthRecordRepository => healthRecordRepository;
-    public IVaccineTypeRepository VaccineTypeRepository => vaccineTypeRepository;
     public IVaccinationRecordRepository VaccinationRecordRepository => vaccinationRecordRepository;
     public IVaccinationScheduleRepository VaccinationScheduleRepository => vaccinationScheduleRepository;
     public IPetSpeciesRepository PetSpeciesRepository => petSpecificRepository;

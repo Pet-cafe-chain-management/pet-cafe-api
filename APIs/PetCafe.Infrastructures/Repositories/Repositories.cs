@@ -40,10 +40,6 @@ public class HealthRecordRepository(AppDbContext context, ICurrentTime currentTi
 {
 }
 
-public class VaccineTypeRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<VaccineType>(context, currentTime, claimsService), IVaccineTypeRepository
-{
-}
-
 public class VaccinationRecordRepository(AppDbContext context, ICurrentTime currentTime, IClaimsService claimsService) : GenericRepository<VaccinationRecord>(context, currentTime, claimsService), IVaccinationRecordRepository
 {
 }

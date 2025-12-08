@@ -482,26 +482,11 @@ public class StatisticsService(IUnitOfWork _unitOfWork) : IStatisticsService
     {
         var pets = await _unitOfWork.PetRepository.WhereAsync(
             x => true,
-            includeFunc: x => x.Include(p => p.HealthRecords).Include(p => p.VaccinationRecords).Include(p => p.VaccinationSchedules).ThenInclude(vs => vs.VaccineType)
+            includeFunc: x => x.Include(p => p.HealthRecords).Include(p => p.VaccinationRecords).Include(p => p.VaccinationSchedules)
         );
 
         var petsWithHealthRecords = pets.Count(x => x.HealthRecords.Any());
 
-        var upcomingVaccinations = pets
-            .SelectMany(p => p.VaccinationSchedules
-                .Where(v => v.ScheduledDate >= DateTime.UtcNow && v.ScheduledDate <= DateTime.UtcNow.AddDays(30))
-                .Select(v => new { Pet = p, Schedule = v }))
-            .Select(x => new UpcomingVaccinationItem
-            {
-                PetId = x.Pet.Id,
-                PetName = x.Pet.Name,
-                VaccineTypeId = x.Schedule.VaccineTypeId,
-                VaccineTypeName = x.Schedule.VaccineType?.Name ?? "N/A",
-                ScheduledDate = x.Schedule.ScheduledDate
-            })
-            .OrderBy(x => x.ScheduledDate)
-            .Take(20)
-            .ToList();
 
         var vaccinatedCount = pets.Count(p => p.VaccinationRecords.Any());
         var notVaccinatedCount = pets.Count - vaccinatedCount;
@@ -521,7 +506,6 @@ public class StatisticsService(IUnitOfWork _unitOfWork) : IStatisticsService
         var response = new PetHealthStatisticsResponse
         {
             PetsWithHealthRecords = petsWithHealthRecords,
-            UpcomingVaccinations = upcomingVaccinations,
             VaccinationStatus = new VaccinationStatusItem
             {
                 VaccinatedCount = vaccinatedCount,

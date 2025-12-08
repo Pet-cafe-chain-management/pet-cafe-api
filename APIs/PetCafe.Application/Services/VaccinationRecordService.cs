@@ -22,23 +22,17 @@ public interface IVaccinationRecordService
 
 public class VaccinationRecordService(
     IUnitOfWork _unitOfWork,
-    ICurrentTime _currentTime,
-    IVaccinationScheduleService _vaccinationScheduleService,
-    IBackgroundJobClient _backgroundJobClient) : IVaccinationRecordService
+    ICurrentTime _currentTime
+) : IVaccinationRecordService
 {
     public async Task<VaccinationRecord> CreateAsync(VaccinationRecordCreateModel model)
     {
-        var recent_records = await _unitOfWork.VaccinationRecordRepository.WhereAsync(x => x.PetId == model.PetId && x.VaccineTypeId == model.VaccineTypeId);
-
-        var vaccine_type = await _unitOfWork.VaccineTypeRepository.GetByIdAsync(model.VaccineTypeId) ?? throw new BadRequestException("Không tìm thấy thông tin vaccine!");
-
-        if (recent_records.Count > 0 && recent_records.Count >= vaccine_type.RequiredDoses) throw new BadRequestException("Đã vượt quá số lần tiêm cho loại vaccine này!");
 
         var schedule = await _unitOfWork.VaccinationScheduleRepository.GetByIdAsync(
             model.ScheduleId,
             includeFunc: x => x
                 .Include(x => x.Pet)
-                .Include(x => x.VaccineType)
+                .Include(x => x.Record!)
         ) ?? throw new BadRequestException("Không tìm thấy lịch tiêm chủng!");
 
         var vaccinationRecord = _unitOfWork.Mapper.Map<VaccinationRecord>(model);
@@ -69,24 +63,9 @@ public class VaccinationRecordService(
             ) ?? throw new BadRequestException("Không tìm thấy team đang hoạt động để gán nhiệm vụ!");
             teamId = team.Id;
         }
-
-        var newSchedule = new VaccinationSchedule
-        {
-            PetId = model.PetId,
-            VaccineTypeId = model.VaccineTypeId,
-            Status = VaccinationScheduleStatus.PENDING,
-            Notes = schedule.Notes,
-            ScheduledDate = _currentTime.GetCurrentTime.AddMonths(vaccine_type.IntervalMonths)
-        };
-
         await _unitOfWork.VaccinationRecordRepository.AddAsync(vaccinationRecord);
         _unitOfWork.VaccinationScheduleRepository.Update(schedule);
-        await _unitOfWork.VaccinationScheduleRepository.AddAsync(newSchedule);
         await _unitOfWork.SaveChangesAsync();
-
-
-        // Create DailyTask for the new schedule
-        _backgroundJobClient.Enqueue(() => _vaccinationScheduleService.CreateOrUpdateDailyTaskAsync(newSchedule.Id, teamId));
 
         return vaccinationRecord;
     }
@@ -99,7 +78,6 @@ public class VaccinationRecordService(
                 .Include(x => x.Schedule!)
                     .ThenInclude(s => s.Pet)
                 .Include(x => x.Schedule!)
-                    .ThenInclude(s => s.VaccineType)
         ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
 
         _unitOfWork.Mapper.Map(model, vaccinationRecord);
@@ -140,7 +118,6 @@ public class VaccinationRecordService(
                 id,
                 includeFunc: x => x
                     .Include(x => x.Pet)
-                    .Include(x => x.VaccineType)
                     .Include(x => x.Schedule!)
                 ) ?? throw new BadRequestException("Không tìm thấy thông tin!");
     }
@@ -157,7 +134,7 @@ public class VaccinationRecordService(
                    k => k.OrderColumn ?? "CreatedAt",
                    v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
                ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
-           includeFunc: x => x.Include(x => x.Schedule!).Include(x => x.VaccineType)
+           includeFunc: x => x.Include(x => x.Schedule!)
        );
         return BasePagingResponseModel<VaccinationRecord>.CreateInstance(Entities, Pagination);
     }
