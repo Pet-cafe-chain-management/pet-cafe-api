@@ -8,7 +8,6 @@ public class TaskConfiguration : IEntityTypeConfiguration<Task>
 {
     public void Configure(EntityTypeBuilder<Task> builder)
     {
-        builder.HasIndex(x => new { x.Status });
 
         builder.HasOne(x => x.WorkType)
             .WithMany(x => x.Tasks)

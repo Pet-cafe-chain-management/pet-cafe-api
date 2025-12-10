@@ -8,7 +8,6 @@ public class ProductOrderDetailConfiguration : IEntityTypeConfiguration<ProductO
 {
     public void Configure(EntityTypeBuilder<ProductOrderDetail> builder)
     {
-        builder.HasIndex(x => new { x.ProductOrderId, x.ProductId });
 
         builder.HasOne(x => x.ProductOrder)
             .WithMany(x => x.OrderDetails)

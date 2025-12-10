@@ -24,8 +24,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 .HasColumnType("json")
                 .Metadata.SetValueComparer(storageComparer);
 
-        builder.HasIndex(x => x.Name);
-        builder.HasIndex(x => new { x.CategoryId, x.IsActive });
 
         builder.HasOne(x => x.Category)
             .WithMany(x => x.Products)

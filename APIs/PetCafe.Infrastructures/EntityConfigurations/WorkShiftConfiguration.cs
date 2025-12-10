@@ -23,7 +23,6 @@ public class WorkShiftConfiguration : IEntityTypeConfiguration<WorkShift>
                 .HasColumnType("json")
                 .Metadata.SetValueComparer(storageComparer);
 
-        builder.HasIndex(x => x.Name).IsUnique();
 
     }
 }

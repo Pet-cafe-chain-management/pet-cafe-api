@@ -8,8 +8,6 @@ public class LeaveRequestConfiguration : IEntityTypeConfiguration<LeaveRequest>
 {
     public void Configure(EntityTypeBuilder<LeaveRequest> builder)
     {
-        builder.HasIndex(x => new { x.EmployeeId, x.LeaveDate });
-        builder.HasIndex(x => new { x.Status, x.ReviewedBy });
 
         builder.HasOne(x => x.Employee)
             .WithMany()

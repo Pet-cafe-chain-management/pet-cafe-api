@@ -23,7 +23,6 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
                 .HasColumnType("json")
                 .Metadata.SetValueComparer(storageComparer);
 
-        builder.HasIndex(x => x.Phone).IsUnique();
 
         builder.HasOne(x => x.Account)
             .WithOne(x => x.Employee)

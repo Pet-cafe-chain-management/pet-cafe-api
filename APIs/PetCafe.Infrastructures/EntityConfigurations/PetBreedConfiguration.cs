@@ -8,7 +8,6 @@ public class PetBreedConfiguration : IEntityTypeConfiguration<PetBreed>
 {
     public void Configure(EntityTypeBuilder<PetBreed> builder)
     {
-        builder.HasIndex(x => new { x.Name, x.SpeciesId }).IsUnique();
 
         builder.HasOne(x => x.Species)
             .WithMany(x => x.PetBreeds)

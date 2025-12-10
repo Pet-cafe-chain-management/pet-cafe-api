@@ -8,7 +8,6 @@ public class VaccinationRecordConfiguration : IEntityTypeConfiguration<Vaccinati
 {
     public void Configure(EntityTypeBuilder<VaccinationRecord> builder)
     {
-        builder.HasIndex(x => new { x.PetId, x.Name, x.VaccinationDate });
 
         builder.HasOne(x => x.Pet)
             .WithMany(x => x.VaccinationRecords)

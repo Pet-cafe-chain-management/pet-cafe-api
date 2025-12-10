@@ -8,7 +8,6 @@ public class ProductCategoryConfiguration : IEntityTypeConfiguration<ProductCate
 {
     public void Configure(EntityTypeBuilder<ProductCategory> builder)
     {
-        builder.HasIndex(x => x.Name).IsUnique();
 
         builder.Property(x => x.IsActive)
             .HasDefaultValue(true);

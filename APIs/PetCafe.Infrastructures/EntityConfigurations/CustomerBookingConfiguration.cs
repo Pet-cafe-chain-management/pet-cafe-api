@@ -8,9 +8,7 @@ public class CustomerBookingConfiguration : IEntityTypeConfiguration<CustomerBoo
 {
     public void Configure(EntityTypeBuilder<CustomerBooking> builder)
     {
-        builder.HasIndex(x => new { x.CustomerId, x.BookingDate });
         builder.Property(x => x.CustomerId).IsRequired(false);
-        builder.HasIndex(x => new { x.ServiceId, x.SlotId });
 
         builder.HasOne(x => x.Customer)
             .WithMany(x => x.Bookings)

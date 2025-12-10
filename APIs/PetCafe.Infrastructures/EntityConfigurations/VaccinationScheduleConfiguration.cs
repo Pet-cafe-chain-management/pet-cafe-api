@@ -8,8 +8,6 @@ public class VaccinationScheduleConfiguration : IEntityTypeConfiguration<Vaccina
 {
     public void Configure(EntityTypeBuilder<VaccinationSchedule> builder)
     {
-        builder.HasIndex(x => new { x.PetId, x.ScheduledDate });
-        builder.HasIndex(x => x.ScheduledDate);
 
         builder.HasOne(x => x.Pet)
             .WithMany(x => x.VaccinationSchedules)

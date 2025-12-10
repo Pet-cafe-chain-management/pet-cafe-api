@@ -8,7 +8,6 @@ public class EmployeeOptionalWorkShiftConfiguration : IEntityTypeConfiguration<E
 {
     public void Configure(EntityTypeBuilder<EmployeeOptionalWorkShift> builder)
     {
-        builder.HasIndex(x => new { x.EmployeeId, x.WorkShiftId }).IsUnique();
 
         builder.HasOne(x => x.Employee)
             .WithMany(x => x.OptionalWorkShifts)

@@ -9,7 +9,6 @@ public class PetConfiguration : IEntityTypeConfiguration<Pet>
 {
     public void Configure(EntityTypeBuilder<Pet> builder)
     {
-        builder.HasIndex(x => x.Name);
 
         builder.Property(x => x.HealthStatus)
             .HasDefaultValue(HealthStatusConstant.HEALTHY);

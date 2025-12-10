@@ -23,9 +23,6 @@ public class ServiceConfiguration : IEntityTypeConfiguration<Service>
                 .HasColumnType("json")
                 .Metadata.SetValueComparer(storageComparer);
 
-        builder.HasIndex(x => x.Name);
-        builder.HasIndex(x => new { x.IsActive });
-
         builder.HasOne(x => x.Task)
            .WithOne(x => x.Service)
            .HasForeignKey<Service>(x => x.TaskId)
