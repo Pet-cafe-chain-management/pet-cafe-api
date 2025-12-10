@@ -8,7 +8,6 @@ public class TeamMemberConfiguration : IEntityTypeConfiguration<TeamMember>
 {
     public void Configure(EntityTypeBuilder<TeamMember> builder)
     {
-        builder.HasIndex(x => new { x.TeamId, x.EmployeeId }).IsUnique();
 
         builder.HasOne(x => x.Team)
             .WithMany(x => x.TeamMembers)
