@@ -185,27 +185,24 @@ public class TeamWorkShiftService(
         await _unitOfWork.TeamWorkShiftRepository.AddRangeAsync(newTeamWorkShifts);
         await _unitOfWork.SaveChangesAsync();
 
-        // 6. Tạo DailySchedule cho tất cả các thành viên trong team đến cuối tuần (chạy background)
+        // 6. Tạo DailySchedule cho tất cả các thành viên trong team đến cuối tháng (chạy background)
         if (teamMembers.Count != 0)
         {
             var today = DateTime.UtcNow.Date;
 
-            // Tính ngày đầu tuần (Thứ 2) và cuối tuần (Chủ nhật)
-            // Nếu hôm nay là Chủ nhật, lấy thứ 2 tuần này (không phải tuần sau)
-            var daysFromMonday = ((int)today.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
-            var startOfWeek = today.AddDays(-daysFromMonday);
-            var endOfWeek = startOfWeek.AddDays(6);
+            // Tính ngày cuối tháng
+            var endOfMonth = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
 
             // Lấy các IDs để truyền vào background job
             var teamMemberIds = teamMembers.Select(tm => tm.Id).ToList();
             var workShiftIdsForJob = workShifts.Select(ws => ws.Id).ToList();
 
-            // Enqueue background job để tạo DailySchedule (từ hôm nay đến cuối tuần)
+            // Enqueue background job để tạo DailySchedule (từ hôm nay đến cuối tháng)
             _backgroundJobClient.Enqueue(() => _dailyScheduleService.CreateDailySchedulesForMembersBackgroundAsync(
                 teamMemberIds,
                 workShiftIdsForJob,
                 today,
-                endOfWeek,
+                endOfMonth,
                 false
             ));
         }
