@@ -282,12 +282,11 @@ public class SlotService(
     public async Task<BasePagingResponseModel<Slot>> GetAllPagingByServiceAsync(Guid serviceId, FilterQuery query, DateOnly? bookingDateTo, DateOnly? bookingDateFrom)
     {
 
-        Expression<Func<Slot, bool>> filter = x => x.ServiceId == serviceId;
 
         var (Pagination, Entities) = await _unitOfWork.SlotRepository.ToPagination(
             pageIndex: query.Page ?? 0,
             pageSize: query.Limit ?? 10,
-            filter: filter,
+            filter: x => x.ServiceId == serviceId,
             searchTerm: query.Q,
             searchFields: ["Name", "Description"],
             sortOrders: query.OrderBy?.ToDictionary(
@@ -295,11 +294,11 @@ public class SlotService(
                     v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
                 ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
             includeFunc: x => x
-                .Include(x => x.SlotAvailabilities.Where(x => x.BookingDate >= bookingDateFrom && x.BookingDate <= bookingDateTo))
+                .Include(x => x.SlotAvailabilities)
                 .Include(x => x.Area)
-                .Include(x => x.Service)
-                .Include(x => x.PetGroup).ThenInclude(x => x!.PetSpecies!)
-                .Include(x => x.PetGroup).ThenInclude(x => x!.PetBreed!)
+                .Include(x => x.Service!)
+                .Include(x => x.PetGroup!).ThenInclude(x => x!.PetSpecies!)
+                .Include(x => x.PetGroup!).ThenInclude(x => x!.PetBreed!)
                 .Include(x => x.Team)
         );
         return BasePagingResponseModel<Slot>.CreateInstance(Entities, Pagination);

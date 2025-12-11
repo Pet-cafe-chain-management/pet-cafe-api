@@ -10,7 +10,6 @@ public class VaccinationRecordCreateModel
     public string Name { get; set; } = default!;
     public string? Veterinarian { get; set; }
     public string? ClinicName { get; set; }
-    public string? BatchNumber { get; set; }
     public string? Notes { get; set; }
     public Guid ScheduleId { get; set; }
 }
@@ -48,10 +47,6 @@ public class VaccinationRecordCreateModelValidator : AbstractValidator<Vaccinati
             .NotEmpty().WithMessage("Tên vaccine không được để trống")
             .MaximumLength(100).WithMessage("Tên vaccine không được vượt quá 100 ký tự")
             .When(x => !string.IsNullOrEmpty(x.Name));
-
-        RuleFor(x => x.BatchNumber)
-            .MaximumLength(50).WithMessage("Số lô không được vượt quá 50 ký tự")
-            .When(x => !string.IsNullOrEmpty(x.BatchNumber));
 
         RuleFor(x => x.Notes)
             .MaximumLength(500).WithMessage("Ghi chú không được vượt quá 500 ký tự")

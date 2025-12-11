@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.Hubs;
+using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services.Commons;
 using PetCafe.Domain.Entities;
 using Task = System.Threading.Tasks.Task;
@@ -18,7 +20,7 @@ public interface INotificationService
         string? referenceType = null,
         DateTime? scheduledSendDate = null
     );
-
+    Task<BasePagingResponseModel<Notification>> GetAllPagingAsync(Guid accountId, FilterQuery query);
     Task SendNotificationToUserAsync(Guid accountId, Notification notification);
     Task SendNotificationToMultipleUsersAsync(List<Guid> accountIds, Notification notification);
 }
@@ -108,6 +110,23 @@ public class NotificationService(
     {
         var tasks = accountIds.Select(accountId => SendNotificationToUserAsync(accountId, notification));
         await Task.WhenAll(tasks);
+    }
+
+    public async Task<BasePagingResponseModel<Notification>> GetAllPagingAsync(Guid accountId, FilterQuery query)
+    {
+        var (Pagination, Entities) = await _unitOfWork.NotificationRepository.ToPagination(
+            pageIndex: query.Page ?? 0,
+            pageSize: query.Limit ?? 10,
+            filter: x => x.AccountId == accountId,
+            searchTerm: query.Q,
+            searchFields: ["Title", "Message"],
+            sortOrders: query.OrderBy?.ToDictionary(
+                k => k.OrderColumn ?? "CreatedAt",
+                v => (v.OrderDir ?? "ASC").Equals("ASC", StringComparison.CurrentCultureIgnoreCase)
+            ) ?? new Dictionary<string, bool> { { "CreatedAt", false } },
+            includeFunc: x => x.Include(x => x.Account)
+        );
+        return BasePagingResponseModel<Notification>.CreateInstance(Entities, Pagination);
     }
 }
 

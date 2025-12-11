@@ -29,10 +29,6 @@ public class VaccinationRecord : BaseEntity
     [MaxLength(100)]
     public string? ClinicName { get; set; }
 
-    [Column("batch_number")]
-    [MaxLength(50)]
-    public string? BatchNumber { get; set; }
-
     [Column("notes")]
     [MaxLength(500)]
     public string? Notes { get; set; }

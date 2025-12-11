@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetCafe.Application.Models.FeedbackModels;
 using PetCafe.Application.Models.ServiceModels;
+using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Models.SlotModels;
 using PetCafe.Application.Services;
 using PetCafe.Domain.Constants;
@@ -53,7 +54,7 @@ public class ServiceController(
     }
 
     [HttpGet("{id:guid}/slots")]
-    public async Task<IActionResult> GetServiceSlots([FromRoute] Guid id, SlotFilterQuery query, [FromQuery(Name = "booking_date_to")] DateOnly? bookingDateTo, [FromQuery(Name = "booking_date_from")] DateOnly? bookingDateFrom)
+    public async Task<IActionResult> GetServiceSlots([FromRoute] Guid id, FilterQuery query, [FromQuery(Name = "booking_date_to")] DateOnly? bookingDateTo, [FromQuery(Name = "booking_date_from")] DateOnly? bookingDateFrom)
     {
         return Ok(await _slotService.GetAllPagingByServiceAsync(id, query, bookingDateTo, bookingDateFrom));
     }
