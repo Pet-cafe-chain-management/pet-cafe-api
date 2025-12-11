@@ -37,6 +37,12 @@ public class WorkTypeService(
 
     public async Task<bool> DeleteAsync(Guid id)
     {
+        var area_work_types = await _unitOfWork.AreaWorkTypeRepository.WhereAsync(x => x.WorkTypeId == id);
+        if (area_work_types.Count > 0) throw new BadRequestException("Không thể xóa work type có area!");
+
+        var team_work_types = await _unitOfWork.TeamWorkTypeRepository.WhereAsync(x => x.WorkTypeId == id);
+        if (team_work_types.Count > 0) throw new BadRequestException("Không thể xóa work type có team!");
+
         var work_type = await _unitOfWork.WorkTypeRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
         _unitOfWork.WorkTypeRepository.SoftRemove(work_type);
         return await _unitOfWork.SaveChangesAsync();

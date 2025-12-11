@@ -131,6 +131,9 @@ public class TeamService(
 
     public async Task<bool> DeleteAsync(Guid id)
     {
+        var slots = await _unitOfWork.SlotRepository.WhereAsync(x => x.TeamId == id);
+        if (slots.Count > 0) throw new BadRequestException("Không thể xóa team có ca làm việc!");
+
         var team = await _unitOfWork.TeamRepository.GetByIdAsync(
             id,
             includeFunc: x => x.Include(t => t.TeamMembers.Where(tm => !tm.IsDeleted))

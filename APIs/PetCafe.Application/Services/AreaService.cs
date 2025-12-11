@@ -70,6 +70,9 @@ public class AreaService(
 
     public async Task<bool> DeleteAsync(Guid id)
     {
+        var slots = await _unitOfWork.SlotRepository.WhereAsync(x => x.AreaId == id);
+        if (slots.Count > 0) throw new BadRequestException("Không thể xóa area có ca làm việc!");
+
         var area = await _unitOfWork.AreaRepository.GetByIdAsync(id) ?? throw new BadRequestException("Không tìm thấy thông tin!");
         _unitOfWork.AreaRepository.SoftRemove(area);
         return await _unitOfWork.SaveChangesAsync();

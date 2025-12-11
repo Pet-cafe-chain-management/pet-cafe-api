@@ -296,10 +296,11 @@ public class SlotService(
             includeFunc: x => x
                 .Include(x => x.SlotAvailabilities)
                 .Include(x => x.Area)
+                .Include(x => x.PetGroup!)
+                    .ThenInclude(x => x!.PetSpecies!)
+                .Include(x => x.PetGroup!)
+                    .ThenInclude(x => x!.PetBreed!)
                 .Include(x => x.Service!)
-                .Include(x => x.PetGroup!).ThenInclude(x => x!.PetSpecies!)
-                .Include(x => x.PetGroup!).ThenInclude(x => x!.PetBreed!)
-                .Include(x => x.Team)
         );
         return BasePagingResponseModel<Slot>.CreateInstance(Entities, Pagination);
     }
