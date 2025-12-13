@@ -65,6 +65,7 @@ public class OrderService(
         {
             order.EmployeeId = _claimsService.GetCurrentUser;
         }
+        order.OrderDate = _currentTime.GetCurrentTime;
         await _unitOfWork.OrderRepository.AddAsync(order);
 
         await _unitOfWork.SaveChangesAsync();
