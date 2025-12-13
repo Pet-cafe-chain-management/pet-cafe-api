@@ -6,7 +6,10 @@ using PetCafe.Application.Services;
 namespace PetCafe.WebApi.Controllers;
 
 
-public class OrderController(IOrderService _orderService, IPayOsService payOsService) : BaseController
+public class OrderController(
+    IOrderService _orderService,
+    IProductOrderService _productOrderService,
+    ISerOrderService _serOrderService) : BaseController
 {
 
     [HttpGet("{id:guid}")]
@@ -49,13 +52,17 @@ public class OrderController(IOrderService _orderService, IPayOsService payOsSer
         return Ok(new { success = true });
     }
 
-    [HttpGet("payos")]
-    public async Task<IActionResult> CreatePayOsPayment()
+
+    [HttpGet("{order_id:guid}/product-order")]
+    public async Task<IActionResult> GetProductOrderAsync([FromRoute] Guid order_id)
     {
-
-        var num = ((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds().ToString();
-
-        var paymentResponse = await payOsService.CreatePaymentAsync(200000, Double.Parse(num));
-        return Ok(paymentResponse);
+        return Ok(await _productOrderService.GetByOrderIdAsync(order_id));
     }
+
+    [HttpGet("{order_id:guid}/service-order")]
+    public async Task<IActionResult> GetServiceOrderAsync([FromRoute] Guid order_id)
+    {
+        return Ok(await _serOrderService.GetByOrderIdAsync(order_id));
+    }
+
 }
