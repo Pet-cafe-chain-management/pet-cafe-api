@@ -8,6 +8,7 @@ public class AppSettings
     public SepayOptions SepayOptions { get; set; } = default!;
     public string GoongAPIKey { get; set; } = default!;
     public PayOSConfig PayOSConfig { get; set; } = default!;
+    public SmtpSettings SmtpSettings { get; set; } = default!;
 
 
 }
@@ -50,4 +51,15 @@ public class PayOSConfig
     public string ChecksumKey { get; set; } = default!;
     public string SuccessURL { get; set; } = default!;
     public string CancelURL { get; set; } = default!;
+}
+
+public class SmtpSettings
+{
+    public string Host { get; set; } = default!;
+    public int Port { get; set; }
+    public string Username { get; set; } = default!;
+    public string Password { get; set; } = default!;
+    public string FromEmail { get; set; } = default!;
+    public string FromName { get; set; } = default!;
+    public bool EnableSsl { get; set; } = true;
 }

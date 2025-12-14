@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PetCafe.Application.GlobalExceptionHandling.Exceptions;
+using PetCafe.Application.Models.EmailModels;
 using PetCafe.Application.Models.OrderModels;
 using PetCafe.Application.Models.PayOsModels;
 using PetCafe.Application.Models.ShareModels;
@@ -29,7 +30,8 @@ public class OrderService(
     IClaimsService _claimsService,
     ICurrentTime _currentTime,
     IPayOsService _payOsService,
-    INotificationService _notificationService
+    INotificationService _notificationService,
+    IEmailService _emailService
 ) : IOrderService
 {
 
@@ -226,7 +228,14 @@ public class OrderService(
             .FirstOrDefaultAsync(x =>
                 x.OrderNumber == model.Data!.OrderCode.ToString() ||
                 model.Data!.Description!.Contains(x.OrderNumber),
-                includeFunc: x => x.Include(x => x.Customer!).ThenInclude(x => x.Account)
+                includeFunc: x => x
+                    .Include(x => x.Customer!).ThenInclude(x => x.Account)
+                    .Include(x => x.ServiceOrder!)
+                        .ThenInclude(x => x.OrderDetails.Where(x => !x.IsDeleted))
+                            .ThenInclude(x => x.Service!)
+                    .Include(x => x.ServiceOrder!)
+                        .ThenInclude(x => x.OrderDetails.Where(x => !x.IsDeleted))
+                            .ThenInclude(x => x.Slot!)
             ) ?? throw new Exception("Thanh toán thất bại!");
 
         order.Status = OrderStatusConstant.PAID;
@@ -254,6 +263,49 @@ public class OrderService(
                 referenceId: order.Id,
                 referenceType: "Order"
             );
+        }
+
+        // Gửi email khi thanh toán online thành công
+        if (saved && order.PaymentMethod == PaymentMethodConstant.ONLINE && order.Customer != null)
+        {
+            try
+            {
+                var bookingTimes = new List<BookingTimeInfo>();
+                if (order.ServiceOrder != null && order.ServiceOrder.OrderDetails != null)
+                {
+                    foreach (var detail in order.ServiceOrder.OrderDetails.Where(x => x.BookingDate.HasValue && x.Slot != null && x.Service != null))
+                    {
+                        if (detail.Service != null && detail.BookingDate.HasValue && detail.Slot != null)
+                        {
+                            bookingTimes.Add(new BookingTimeInfo
+                            {
+                                ServiceName = detail.Service.Name,
+                                BookingDate = detail.BookingDate.Value,
+                                StartTime = detail.Slot.StartTime,
+                                EndTime = detail.Slot.EndTime
+                            });
+                        }
+                    }
+                }
+
+                var emailModel = new PaymentSuccessEmailModel
+                {
+                    CustomerName = order.Customer.FullName,
+                    CustomerEmail = order.Customer.Email,
+                    CustomerPhone = order.Customer.Phone,
+                    OrderNumber = order.OrderNumber,
+                    TotalAmount = order.FinalAmount,
+                    OrderDate = order.OrderDate,
+                    BookingTimes = bookingTimes.Count > 0 ? bookingTimes : null
+                };
+
+                await _emailService.SendPaymentSuccessEmailAsync(emailModel);
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't fail the payment process
+                Console.WriteLine($"Error sending payment success email: {ex.Message}");
+            }
         }
 
         return saved;
