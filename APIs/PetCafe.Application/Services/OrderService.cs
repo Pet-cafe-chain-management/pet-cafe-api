@@ -284,9 +284,9 @@ public class OrderService(
 
                 var emailModel = new PaymentSuccessEmailModel
                 {
-                    CustomerName = order.Customer.FullName,
+                    CustomerName = order.FullName ?? order.Customer.FullName,
                     CustomerEmail = order.Customer.Email,
-                    CustomerPhone = order.Customer.Phone,
+                    CustomerPhone = order?.Phone ?? order!.Customer.Phone,
                     OrderNumber = order.OrderNumber,
                     TotalAmount = order.FinalAmount,
                     OrderDate = order.OrderDate,
