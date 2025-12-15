@@ -230,12 +230,6 @@ public class OrderService(
                 model.Data!.Description!.Contains(x.OrderNumber),
                 includeFunc: x => x
                     .Include(x => x.Customer!).ThenInclude(x => x.Account)
-                    .Include(x => x.ServiceOrder!)
-                        .ThenInclude(x => x.OrderDetails.Where(x => !x.IsDeleted))
-                            .ThenInclude(x => x.Service!)
-                    .Include(x => x.ServiceOrder!)
-                        .ThenInclude(x => x.OrderDetails.Where(x => !x.IsDeleted))
-                            .ThenInclude(x => x.Slot!)
             ) ?? throw new Exception("Thanh toán thất bại!");
 
         order.Status = OrderStatusConstant.PAID;
@@ -244,7 +238,7 @@ public class OrderService(
         var transaction = _unitOfWork.Mapper.Map<Transaction>(model.Data);
         transaction.OrderId = order.Id;
 
-        await UpdateServiceOrder(order);
+        var service_order = await UpdateServiceOrder(order);
 
         await _unitOfWork.TransactionRepository.AddAsync(transaction);
         _unitOfWork.OrderRepository.Update(order);
@@ -271,9 +265,9 @@ public class OrderService(
             try
             {
                 var bookingTimes = new List<BookingTimeInfo>();
-                if (order.ServiceOrder != null && order.ServiceOrder.OrderDetails != null)
+                if (service_order != null && service_order.OrderDetails != null)
                 {
-                    foreach (var detail in order.ServiceOrder.OrderDetails.Where(x => x.BookingDate.HasValue && x.Slot != null && x.Service != null))
+                    foreach (var detail in service_order.OrderDetails.Where(x => x.BookingDate.HasValue && x.Slot != null && x.Service != null))
                     {
                         if (detail.Service != null && detail.BookingDate.HasValue && detail.Slot != null)
                         {
@@ -335,13 +329,13 @@ public class OrderService(
         _unitOfWork.ProductOrderRepository.Update(product_order);
 
     }
-    private async Task UpdateServiceOrder(Order order)
+    private async Task<ServiceOrder?> UpdateServiceOrder(Order order)
     {
         var serivce_order = await _unitOfWork.ServiceOrderRepository
             .FirstOrDefaultAsync(x => x.OrderId == order.Id,
                 includeFunc: x => x.Include(x => x.OrderDetails.Where(x => !x.IsDeleted)));
 
-        if (serivce_order == null) return;
+        if (serivce_order == null) return null;
 
         foreach (var item in serivce_order.OrderDetails.Where(x => x.SlotId != null))
         {
@@ -372,6 +366,7 @@ public class OrderService(
 
         serivce_order.Status = OrderStatusConstant.PAID;
         _unitOfWork.ServiceOrderRepository.Update(serivce_order);
+        return serivce_order;
     }
 
 
