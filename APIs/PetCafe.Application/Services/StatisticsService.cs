@@ -123,7 +123,7 @@ public class StatisticsService(IUnitOfWork _unitOfWork) : IStatisticsService
 
         // Top customers by order count
         var topCustomersByOrder = orders
-            .Where(x => x.CustomerId.HasValue)
+            .Where(x => x != null && x.CustomerId.HasValue)
             .GroupBy(x => new { x.CustomerId, x.Customer!.FullName })
             .Select(g => new TopCustomerByOrderItem
             {
@@ -137,7 +137,7 @@ public class StatisticsService(IUnitOfWork _unitOfWork) : IStatisticsService
 
         // Top customers by revenue
         var topCustomersByRevenue = orders
-            .Where(x => x.CustomerId.HasValue && x.PaymentStatus == PaymentStatusConstant.PAID)
+            .Where(x => x != null && x.CustomerId.HasValue && x.PaymentStatus == PaymentStatusConstant.PAID)
             .GroupBy(x => new { x.CustomerId, x.Customer!.FullName })
             .Select(g => new TopCustomerByRevenueItem
             {
