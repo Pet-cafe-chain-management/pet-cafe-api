@@ -121,14 +121,16 @@ public class StatisticsService(IUnitOfWork _unitOfWork) : IStatisticsService
         var previousTotalOrders = previousOrders.Count;
         var growthRate = previousTotalOrders > 0 ? ((double)(totalOrders - previousTotalOrders) / previousTotalOrders) * 100 : 0;
 
+        var filteredOrders = orders.Where(x => x != null && x.CustomerId.HasValue).ToList();
+
         // Top customers by order count
-        var topCustomersByOrder = orders
+        var topCustomersByOrder = filteredOrders
             .Where(x => x != null && x.CustomerId.HasValue)
-            .GroupBy(x => new { x.CustomerId, x.Customer!.FullName })
+            .GroupBy(x => new { x.CustomerId })
             .Select(g => new TopCustomerByOrderItem
             {
                 CustomerId = g.Key.CustomerId!.Value,
-                CustomerName = g.Key.FullName ?? "N/A",
+                CustomerName = filteredOrders.FirstOrDefault(x => x.CustomerId == g.Key.CustomerId)?.Customer?.FullName ?? "N/A",
                 OrderCount = g.Count()
             })
             .OrderByDescending(x => x.OrderCount)
@@ -136,13 +138,13 @@ public class StatisticsService(IUnitOfWork _unitOfWork) : IStatisticsService
             .ToList();
 
         // Top customers by revenue
-        var topCustomersByRevenue = orders
+        var topCustomersByRevenue = filteredOrders
             .Where(x => x != null && x.CustomerId.HasValue && x.PaymentStatus == PaymentStatusConstant.PAID)
-            .GroupBy(x => new { x.CustomerId, x.Customer!.FullName })
+            .GroupBy(x => new { x.CustomerId })
             .Select(g => new TopCustomerByRevenueItem
             {
                 CustomerId = g.Key.CustomerId!.Value,
-                CustomerName = g.Key.FullName ?? "N/A",
+                CustomerName = filteredOrders.FirstOrDefault(x => x.CustomerId == g.Key.CustomerId)?.Customer?.FullName ?? "N/A",
                 TotalRevenue = g.Sum(x => x.FinalAmount)
             })
             .OrderByDescending(x => x.TotalRevenue)
