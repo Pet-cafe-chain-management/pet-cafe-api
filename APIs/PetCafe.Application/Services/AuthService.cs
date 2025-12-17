@@ -77,7 +77,7 @@ public class AuthService(
             ?? throw new BadRequestException($"Tài khoản không tồn tại!");
 
         var account = await _unitOfWork.AccountRepository
-            .FirstOrDefaultAsync(x => x.Email == userGoogleProfile.Email && x.IsActive) ?? await CreateAccountAsync(userGoogleProfile);
+            .FirstOrDefaultAsync(x => x.Email == userGoogleProfile.Email && x.IsActive, includeFunc: x => x.Include(x => x.Customer!).Include(x => x.Employee!)) ?? await CreateAccountAsync(userGoogleProfile);
 
         return new AuthResponseModel
         {
