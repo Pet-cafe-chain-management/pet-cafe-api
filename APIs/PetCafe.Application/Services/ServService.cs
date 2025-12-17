@@ -44,7 +44,6 @@ public class ServService(IUnitOfWork _unitOfWork, IClaimsService _claimsService)
             foreach (var slot in slots)
             {
                 slot.ServiceId = service.Id;
-                slot.ServiceStatus = SlotStatusConstant.UNAVAILABLE;
                 _unitOfWork.SlotRepository.Update(slot);
             }
         }
