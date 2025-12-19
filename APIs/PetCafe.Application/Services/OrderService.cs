@@ -248,6 +248,7 @@ public class OrderService(
         // Gửi notification khi order thành công
         if (saved && order.CustomerId.HasValue && order.Customer?.AccountId != null)
         {
+            // Gửi notification cho customer
             await _notificationService.SendNotificationAsync(
                 accountId: order.Customer.AccountId,
                 title: "Đặt hàng thành công",
@@ -257,6 +258,27 @@ public class OrderService(
                 referenceId: order.Id,
                 referenceType: "Order"
             );
+
+            // Gửi notification cho managers
+            var managerAccounts = await _unitOfWork.AccountRepository.WhereAsync(
+                a => a.Role == RoleConstants.MANAGER && a.IsActive && !a.IsDeleted
+            );
+
+            var notificationTasks = new List<Task>();
+            foreach (var managerAccount in managerAccounts)
+            {
+                notificationTasks.Add(_notificationService.SendNotificationAsync(
+                    accountId: managerAccount.Id,
+                    title: "Đơn hàng mới",
+                    message: $"Đơn hàng #{order.OrderNumber} đã được thanh toán thành công. Khách hàng: {order.Customer?.FullName ?? "N/A"}, Tổng tiền: {order.FinalAmount:N0} VNĐ",
+                    notificationType: "Order",
+                    priority: "Normal",
+                    referenceId: order.Id,
+                    referenceType: "Order"
+                ));
+            }
+
+            await Task.WhenAll(notificationTasks);
         }
 
         // Gửi email khi thanh toán online thành công
