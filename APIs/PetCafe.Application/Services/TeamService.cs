@@ -134,6 +134,8 @@ public class TeamService(
         var slots = await _unitOfWork.SlotRepository.WhereAsync(x => x.TeamId == id);
         if (slots.Count > 0) throw new BadRequestException("Không thể xóa team có ca làm việc!");
 
+        var customerBookings = await _unitOfWork.BookingRepository.WhereAsync(x => x.TeamId == id);
+        if (customerBookings.Count > 0) throw new BadRequestException("Không thể xóa team có đặt lịch!");
         var team = await _unitOfWork.TeamRepository.GetByIdAsync(
             id,
             includeFunc: x => x.Include(t => t.TeamMembers.Where(tm => !tm.IsDeleted))
