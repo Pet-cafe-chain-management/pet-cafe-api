@@ -260,7 +260,7 @@ public class TeamService(
 
         // Xóa DailySchedule của member này
         var dailySchedules = await _unitOfWork.DailyScheduleRepository.WhereAsync(
-            ds => ds.TeamMemberId == teamMemberId
+            ds => ds.TeamMemberId == teamMemberId && ds.Date >= DateTime.UtcNow.Date
         );
 
         if (dailySchedules.Count > 0)
