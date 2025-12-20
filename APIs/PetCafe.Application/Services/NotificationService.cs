@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PetCafe.Application.Hubs;
+using PetCafe.Application.Models.NotificationModels;
 using PetCafe.Application.Models.ShareModels;
 using PetCafe.Application.Services.Commons;
 using PetCafe.Domain.Entities;
@@ -23,6 +24,8 @@ public interface INotificationService
     Task<BasePagingResponseModel<Notification>> GetAllPagingAsync(Guid accountId, FilterQuery query);
     Task SendNotificationToUserAsync(Guid accountId, Notification notification);
     Task SendNotificationToMultipleUsersAsync(List<Guid> accountIds, Notification notification);
+
+    Task UpdateNotificationAsync(NotificationUpdateModel model);
 }
 
 
@@ -127,6 +130,18 @@ public class NotificationService(
             includeFunc: x => x.Include(x => x.Account)
         );
         return BasePagingResponseModel<Notification>.CreateInstance(Entities, Pagination);
+    }
+
+    public async Task UpdateNotificationAsync(NotificationUpdateModel model)
+    {
+        var notifications = await _unitOfWork.NotificationRepository.WhereAsync(x => x.AccountId == model.AccountId && x.IsRead == false);
+        foreach (var notification in notifications)
+        {
+            notification.IsRead = true;
+            notification.ReadDate = _currentTime.GetCurrentTime;
+        }
+        _unitOfWork.NotificationRepository.UpdateRange(notifications);
+        await _unitOfWork.SaveChangesAsync();
     }
 }
 
