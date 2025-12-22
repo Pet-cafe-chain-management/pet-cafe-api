@@ -153,9 +153,8 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
 
     public async Task<BasePagingResponseModel<DailySchedule>> GetDailySchedulesAsync(Guid teamId, DailyScheduleFilterQuery query)
     {
-        // Lấy tất cả các team members của team
-        Expression<Func<DailySchedule, bool>> filter = x => x.Employee.IsActive && x.TeamMember.TeamId == teamId;
 
+        Expression<Func<DailySchedule, bool>> filter = x => x.Employee.IsActive && x.TeamMember.TeamId == teamId && !x.TeamMember.IsOutTeam;
 
         if (query.FromDate.HasValue)
         {
@@ -170,7 +169,6 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
             filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.Status == query.Status) : x => x.Status == query.Status;
         }
 
-        // Load tất cả records matching các filter (không có ApplicableDays filter)
         var allEntities = await _unitOfWork.DailyScheduleRepository.WhereAsync(
             filter,
             includeFunc: q => q.Include(ds => ds.WorkShift)
@@ -178,13 +176,7 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
                               .Include(ds => ds.TeamMember)
         );
 
-        // Filter theo ApplicableDays trong memory
-        var filteredEntities = allEntities
-            .Where(ds => ds.WorkShift != null &&
-                        ds.WorkShift.ApplicableDays.Contains(ds.Date.DayOfWeek.ToString().ToUpper()))
-            .ToList();
-
-        // Apply pagination thủ công
+        var filteredEntities = allEntities.ToList();
         var pageIndex = query.Page ?? 0;
         var pageSize = query.Limit ?? 10;
         var totalCount = filteredEntities.Count;
@@ -328,7 +320,7 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
 
         // Lấy team members và work shifts từ database
         var teamMembers = await _unitOfWork.TeamMemberRepository.WhereAsync(
-            tm => teamMemberIds.Contains(tm.Id)
+            tm => teamMemberIds.Contains(tm.Id) && !tm.IsOutTeam
         );
 
         var workShifts = await _unitOfWork.WorkShiftRepository.WhereAsync(

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetCafe.Infrastructures;
@@ -11,9 +12,11 @@ using PetCafe.Infrastructures;
 namespace PetCafe.Infrastructures.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251222143423_Update_Team_Member_2025_12_22_21_32")]
+    partial class Update_Team_Member_2025_12_22_21_32
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -394,6 +397,10 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsOutTeam")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_out_team");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
@@ -2258,10 +2265,6 @@ namespace PetCafe.Infrastructures.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
-
-                    b.Property<bool>("IsOutTeam")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_out_team");
 
                     b.Property<Guid>("TeamId")
                         .HasColumnType("uuid")

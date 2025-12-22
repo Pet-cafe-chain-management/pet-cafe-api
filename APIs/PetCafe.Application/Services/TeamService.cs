@@ -268,13 +268,14 @@ public class TeamService(
         if (dailySchedules.Count > 0)
             _unitOfWork.DailyScheduleRepository.SoftRemoveRange(dailySchedules);
 
-        _unitOfWork.TeamMemberRepository.SoftRemove(member);
+        member.IsOutTeam = true;
+        _unitOfWork.TeamMemberRepository.Update(member);
         return await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<List<TeamMember>> GetMembersByTeamIdAsync(Guid teamId)
     {
-        return await _unitOfWork.TeamMemberRepository.WhereAsync(x => x.TeamId == teamId, includeFunc: x => x.Include(x => x.Employee));
+        return await _unitOfWork.TeamMemberRepository.WhereAsync(x => x.TeamId == teamId && !x.IsOutTeam, includeFunc: x => x.Include(x => x.Employee));
     }
 
 

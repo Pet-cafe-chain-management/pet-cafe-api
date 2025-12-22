@@ -14,6 +14,8 @@ public class TeamMember : BaseEntity
     [ForeignKey("Employee")]
     public Guid EmployeeId { get; set; }
 
+    [Column("is_out_team")]
+    public bool IsOutTeam { get; set; } = false;
 
 
     // Navigation properties
