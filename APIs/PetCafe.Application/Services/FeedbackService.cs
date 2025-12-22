@@ -53,6 +53,7 @@ public class FeedbackService(IUnitOfWork _unitOfWork, IClaimsService _claimsServ
 
         var feedback = _unitOfWork.Mapper.Map<ServiceFeedback>(model);
         feedback.FeedbackDate = DateTime.UtcNow;
+        feedback.CustomerId = _claimsService.GetCurrentUser;
         await _unitOfWork.FeedbackRepository.AddAsync(feedback);
         await _unitOfWork.SaveChangesAsync();
         return feedback;
