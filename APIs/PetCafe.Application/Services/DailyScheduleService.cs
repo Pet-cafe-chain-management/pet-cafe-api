@@ -154,7 +154,7 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
     public async Task<BasePagingResponseModel<DailySchedule>> GetDailySchedulesAsync(Guid teamId, DailyScheduleFilterQuery query)
     {
 
-        Expression<Func<DailySchedule, bool>> filter = x => x.Employee.IsActive && x.TeamMember.TeamId == teamId && !x.TeamMember.IsOutTeam;
+        Expression<Func<DailySchedule, bool>> filter = x => x.Employee.IsActive && x.TeamMember.TeamId == teamId;
 
         if (query.FromDate.HasValue)
         {
@@ -169,30 +169,16 @@ public class DailyScheduleService(IUnitOfWork _unitOfWork, IClaimsService _claim
             filter = filter != null ? FilterCustoms.CombineFilters(filter, x => x.Status == query.Status) : x => x.Status == query.Status;
         }
 
-        var allEntities = await _unitOfWork.DailyScheduleRepository.WhereAsync(
-            filter,
-            includeFunc: q => q.Include(ds => ds.WorkShift)
-                              .Include(ds => ds.Employee)
-                              .Include(ds => ds.TeamMember)
+        var (Pagination, Entities) = await _unitOfWork.DailyScheduleRepository.ToPagination(
+           pageIndex: query.Page ?? 0,
+           pageSize: query.Limit ?? 10,
+           filter: filter,
+           includeFunc: q => q.Include(ds => ds.WorkShift)
+                             .Include(ds => ds.Employee)
+                             .Include(ds => ds.TeamMember)
         );
 
-        var filteredEntities = allEntities.ToList();
-        var pageIndex = query.Page ?? 0;
-        var pageSize = query.Limit ?? 10;
-        var totalCount = filteredEntities.Count;
-        var paginatedEntities = filteredEntities
-            .Skip(pageIndex * pageSize)
-            .Take(pageSize)
-            .ToList();
-
-        var pagination = new Pagination
-        {
-            PageIndex = pageIndex,
-            PageSize = pageSize,
-            TotalItemsCount = totalCount
-        };
-
-        return BasePagingResponseModel<DailySchedule>.CreateInstance(paginatedEntities, pagination);
+        return BasePagingResponseModel<DailySchedule>.CreateInstance(Entities, Pagination);
     }
     public async Task<List<DailySchedule>> CreateDailySchedulesForMembersAsync(
         List<TeamMember> teamMembers,
