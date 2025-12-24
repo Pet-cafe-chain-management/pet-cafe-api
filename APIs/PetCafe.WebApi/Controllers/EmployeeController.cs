@@ -40,7 +40,7 @@ public class EmployeeController(IEmployeeService _employeeService) : BaseControl
     }
 
     [HttpGet]
-    [Authorize(Roles = RoleConstants.MANAGER)]
+    [Authorize]
     public async Task<IActionResult> GetAllPaging([FromQuery] EmployeeFilterQuery query)
     {
         return Ok(await _employeeService.GetAllPagingAsync(query));
