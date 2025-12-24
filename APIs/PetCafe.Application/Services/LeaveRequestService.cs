@@ -96,12 +96,11 @@ public class LeaveRequestService(
             a => a.Role == RoleConstants.MANAGER && a.IsActive && !a.IsDeleted
         );
 
-        var notificationTasks = new List<Task>();
 
         // Notify managers
         foreach (var managerAccount in managerAccounts)
         {
-            notificationTasks.Add(_notificationService.SendNotificationAsync(
+            await _notificationService.SendNotificationAsync(
                 managerAccount.Id,
                 "Đơn nghỉ phép mới",
                 $"Nhân viên {employee.FullName} đã nộp đơn nghỉ phép cho ngày {model.LeaveDate:dd/MM/yyyy}",
@@ -109,7 +108,7 @@ public class LeaveRequestService(
                 "Normal",
                 leaveRequest.Id,
                 "LeaveRequest"
-            ));
+            );
         }
 
         // Notify team leaders
@@ -117,19 +116,18 @@ public class LeaveRequestService(
         {
             if (teamMember.Team?.Leader?.AccountId != null)
             {
-                notificationTasks.Add(_notificationService.SendNotificationAsync(
-                    teamMember.Team.Leader.AccountId,
-                    "Đơn nghỉ phép mới",
-                    $"Nhân viên {employee.FullName} trong team {teamMember.Team.Name} đã nộp đơn nghỉ phép cho ngày {model.LeaveDate:dd/MM/yyyy}",
-                    "LeaveRequest",
-                    "Normal",
-                    leaveRequest.Id,
-                    "LeaveRequest"
-                ));
+                await _notificationService.SendNotificationAsync(
+                      teamMember.Team.Leader.AccountId,
+                     "Đơn nghỉ phép mới",
+                     $"Nhân viên {employee.FullName} trong team {teamMember.Team.Name} đã nộp đơn nghỉ phép cho ngày {model.LeaveDate:dd/MM/yyyy}",
+                     "LeaveRequest",
+                     "Normal",
+                     leaveRequest.Id,
+                     "LeaveRequest"
+                 );
             }
         }
 
-        await Task.WhenAll(notificationTasks);
 
         return leaveRequest;
     }
